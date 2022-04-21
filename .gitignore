@@ -1,0 +1,9 @@
+_note/
+_olds/
+resources/
+*.pptx
+
+*test*
+
+Pipfile
+Pipfile.lock
