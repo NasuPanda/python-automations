@@ -1,4 +1,4 @@
 """Global variables"""
 
-IMAGE_KEY: str = "img"
+IMAGE_KEY: str = "image"
 TEXTBOX_KEY: str = "textbox"
