@@ -19,9 +19,3 @@ class Image(SlideContent, total=False):
 class TextBox(SlideContent, total=False):
     """テキストボックス"""
     text: str
-
-
-class SlideContents(TypedDict, total=False):
-    """SlideContentの集合"""
-    image: list[Image]
-    textbox: list[TextBox]
