@@ -244,9 +244,9 @@ class InterFace:
 
         select_output_pattern_frame = sg.Frame(
             layout=[
-                [sg.Radio("連番データ(1画像/1データ)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN1_RADIO"])],
-                [sg.Radio("複数画像/1データ & 1データ/1スライド", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN2_RADIO"])],
-                [sg.Radio("複数画像/1データ & 複数データ/1スライド", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN3_RADIO"])],
+                [sg.Radio("順に並べる(1画像/1データ)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN1_RADIO"])],
+                [sg.Radio("特定のレイアウトに配置(1データ/1スライド)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN2_RADIO"])],
+                [sg.Radio("特定のレイアウトに配置(複数データ/1スライド)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN3_RADIO"])],
             ], **SELECT_LAYOUT_PATTERN_STYLES["FRAME"]
         )
 
