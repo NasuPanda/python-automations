@@ -14,7 +14,7 @@ class SlideContents(TypedDict, total=False):
 class Slide():
     """スライドクラス"""
     def __init__(self) -> None:
-        self.contents: list[SlideContents] = [{"group_id": "", "image": [], "textbox": []}]
+        self.contents: list[SlideContents] = []
 
     def set_contents(self, content_type: str, contents: list[Union[Image, TextBox]], group_id: str):
         """指定したgroup_id, content_typeにcontentsをセット"""
@@ -24,7 +24,11 @@ class Slide():
                 _contents[content_type] = contents
                 return
         # group_idが存在しない場合は新たに追加
-        self.contents.append({"group_id": group_id, content_type: contents})
+        new_contents: SlideContents = {
+            "group_id": group_id,
+            content_type: contents,
+        }
+        self.contents.append(new_contents)
 
     def set_content(self, content_type: str, content: Union[Image, TextBox], group_id: str):
         for _contents in self.contents:
@@ -32,18 +36,21 @@ class Slide():
                 _contents[content_type].append(content)
                 return
 
-        raise KeyError(f"group id doesn't exist: {group_id}")
+        new_contents: SlideContents = {
+            "group_id": group_id,
+            content_type: [content],
+        }
+        self.contents.append(new_contents)
 
     def __search_contents_by_group_id(self, group_id: str | None) -> SlideContents:
         if group_id is None:
             return self.contents[0]
         else:
             for contents in self.contents:
-                if contents["group_id"] == group_id:
+                if contents["group_id"] == str(group_id):
                     return contents
 
         raise KeyError(f"group id doesn't exist: {group_id}")
-
 
     def search_content_by_label(self, content_type: str, search_label: str, group_id: Optional[str] = None):
         """labelを元にcontnetを検索する"""
@@ -71,20 +78,50 @@ class Slide():
     def get_number_of_group(self):
         return len(self.contents)
 
-    # def get_number_of_group(self, content_type: str = config.IMAGE_KEY) -> int:
-    #     """
-    #     content.label を id / label に分けてユニークなidをカウント。
-    #     labels=[1_A, 1_B, 1_C, 2_A, 2_B, 2_C]の場合, データ数は2。
-    #     """
-    #     # 全てのcontent["label"]を取得する
-    #     labels: list[str] = []
-    #     [
-    #         [labels.append(content["label"]) for content in searched_contents[content_type]]
-    #         for searched_contents in self.contents
-    #     ]
-    #     # id_labelのみ対応しているため、split => [1, A]以外の形式は弾く
-    #     splits = [i.split(config.DELIMITER) for i in labels if len(i.split(config.DELIMITER)) == 2]
-    #     if not splits:
-    #         return 1
 
-    #     return len(set([i[0] for i in splits]))
+class SlideGenerator():
+    def __init__(self, template_contents: list[Image], content_type: str = config.IMAGE_KEY) -> None:
+        labels = [content["label"] for content in template_contents]
+
+        # 1スライド/複数データの場合: group_label形式のみ対応。split => [1, A]以外は弾く
+        splits = [i.split(config.DELIMITER) for i in labels if len(i.split(config.DELIMITER)) == 2]
+        if not splits:
+            self.template_slide: Slide = Slide()
+            self.template_slide.set_contents(content_type, template_contents, group_id="template")
+            return
+
+        # 1スライド/複数データの場合
+        self.template_slide: Slide = Slide()
+        group_ids: set[str] = set([i[0] for i in splits])
+        labels: set[str] = set([i[1] for i in splits])
+
+        # labels=[1_A, 1_B, 2_A]のようば場合(labelの数が対応していない場合)は弾く
+        if not len(group_ids) * len(labels) == len(template_contents):
+            raise Exception("number of labels & group_ids * labels are not equal")
+
+        for group_id in group_ids:
+            for label in labels:
+                searching_label = group_id + config.DELIMITER + label
+                for content in template_contents:
+                    if searching_label == content["label"]:
+                        content["label"] = label
+                        self.template_slide.set_content(content_type, content, group_id)
+
+
+    def get_number_of_group(self, content_type: str = config.IMAGE_KEY) -> int:
+        """
+        content.label を id / label に分けてユニークなidをカウント。
+        labels=[1_A, 1_B, 1_C, 2_A, 2_B, 2_C]の場合, データ数は2。
+        """
+        # 全てのcontent["label"]を取得する
+        labels: list[str] = []
+        [
+            [labels.append(content["label"]) for content in searched_contents[content_type]]
+            for searched_contents in self.contents
+        ]
+        # id_labelのみ対応しているため、split => [1, A]以外の形式は弾く
+        splits = [i.split(config.DELIMITER) for i in labels if len(i.split(config.DELIMITER)) == 2]
+        if not splits:
+            return 1
+
+        return len(set([i[0] for i in splits]))

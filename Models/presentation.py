@@ -14,6 +14,22 @@ class PresentationReader():
     def __init__(self, path: str) -> None:
         self.prs: Presentation = Presentation(path)
 
+    def get_imgs(self, slide_index=0) -> list[Image]:
+        """スライドが持つ画像の情報を取得(RECTANGLEを使用)"""
+        return self.__get_contents(
+            content_type=config.IMAGE_KEY,
+            shape_type=MSO_SHAPE.RECTANGLE,
+            slide_index=slide_index
+        )
+
+    def get_textbox(self, slide_index=0):
+        """スライドが持つテキストボックスの情報を取得"""
+        return self.__get_contents(
+            content_type=config.TEXTBOX_KEY,
+            shape_type=MSO_SHAPE_TYPE.TEXT_BOX,
+            slide_index=slide_index
+        )
+
     def __set_content(self, content_type: str, shape) -> Union[Image, TextBox]:
         if content_type == config.IMAGE_KEY:
             return Image(
@@ -31,7 +47,7 @@ class PresentationReader():
             )
 
     def __get_contents(self, content_type: str, shape_type: Union[MSO_SHAPE, MSO_SHAPE_TYPE], slide_index=0):
-        """特定のshape_typeのテキストを取得"""
+        """特定のshape_typeを取得"""
         contents: list[Union[Image, TextBox]] = []
         shapes = self.prs.slides[slide_index].shapes
 
@@ -43,22 +59,6 @@ class PresentationReader():
             contents.append(self.__set_content(content_type, shape))
 
         return contents
-
-    def get_imgs(self, slide_index=0):
-        """スライドが持つ画像の情報を取得(RECTANGLEを使用)"""
-        return self.__get_contents(
-            content_type=config.IMAGE_KEY,
-            shape_type=MSO_SHAPE.RECTANGLE,
-            slide_index=slide_index
-        )
-
-    def get_textbox(self, slide_index=0):
-        """スライドが持つテキストボックスの情報を取得"""
-        return self.__get_contents(
-            content_type=config.TEXTBOX_KEY,
-            shape_type=MSO_SHAPE_TYPE.TEXT_BOX,
-            slide_index=slide_index
-        )
 
 
 class PresentationWriter():
