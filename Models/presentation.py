@@ -52,7 +52,7 @@ class PresentationReader():
         shapes = self.prs.slides[slide_index].shapes
 
         for shape in shapes:
-            if not shape.shape_type == shape_type:
+            if shape.shape_type != shape_type:
                 continue
             if not shape.text:
                 continue
