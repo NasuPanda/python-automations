@@ -8,7 +8,7 @@ class LabeledImage(TypedDict):
     path: str
 
 
-class ImageSequencer():
+class ImageSorter():
     """順序付ける。"""
     def __init__(self, contents: list[Path]) -> None:
         self.image_paths: list[Path] = contents
@@ -56,7 +56,7 @@ class ImageSequencer():
             label = splits[label_part_index]
         except IndexError:
             raise IndexError(f"Label/others splits fail. string: {string}, index: {label_part_index}")
-        without_label = [i for i in splits if not i == label]
+        without_label = [i for i in splits if i != label]
         without_label = config.DELIMITER.join(without_label)
 
         return label, without_label
