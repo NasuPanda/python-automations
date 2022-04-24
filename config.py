@@ -3,17 +3,17 @@ from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE
 
 """Global variables"""
 
-# contnet type
+# content type
 IMAGE_KEY: str = "image"
 TEXTBOX_KEY: str = "textbox"
 
-# shape
+# shapes pointing contents
 SHAPES = {
     "image": MSO_SHAPE.RECTANGLE,
     "textbox": MSO_SHAPE_TYPE.TEXT_BOX
 }
 
-# sepalater
+# delimiter (label)
 DELIMITER: str = "_"
 
 # regex
@@ -31,14 +31,9 @@ $ : 文字列の末尾
 
 .* : 任意の文字を0回以上繰り返し(あってもなくても良い)
 """
-
+# 画像の拡張子を指すパターン
 REGEX_IMAGE = '/*\.(jpg|jpeg|png|bmp)'
-# groupを指す文字 : [@1, ＠2, @_1, @ 1...]
+# groupを指すパターン : [@1, ＠2, @_1, @ 1...]
 REGEX_POINTING_GROUP = '(@|＠).*\d+'
-# labelを指す文字
+# labelを指すパターン
 REGEX_POINTING_LABEL = '(#|＃).*\d+'
-
-CORRESPONDING_OLD_NEW_TEXT = {
-    REGEX_POINTING_GROUP: "group_id",
-    REGEX_POINTING_LABEL: "label",
-}
