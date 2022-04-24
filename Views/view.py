@@ -3,7 +3,8 @@ import PySimpleGUI as sg
 """
 GUI Styles
 
-enabled_events: 通常イベントが発火しない要素に対してTrueを指定するとイベントが発火するようになる
+enabled_events: 通常イベントが発火しない要素に対してTrueを指定するとイベントが発火するようになる。
+disabled: 使用不可。イベントの発火をキャッチしてこの要素を切り替えることで使用の可不可を切り替える事ができる。
 """
 TITLE = "PowerPointFormatter"
 FONT = "MeiryoUI"
@@ -18,6 +19,30 @@ WINDOW_STYLES = {
     "size": WINDOW_SIZE,
     "font": FONT,
     "resizable": True,
+}
+
+# レイアウトパターンの選択
+SELECT_LAYOUT_PATTERN_STYLES = {
+    "FRAME": {
+        "title": "レイアウトパターンの選択",
+        "title_color": "green",  # TODO いい感じの色を選ぶ
+        "relief": sg.RELIEF_SOLID,
+    },
+    # 特定フォーマットデータ
+    "PATTERN1_RADIO": {
+        "key": "-SELECT_PATTERN1-",
+        "group_id": "SELECT_OUTPUT_PATTERN",
+        "size": (40, 1),
+        "enable_events": True,
+        "default": True,  # デフォルト選択
+    },
+    # 順序データ
+    "PATTERN2_RADIO": {
+        "key": "-SELECT_PATTERN2-",
+        "group_id": "SELECT_OUTPUT_PATTERN",
+        "enable_events": True,
+        "size": (40, 1),
+    },
 }
 
 # PowerPointの入力
@@ -50,18 +75,6 @@ PWT_BROWSE_STYELES = {
         "default_value": "",
         "size": (5, 1),
     },
-    "SETTING_DESC_TEXT": {
-        "size": (40, 1),
-        "font": (FONT, 15),
-        "justification": "right"
-    },
-    "POPUP_BUTTON": {
-        "button_text": "設定を開く",
-        "key": "-CALL_POPUP-",
-        "disabled": True,
-        "size": (15, 1),
-        "font": (FONT, 10),
-    }
 }
 
 # 画像の入力
@@ -100,7 +113,6 @@ IMAGE_BROWSE_STYLES = {
         "font": (FONT, 10),
     },
     # ファイル入力
-    # デフォルト: disabled=True, text_color=gray
     "FILES_INPUT_TEXT": {
         "key": "-SRC_FILES-",
         "text_color": "gray",
@@ -118,8 +130,8 @@ IMAGE_BROWSE_STYLES = {
     },
 }
 
-# レイアウト部分の選択
-SELECT_LAYOUT_PART_STYLES = {
+# ラベル部分の選択
+SELECT_LABEL_PART_STYLES = {
     "DESC_TEXT": {
         "text": "連番 or レイアウト に当たる箇所を選択してください",
         "size": (40, 1),
@@ -131,46 +143,18 @@ SELECT_LAYOUT_PART_STYLES = {
         "font": (FONT, 12),
     },
     "PLACEHOLDER": {
-        "key": "-LAYOUT_PART_PLACEHOLDER-",
+        "key": "-LABEL_PART_PLACEFOLDER-",
         "text": "未入力",
         "size": (30, 1),
         "font": (FONT, 12),
     },
     "COMBO": {
-        "key": "-LAYOUT_PART-",
+        "key": "-LABEL_PART-",
         "tooltip": "レイアウトに相当する箇所を選択する",
         "values": ["", ""],
         "default_value": "",
         "size": (20, 1),
     }
-}
-
-# レイアウトパターンの選択
-SELECT_LAYOUT_PATTERN_STYLES = {
-    "FRAME": {
-        "title": "レイアウトパターンの選択",
-        "title_color": "green",  # TODO いい感じの色を選ぶ
-        "relief": sg.RELIEF_SOLID,
-    },
-    "PATTERN1_RADIO": {
-        "key": "-SELECT_PATTERN1-",
-        "group_id": "SELECT_OUTPUT_PATTERN",
-        "size": (40, 1),
-        "enable_events": True,
-        "default": True,  # デフォルト選択
-    },
-    "PATTERN2_RADIO": {
-        "key": "-SELECT_PATTERN2-",
-        "group_id": "SELECT_OUTPUT_PATTERN",
-        "enable_events": True,
-        "size": (40, 1),
-    },
-    "PATTERN3_RADIO": {
-        "key": "-SELECT_PATTERN3-",
-        "group_id": "SELECT_OUTPUT_PATTERN",
-        "enable_events": True,
-        "size": (40, 1),
-    },
 }
 
 # 実行
@@ -205,6 +189,13 @@ class InterFace:
     """UI"""
 
     def __init__(self):
+        select_layout_pattern_frame = sg.Frame(
+            layout=[
+                [sg.Radio("特定のレイアウトに配置", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN1_RADIO"])],
+                [sg.Radio("順に並べる(1画像:1データ)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN2_RADIO"])],
+            ], **SELECT_LAYOUT_PATTERN_STYLES["FRAME"]
+        )
+
         powerpoint_browse_frame = sg.Frame(
             layout=[
                 [
@@ -214,8 +205,6 @@ class InterFace:
                 [
                     sg.T("使用するスライドを選択: ", **PWT_BROWSE_STYELES["SLIDE_DESC_TEXT"]),
                     sg.Combo(**PWT_BROWSE_STYELES["COMBO_TEMPLATE_INDEX"]),
-                    sg.T("オプション: テキスト置換設定(デフォルトはデータ名)", **PWT_BROWSE_STYELES["SETTING_DESC_TEXT"]),
-                    sg.B(**PWT_BROWSE_STYELES["POPUP_BUTTON"])
                 ],
             ], **PWT_BROWSE_STYELES["FRAME"]
         )
@@ -232,22 +221,14 @@ class InterFace:
                     sg.InputText(**IMAGE_BROWSE_STYLES["FILES_INPUT_TEXT"]),
                     sg.FilesBrowse("ファイル選択", **IMAGE_BROWSE_STYLES["FILES_BROWSE"]),
                 ],
-                [sg.T(**SELECT_LAYOUT_PART_STYLES["DESC_TEXT"])],
+                [sg.T(**SELECT_LABEL_PART_STYLES["DESC_TEXT"])],
                 [
-                    sg.T(**SELECT_LAYOUT_PART_STYLES["TEXT"]),
-                    sg.T(**SELECT_LAYOUT_PART_STYLES["PLACEHOLDER"]),
-                    sg.Combo(**SELECT_LAYOUT_PART_STYLES["COMBO"])
+                    sg.T(**SELECT_LABEL_PART_STYLES["TEXT"]),
+                    sg.T(**SELECT_LABEL_PART_STYLES["PLACEHOLDER"]),
+                    sg.Combo(**SELECT_LABEL_PART_STYLES["COMBO"])
                 ],
             ],
             **IMAGE_BROWSE_STYLES["FRAME"]
-        )
-
-        select_output_pattern_frame = sg.Frame(
-            layout=[
-                [sg.Radio("順に並べる(1画像/1データ)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN1_RADIO"])],
-                [sg.Radio("特定のレイアウトに配置(1データ/1スライド)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN2_RADIO"])],
-                [sg.Radio("特定のレイアウトに配置(複数データ/1スライド)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN3_RADIO"])],
-            ], **SELECT_LAYOUT_PATTERN_STYLES["FRAME"]
         )
 
         submit_frame = sg.Frame(
@@ -263,9 +244,9 @@ class InterFace:
 
         self.window = sg.Window(
             layout=[
+                [select_layout_pattern_frame],
                 [powerpoint_browse_frame],
                 [image_browse_frame],
-                [select_output_pattern_frame],
                 [submit_frame],
             ],
             **WINDOW_STYLES,
@@ -274,11 +255,3 @@ class InterFace:
     def close_window(self):
         """windowを閉じる"""
         self.window.close()
-
-    @staticmethod
-    def call_error_popup(message="エラー"):
-        sg.popup(message, text_color="red", auto_close=True, auto_close_duration=2)
-
-    @staticmethod
-    def call_success_popup(message="成功しました"):
-        sg.popup_ok(message, auto_close=True, auto_close_duration=2)
