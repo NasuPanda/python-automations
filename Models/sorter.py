@@ -82,7 +82,7 @@ class ImageSorter():
         Returns
         -------
         dict[str, list[LabeledImage]]
-            グループ化されたレバリング済画像のリスト。
+            グループ化されたラベリング済画像のリスト。
         """
         labeld_images: dict[str, list[LabeledImage]] = {}
 

@@ -204,7 +204,7 @@ class TemplateSlide(Slide):
 
         例: 複数グループ/1スライドの場合
             labels = [1_1, 1_2, 1_3, 2_1, 2_2, 2_3]
-            splits = [[1, 1], [1, 2]...] => 空で無い場合複数グループ/1スライド
+            splits = [[1, 1], [1, 2]...] => 複数グループ/1スライド
             group_ids = [1, 2], labels = (1, 2, 3)
             group1: label[1, 2, 3], group2: label[1, 2, 3]
 
@@ -370,16 +370,17 @@ class SlideGenerator():
         """
         if (group_id := self.__get_single_group_id(grouped_images)) is None:
             raise Exception("Group exists two or more.")
+
         images = grouped_images[group_id]
         template_contents = self.template_slide.get_contents_from_first_group(config.IMAGE_KEY)
         image_index = 0
 
         for slide in self.slides:
-            temp_contents = []
+            tmp_contents = []
 
             for content in template_contents:
                 image = images[image_index]
-                temp_contents.append(
+                tmp_contents.append(
                     Image(
                         coordinates=content["coordinates"],
                         size=content["size"],
@@ -392,7 +393,7 @@ class SlideGenerator():
                 if image_index == len(images):
                     break
 
-            slide.set_contents(config.IMAGE_KEY, temp_contents, group_id)
+            slide.set_contents(config.IMAGE_KEY, tmp_contents, group_id)
 
     def set_laidout_images_to_slides(self, grouped_images: dict[str, list[LabeledImage]]):
         """スライドに対してレイアウトされた画像をセットする。
@@ -442,16 +443,14 @@ class SlideGenerator():
             template_contents = deepcopy(self.template_slide.contents)
             current_label = 0
             matched_pairs: dict[str, str] = {}
-
             # グループ数が奇数の場合に備えてzip_longestを使う
-            for template_group, group in itertools.zip_longest(template_contents, slide.contents):
+            for template_group, group in zip(template_contents, slide.contents):
                 if not group:
                     return
                 for textbox in template_group["textbox"]:
                     text = textbox["text"]
                     # group_idを指す文字列が存在すれば置換する
                     text = re.sub(config.REGEX_POINTING_GROUP, group["group_id"], text)
-
                     # labelを指す文字列が存在すれば置換する
                     if re.search(config.REGEX_POINTING_LABEL, text):
                         # 既にマッチしたlabelを指す文字列が存在する場合それを利用する
@@ -462,14 +461,19 @@ class SlideGenerator():
                             try:
                                 replacement_label = group["image"][current_label]["label"]
                             except IndexError:
-                                # TODO GUI
-                                raise IndexError("Label number is over.")
+                                break
                             matched_pairs[text] = replacement_label
                             text = re.sub(config.REGEX_POINTING_LABEL, replacement_label, text)
                             current_label += 1
-
                     textbox["text"] = text
+                    print("text box is ", textbox)
                 group["textbox"] = template_group["textbox"]
+
+    def sort_template_images_by_numeric_label(self):
+        """テンプレートの画像をラベル順(数値順)にソートする。
+        順序データの時にのみ使用し、数値以外のラベルを許容しない。
+        """
+        self.template_slide.sort_contents_by_numeric_label(config.IMAGE_KEY)
 
     @staticmethod
     def __generate_dict_items_generator(dict: dict) -> Iterator[tuple[str, list[Image]]]:
