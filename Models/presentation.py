@@ -62,6 +62,58 @@ class PresentationReader():
 
 class PresentationWriter():
     """プレゼンテーションを出力するクラス。"""
-    def __init__(self, path: str) -> None:
-        self.slides: list[Slide] = []
+    def __init__(self, path: str, slides: list[Slide]) -> None:
         self.prs: Presentation = Presentation(path)
+        self.slides: list[Slide] = slides
+
+        # 優先順位: 白紙 > タイトルとコンテンツ > 最後
+        # get_by_nameは存在しない場合Noneを返す
+        self.layout = self.prs.slide_layouts.get_by_name("白紙")
+        if not self.layout:
+            self.layout = self.prs.slide_layouts.get_by_name("タイトルとコンテンツ")
+        if not self.layout:
+            self.layout = self.prs.slide_layouts[-1]
+
+    def add_slide(self):
+        """空のスライドを追加する。
+        """
+        return self.prs.slides.add_slide(self.layout)
+
+    def __get_slide_index(self, slide) -> int:
+        """スライドのindexを取得する。
+        """
+        return self.prs.slides.index(slide)
+
+    def duplicate_slide(self, base_slide_index=0) -> int:
+        """スライドを複製する。
+        参考 : https://stackoverflow.com/questions/50866634/python-pptx-copy-slide
+
+        Parameters
+        ----------
+        base_slide_index : int, optional
+            複製元スライドのインデックス, by default 0
+
+        Returns
+        -------
+        int
+            複製したスライドのインデックス。
+        """
+        base_slide = self.prs.slides[base_slide_index]
+        duplicate_slide = self.add_slide()
+        for shape in base_slide.shapes:
+            el = shape.element
+            new_el = deepcopy(el)
+            duplicate_slide.shapes._spTree.insert_element_before(new_el, "p:extLst")
+        return self.__get_slide_index(duplicate_slide)
+
+    def __paste_img(
+                self,
+                coordinates: tuple[int, int],
+                sizes: tuple[int, int],
+                img: str,
+                slide_index=1
+        ):
+        """スライドに画像を貼り付ける。
+        """
+        shapes = self.prs.slides[slide_index].shapes
+        shapes.add_picture(img, *coordinates, *sizes)
