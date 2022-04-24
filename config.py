@@ -1,8 +1,17 @@
+from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE
+
+
 """Global variables"""
 
 # contnet type
 IMAGE_KEY: str = "image"
 TEXTBOX_KEY: str = "textbox"
+
+# shape
+SHAPES = {
+    "image": MSO_SHAPE.RECTANGLE,
+    "textbox": MSO_SHAPE_TYPE.TEXT_BOX
+}
 
 # sepalater
 DELIMITER: str = "_"
