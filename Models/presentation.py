@@ -1,4 +1,3 @@
-from typing import Union
 from copy import deepcopy
 
 from pptx import Presentation
@@ -22,7 +21,7 @@ class PresentationReader():
             slide_index=slide_index
         )
 
-    def get_textbox(self, slide_index=0):
+    def get_textbox(self, slide_index=0) -> list[TextBox]:
         """スライドが持つテキストボックスの情報を取得"""
         return self.__get_contents(
             content_type=config.TEXTBOX_KEY,
@@ -30,7 +29,7 @@ class PresentationReader():
             slide_index=slide_index
         )
 
-    def __set_content(self, content_type: str, shape) -> Union[Image, TextBox]:
+    def __set_content(self, content_type: str, shape) -> Image | TextBox:
         if content_type == config.IMAGE_KEY:
             return Image(
                 coordinates=(shape.left, shape.top),
@@ -46,9 +45,9 @@ class PresentationReader():
                 text=shape.text
             )
 
-    def __get_contents(self, content_type: str, shape_type: Union[MSO_SHAPE, MSO_SHAPE_TYPE], slide_index=0):
+    def __get_contents(self, content_type: str, shape_type: MSO_SHAPE | MSO_SHAPE_TYPE, slide_index=0):
         """特定のshape_typeを取得"""
-        contents: list[Union[Image, TextBox]] = []
+        contents: list[Image | TextBox] = []
         shapes = self.prs.slides[slide_index].shapes
 
         for shape in shapes:
