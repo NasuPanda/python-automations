@@ -1,10 +1,11 @@
+import re
 from copy import deepcopy
 from pathlib import Path
-import re
 from typing import TypedDict
 
 import config
 from Models.content import TextBox
+
 
 class LabeledImage(TypedDict):
     """ラベリングされた画像。

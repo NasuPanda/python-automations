@@ -1,13 +1,11 @@
-from copy import deepcopy
-import itertools
-import math
-from msilib import text
 import re
+import math
+import itertools
+from copy import deepcopy
 from typing import Iterator, TypedDict, Optional
 
-from Models.sorter import LabeledImage
-
 import config
+from Models.sorter import LabeledImage
 from Models.content import Image, TextBox
 
 
@@ -19,7 +17,7 @@ class ContentsGroup(TypedDict, total=False):
 
 
 class Slide():
-    """スライドクラス。
+    """スライド。
 
     contents: list[ContentsGroup]
         ContentsGroupのリスト。
@@ -185,13 +183,30 @@ class Slide():
 
         raise KeyError(f"group id doesn't exist: {group_id}")
 
+
 class TemplateSlide(Slide):
+    """テンプレートスライド。
+
+    contents: list[ContentsGroup]
+        ContentsGroupのリスト。
+    """
     def __init__(
             self,
             template_contents: list[Image],
             template_content_type: str = config.IMAGE_KEY
     ) -> None:
-        """初期化
+        """初期化。
+        グループ数を画像のテンプレートから定義するため画像のリストを渡す。
+
+        例: 1グループ/1スライドの場合
+            labels = [1, 2, 3, 4]
+            splits = [] => 空なので1グループ/1スライド
+
+        例: 複数グループ/1スライドの場合
+            labels = [1_1, 1_2, 1_3, 2_1, 2_2, 2_3]
+            splits = [[1, 1], [1, 2]...] => 空で無い場合複数グループ/1スライド
+            group_ids = [1, 2], labels = (1, 2, 3)
+            group1: label[1, 2, 3], group2: label[1, 2, 3]
 
         Parameters
         ----------
@@ -230,8 +245,7 @@ class TemplateSlide(Slide):
             # TODO GUI
             raise Exception("number of contents / number of group_id's * number of label's are not equal")
 
-        # group_ids = (1, 2)
-        # new_labels = (A, B)
+        # group_ids = [1, 2], new_labels = (A, B)
         # group 1 : label A, B / group2: label A, B
         for group_id in group_ids:
             for label in new_labels:
@@ -302,8 +316,12 @@ class TemplateSlide(Slide):
 
 
 class SlideGenerator():
-    """
-    スライドを生成する。
+    """書き込みに使う情報を持つスライドを生成する。
+
+    template_slide: TemplateSlide
+        テンプレートスライド。
+    slides: list[Slide]
+        書き込みに使う情報を持つSlideのリスト。
     """
     def __init__(
             self,
@@ -312,7 +330,7 @@ class SlideGenerator():
             total_number_of_contents: int
     ) -> None:
         """
-        テンプレートの初期化。(デフォルトは画像)
+        初期化。
 
         Parameters
         ----------
@@ -338,9 +356,7 @@ class SlideGenerator():
         self.template_slide.set_textboxes(textboxes)
 
     def set_sequence_images_to_slides(self, grouped_images: dict[str, list[LabeledImage]]):
-        """
-        順序画像をセットする。(複数グループを持つ画像を許容しない)
-        ※ 画像を元にグループ分けする都合上画像を先にセットする。
+        """スライドに対して順番に画像をセットする。複数グループを持つ画像を許容しない。
 
         Parameters
         ----------
@@ -379,7 +395,7 @@ class SlideGenerator():
             slide.set_contents(config.IMAGE_KEY, temp_contents, group_id)
 
     def set_laidout_images_to_slides(self, grouped_images: dict[str, list[LabeledImage]]):
-        """※ 画像を元にグループ分けする都合上画像を先にセットする。
+        """スライドに対してレイアウトされた画像をセットする。
 
         Parameters
         ----------
@@ -415,7 +431,7 @@ class SlideGenerator():
                 slide.set_contents(config.IMAGE_KEY, temp_contents, new_group_id)
 
     def set_textboxes_to_slides(self):
-        """スライドにテキストボックスをセットする。
+        """スライドに対してテキストボックスをセットする。
 
         Raises
         ------
@@ -427,19 +443,21 @@ class SlideGenerator():
             current_label = 0
             matched_pairs: dict[str, str] = {}
 
+            # グループ数が奇数の場合に備えてzip_longestを使う
             for template_group, group in itertools.zip_longest(template_contents, slide.contents):
                 if not group:
                     return
                 for textbox in template_group["textbox"]:
                     text = textbox["text"]
-                    # group_idを指す文字列が存在すれば置換
+                    # group_idを指す文字列が存在すれば置換する
                     text = re.sub(config.REGEX_POINTING_GROUP, group["group_id"], text)
+
                     # labelを指す文字列が存在すれば置換する
                     if re.search(config.REGEX_POINTING_LABEL, text):
                         # 既にマッチしたlabelを指す文字列が存在する場合それを利用する
                         if text in matched_pairs.keys():
                             text = matched_pairs[text]
-                        # matched_pairsに存在しなければペアを追加して置換
+                        # matched_pairsに存在しなければペアに追加して置換
                         else:
                             try:
                                 replacement_label = group["image"][current_label]["label"]
@@ -449,6 +467,7 @@ class SlideGenerator():
                             matched_pairs[text] = replacement_label
                             text = re.sub(config.REGEX_POINTING_LABEL, replacement_label, text)
                             current_label += 1
+
                     textbox["text"] = text
                 group["textbox"] = template_group["textbox"]
 
