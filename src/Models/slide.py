@@ -1,12 +1,11 @@
 import re
 import math
-import itertools
 from copy import deepcopy
 from typing import Iterator, TypedDict, Optional
 
-import config
-from Models.sorter import LabeledImage
-from Models.content import Image, TextBox
+import src.config as config
+from src.Models.sorter import LabeledImage
+from src.Models.content import Image, TextBox
 
 
 class ContentsGroup(TypedDict, total=False):
@@ -466,7 +465,6 @@ class SlideGenerator():
                             text = re.sub(config.REGEX_POINTING_LABEL, replacement_label, text)
                             current_label += 1
                     textbox["text"] = text
-                    print("text box is ", textbox)
                 group["textbox"] = template_group["textbox"]
 
     def sort_template_images_by_numeric_label(self):
