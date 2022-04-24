@@ -3,8 +3,8 @@ from copy import deepcopy
 from pathlib import Path
 from typing import TypedDict
 
-import config
-from Models.content import TextBox
+import src.config as config
+from src.Models.content import TextBox
 
 
 class LabeledImage(TypedDict):
@@ -20,15 +20,15 @@ class ImageSorter():
     image_paths: list[Path]
         画像のパス。(Pathオブジェクトのリスト。)
     """
-    def __init__(self, contents: list[Path]) -> None:
+    def __init__(self, images: list[Path]) -> None:
         """初期化。
 
         Parameters
         ----------
-        contents : list[Path]
+        images : list[Path]
             Pathオブジェクトのリスト。
         """
-        self.image_paths: list[Path] = contents
+        self.image_paths: list[Path] = images
 
     def get_image_paths_as_str(self) -> list[str]:
         """文字列としてパスのリストを取得。

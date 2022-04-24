@@ -2,9 +2,9 @@ from copy import deepcopy
 
 from pptx import Presentation
 
-import config
-from Models.slide import Slide
-from Models.content import Image, TextBox
+import src.config as config
+from src.Models.slide import Slide
+from src.Models.content import Image, TextBox
 
 
 class PresentationReader():
@@ -13,21 +13,32 @@ class PresentationReader():
     def __init__(self, path: str) -> None:
         self.prs: Presentation = Presentation(path)
 
-    def get_imgs(self, slide_index=0) -> list[Image]:
+    def get_image_templates(self, slide_index=0) -> list[Image]:
         """スライドが持つ画像の情報を取得(RECTANGLEを使用)"""
-        return self.__get_contents(
-            content_type=config.IMAGE_KEY,
-            shape_type=config.SHAPES["image"],
-            slide_index=slide_index
-        )
+        try:
+            image_templates =  self.__get_contents(
+                content_type=config.IMAGE_KEY,
+                shape_type=config.SHAPES["image"],
+                slide_index=slide_index
+            )
+        except IndexError:
+            raise IndexError("slide index out of range")
+        return image_templates
 
-    def get_textbox(self, slide_index=0) -> list[TextBox]:
+    def get_textbox_templates(self, slide_index=0) -> list[TextBox]:
         """スライドが持つテキストボックスの情報を取得"""
-        return self.__get_contents(
-            content_type=config.TEXTBOX_KEY,
-            shape_type=config.SHAPES["textbox"],
-            slide_index=slide_index
-        )
+        try:
+            textbox_templates = self.__get_contents(
+                content_type=config.TEXTBOX_KEY,
+                shape_type=config.SHAPES["textbox"],
+                slide_index=slide_index
+            )
+        except IndexError:
+            raise IndexError("slide index out of range")
+        return textbox_templates
+
+    def get_number_of_slide(self):
+        return len(self.prs.slides)
 
     def __set_content(self, content_type: str, shape) -> Image | TextBox:
         if content_type == config.IMAGE_KEY:
@@ -47,8 +58,11 @@ class PresentationReader():
 
     def __get_contents(self, content_type: str, shape_type, slide_index=0):
         """特定のshape_typeを取得"""
-        contents: list[Image | TextBox] = []
-        shapes = self.prs.slides[slide_index].shapes
+        try:
+            shapes = self.prs.slides[slide_index].shapes
+        except IndexError:
+            raise IndexError("slide index out of range")
+        contents = []
 
         for shape in shapes:
             if shape.shape_type != shape_type:

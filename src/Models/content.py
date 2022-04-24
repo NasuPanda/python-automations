@@ -1,5 +1,4 @@
 from typing import TypedDict
-import config
 
 
 class SlideContent(TypedDict):
@@ -19,5 +18,5 @@ class Image(SlideContent, total=False):
 class TextBox(SlideContent, total=False):
     """テキストボックス"""
     text: str
-    # to_be_replace: bool
-    # font: str
+    # int: size
+

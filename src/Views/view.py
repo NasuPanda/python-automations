@@ -1,5 +1,6 @@
 import PySimpleGUI as sg
 
+
 """
 GUI Styles
 

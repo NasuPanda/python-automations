@@ -6,12 +6,12 @@ import pathlib
 import subprocess
 import PySimpleGUI as sg
 from datetime import datetime
-from Models.slide import SlideGenerator
-from Models.sorter import ImageSorter, LabeledImage, TextBoxSorter
 
-import config
-from Models.presentation import PresentationReader, PresentationWriter
-from Views.popup import Popup
+import src.config as config
+from src.Models.slide import SlideGenerator
+from src.Models.sorter import ImageSorter, LabeledImage, TextBoxSorter
+from src.Models.presentation import PresentationReader, PresentationWriter
+from src.Views.popup import Popup
 
 
 class Controller():
