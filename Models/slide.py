@@ -1,12 +1,17 @@
+from copy import deepcopy
+import itertools
 import math
-from typing import Iterator, TypedDict, Union, Optional
+from msilib import text
+import re
+from typing import Iterator, TypedDict, Optional
+
 from Models.sorter import LabeledImage
 
 import config
 from Models.content import Image, TextBox
 
 
-class SlideContents(TypedDict, total=False):
+class ContentsGroup(TypedDict, total=False):
     """SlideContentの集合"""
     group_id: str
     image: list[Image]
@@ -16,24 +21,23 @@ class SlideContents(TypedDict, total=False):
 class Slide():
     """スライドクラス"""
     def __init__(self) -> None:
-        self.contents: list[SlideContents] = []
+        self.contents: list[ContentsGroup] = []
 
-    def set_contents(self, content_type: str, contents: list[Union[Image, TextBox]], group_id: str):
+    def set_contents(self, content_type: str, contents: list, group_id: str):
         """指定したgroup_id, content_typeにcontentsをセット"""
-        # group_idが存在しない場合は新たに追加
-        new_contents: SlideContents = {"group_id": group_id, content_type: contents}  # type: ignore
+        new_contents: ContentsGroup = {"group_id": group_id, content_type: contents}
         self.contents.append(new_contents)
 
-    def set_content(self, content_type: str, content: Union[Image, TextBox], group_id: str):
+    def set_content(self, content_type: str, content: Image | TextBox, group_id: str):
         for _contents in self.contents:
             if _contents["group_id"] == group_id:
                 _contents[content_type].append(content)
                 return
 
-        new_contents: SlideContents = {"group_id": group_id, content_type: [content]}  # type: ignore
+        new_contents: ContentsGroup = {"group_id": group_id, content_type: [content]}
         self.contents.append(new_contents)
 
-    def __search_contents_by_group_id(self, group_id: str | None) -> SlideContents:
+    def __search_contents_by_group_id(self, group_id: Optional[str]) -> ContentsGroup:
         if group_id is None:
             return self.contents[0]
         else:
@@ -63,7 +67,6 @@ class Slide():
 
     def get_number_of_contents(self, content_type: str):
         count = 0
-        # := は walrus operator, 代入に使う
         [count := count + len(i[content_type]) for i in self.contents]
         return count
 
@@ -91,10 +94,16 @@ class TemplateSlide(Slide):
             return
 
         # 複数グループ/1スライドの場合
-        group_ids: set[str] = set([i[0] for i in splits])
+        # 重複を排除しつつ数値順に並び替える
+        try:
+            group_ids: list[str] = sorted(set([i[0] for i in splits]), key=lambda i: int(i))
+        except ValueError:
+            # TODO GUI
+            raise ValueError("group id isn't number.")
         new_labels: set[str] = set([i[1] for i in splits])
         # labels = [1_A, 1_B, 2_A] のようにlabelの数が一致していない場合は弾く
         if len(template_contents) != len(group_ids) * len(new_labels):
+            # TODO GUI
             raise Exception("number of contents / number of group_id's * number of label's are not equal")
 
         # group_ids = (1, 2)
@@ -118,32 +127,56 @@ class TemplateSlide(Slide):
         except ValueError:
             raise ValueError("Non-numeric value is specified")
 
+    def set_textboxes(self, textboxes: list):
+        if (number_of_group := self.get_number_of_group()) == 1:
+            self.contents[0]["textbox"] = textboxes
+            return
+        # グループ数が2以上の場合、分割しつつ追加する
+        split_textboxes: list[list[TextBox]] = self.__split_list(textboxes, number_of_group)
+        for textboxes, contents, in zip(split_textboxes, self.contents):
+            contents["textbox"] = textboxes
+
+    @staticmethod
+    def __split_list(list, number_of_splits):
+        # [10]のリストを3分割したい => 要素数は 3/ 10 = 3
+        number_of_elements = math.ceil(len(list) / number_of_splits)
+        result = [list[i: i + number_of_elements] for i in range(0, len(list), number_of_elements)]
+        return result
+
+
 class SlideGenerator():
+    """
+    スライドを生成する。
+    画像を元にグループ分けする都合上画像を先にセットする。
+    """
     def __init__(
             self,
-            labeld_contents: dict[str, list[LabeledImage]],
             template_contents: list[Image],
-            template_content_type: str = config.IMAGE_KEY
+            template_content_type: str,
+            total_number_of_contents: int
     ) -> None:
-        self.grouped_contents = labeld_contents
         self.template_slide = TemplateSlide(template_contents, template_content_type)
-
-        total_number_of_contents = 0
-        [total_number_of_contents := total_number_of_contents + len(contents_group) for contents_group in labeld_contents.values()]
         number_of_slide = math.ceil(total_number_of_contents / len(template_contents))
         self.slides = [Slide() for _ in range(number_of_slide)]
 
-    def set_sequence_images(self):
-        if (group_id := self.__get_single_group_id()) is None:
+    def set_textboxes_to_template(self, textboxes: list):
+        self.template_slide.set_textboxes(textboxes)
+
+    def set_sequence_images_to_slides(self, grouped_images: dict[str, list[LabeledImage]]):
+        """
+        順序画像をセットする。(複数グループを持つ画像を許容しない)
+        """
+        if (group_id := self.__get_single_group_id(grouped_images)) is None:
             raise Exception("Group exists two or more.")
-        labeld_images = self.grouped_contents[group_id]
+        images = grouped_images[group_id]
         template_contents = self.template_slide.get_first_group_of_contents(config.IMAGE_KEY)
         image_index = 0
 
         for slide in self.slides:
             temp_contents = []
+
             for content in template_contents:
-                image = labeld_images[image_index]
+                image = images[image_index]
                 temp_contents.append(
                     Image(
                         coordinates=content["coordinates"],
@@ -153,23 +186,30 @@ class SlideGenerator():
                     )
                 )
                 image_index += 1
-                # スライド数×1スライドのコンテンツ数 != コンテンツ数の合計の時
-                if image_index == len(labeld_images):
+                # スライド数×1スライドのコンテンツ数 != コンテンツ数の合計の時、処理を中断するための分岐
+                if image_index == len(images):
                     break
+
             slide.set_contents(config.IMAGE_KEY, temp_contents, group_id)
 
-    def set_laidout_images(self):
-        labled_image_generator = self.__generate_dict_items_generator(self.grouped_contents)
+    def set_laidout_images_to_slides(self, grouped_images: dict[str, list[LabeledImage]]):
+        labled_image_generator = self.__generate_dict_items_generator(grouped_images)
 
         for slide in self.slides:
-            for searching_group_id in range(1, self.template_slide.get_number_of_group() + 1):
+            for group in self.template_slide.contents:
                 try:
                     new_group_id, images = next(labled_image_generator)
                 except StopIteration:
                     break
+
                 temp_contents = []
+
                 for image in images:
-                    content = self.template_slide.search_content_by_label(config.IMAGE_KEY, image["label"], str(searching_group_id))
+                    content = self.template_slide.search_content_by_label(
+                        config.IMAGE_KEY,
+                        image["label"],
+                        group["group_id"]
+                    )
                     temp_contents.append(
                         Image(
                             coordinates=content["coordinates"],
@@ -178,14 +218,36 @@ class SlideGenerator():
                             path=image["path"]
                         ),
                     )
+
                 slide.set_contents(config.IMAGE_KEY, temp_contents, new_group_id)
 
-    def __generate_dict_items_generator(self, dict: dict) -> Iterator[tuple[str, list[Image]]]:
+    def set_textboxes_to_slides(self):
+        for slide in self.slides:
+            template_contents = deepcopy(self.template_slide.contents)
+            current_label = 0
+
+            for template_group, group in itertools.zip_longest(template_contents, slide.contents):
+                # 終了条件
+                if not group:
+                    return
+
+                for textbox in template_group["textbox"]:
+                    textbox["text"] = re.sub(config.REGEX_POINTING_GROUP, group["group_id"], textbox["text"])
+                    if re.search(config.REGEX_POINTING_LABEL, textbox["text"]):
+                        replaced_label = group["image"][current_label]
+                        textbox["text"] = re.sub(config.REGEX_POINTING_LABEL, replaced_label, textbox["text"])
+                        current_label += 1
+
+                group["textbox"] = template_group["textbox"]
+
+    @staticmethod
+    def __generate_dict_items_generator(dict: dict) -> Iterator[tuple[str, list[Image]]]:
         for k, v in dict.items():
             yield k, v
 
-    def __get_single_group_id(self):
+    @staticmethod
+    def __get_single_group_id(grouped_contents: dict[str, list[LabeledImage]]):
         # 複数group存在する場合弾く
-        if len(group_ids := [key for key in self.grouped_contents.keys()]) != 1:
+        if len(group_ids := [key for key in grouped_contents.keys()]) != 1:
             return
         return group_ids[0]

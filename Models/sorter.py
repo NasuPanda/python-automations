@@ -1,5 +1,8 @@
+from copy import deepcopy
 from pathlib import Path
-from typing import TypedDict
+import re
+from typing import Text, TypedDict
+from Models.content import TextBox
 
 import config
 
@@ -60,3 +63,42 @@ class ImageSorter():
         without_label = config.DELIMITER.join(without_label)
 
         return label, without_label
+
+
+class TextBoxSorter():
+    def __init__(self, textboxes: list[TextBox]) -> None:
+        self.textboxes: list[TextBox] = textboxes
+        self.sorted_textboxes: list[list[TextBox]] = []
+
+    def sort_based_on_label(self, *patterns: str):
+        """
+        TextBox["label"]を元にソートする。
+        *patternsに指定したパターンごとに別々のリストに入れる。
+        """
+        copied_textboxes: list[TextBox] = deepcopy(self.textboxes)
+
+        for i, pattern in enumerate(patterns):
+            self.sorted_textboxes.append([])
+            match: list[TextBox] = []
+
+            for textbox in copied_textboxes:
+                if re.search(pattern, textbox["label"]):
+                    match.append(textbox)
+            try:
+                match.sort(key=self.__search_number)
+                [self.sorted_textboxes[i].append(t) for t in match]
+                [copied_textboxes.remove(t) for t in match]
+            except TypeError:
+                pass
+
+        # 残りをappend
+        [self.sorted_textboxes.append(c) for c in copied_textboxes]
+
+    @staticmethod
+    def __search_number(textbox: TextBox, ret=float("inf")):
+        match = re.search('\d', textbox["label"])
+        try:
+            return int(match.group())
+        # 存在しなければ無限大(強制的に最後尾へ)
+        except Exception:
+            return ret
