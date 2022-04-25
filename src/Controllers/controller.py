@@ -83,11 +83,11 @@ class Controller():
         if self.textbox_templates:
             slide_generator = self._set_textboxes(slide_generator)
 
-        # 失敗した場合生成したファイルは削除する
+        # TODO 失敗した場合生成したファイルは削除する
         # Helper.delete_file(dst_path)
 
         writer = PresentationWriter(dst_path, slide_generator.slides)
-        writer.set_empty_slides(self._receive_template_index(values))
+        writer.set_empty_slides(self._receive_template_slide_index(values))
         writer.add_images()
         writer.add_textboxes()
         writer.save(dst_path)
@@ -135,15 +135,33 @@ class Controller():
 
     # From View
     def _receive_images_from_folder(self, values: dict, regex=config.REGEX_IMAGE):
+        """入力されたフォルダから画像を受け取る。
+
+        Parameters
+        ----------
+        values : dict
+            GUIの持つ値。
+        regex : str
+            画像ファイルにマッチするパターン, by default config.REGEX_IMAGE
+        """
         p = pathlib.Path(values["-SRC_FOLDER-"])
         self.input_images = sorted([i for i in p.glob('**/*') if re.search(regex, str(i))])
 
     def _receive_images_from_files(self, values: dict, delimiter=config.FILES_BROWSE_DELIMITER):
+        """入力されたfilesから画像を受け取る。
+
+        Parameters
+        ----------
+        values : dict
+            GUIの持つ値。
+        delimiter : str
+            filesの区切り文字, by default config.FILES_BROWSE_DELIMITER
+        """
         files = values["-SRC_FILES-"].split(delimiter)
         self.input_images = sorted([pathlib.Path(f) for f in files])
 
     def _receive_templates(self, values):
-        """コンテンツの情報を受け取る"""
+        """テンプレートの情報を受け取る。"""
         # 最初の呼び出し時は-TEMPLATE_INDEX-が空なので0をセットする
         slide_index = int(values["-TEMPLATE_INDEX-"] - 1) if values["-TEMPLATE_INDEX-"] else 0
         try:
@@ -153,12 +171,15 @@ class Controller():
             Popup.call_error_popup("存在しないスライドが選択されました。設定を確認してください。")
 
     def _receive_label_part_index(self, values) -> int:
+        """ラベル部分のインデックスを受け取る。"""
         # Comboの持つvaluesには .Values でアクセスできる
         label = self.window["-LABEL_PART-"].Values
         selected_layout_part = values["-LABEL_PART-"]
         return label.index(selected_layout_part)
 
-    def _receive_template_index(self, values) -> int:
+    def _receive_template_slide_index(self, values) -> int:
+        """テンプレートとして使うスライドのインデックス(何枚目か)を受け取る。"""
+        # 表示をユーザーに合わせてあるため -1 する。
         return int(values["-TEMPLATE_INDEX-"]) - 1
 
     # To View
