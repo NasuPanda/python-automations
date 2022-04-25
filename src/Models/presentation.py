@@ -1,4 +1,5 @@
 from copy import deepcopy
+import re
 
 from pptx import Presentation
 
@@ -16,26 +17,36 @@ class PresentationReader():
     def get_image_templates(self, slide_index=0) -> list[Image]:
         """スライドが持つ画像の情報を取得(RECTANGLEを使用)"""
         try:
-            image_templates =  self.__get_contents(
-                content_type=config.IMAGE_KEY,
-                shape_type=config.SHAPES["image"],
-                slide_index=slide_index
-            )
+            shapes = self.prs.slides[slide_index].shapes
         except IndexError:
             raise IndexError("slide index out of range")
+        image_templates = []
+
+        for shape in shapes:
+            if shape.shape_type != config.SHAPES["image"]:
+                continue
+            if not shape.text:
+                continue
+            image_templates.append(self.__set_content(config.IMAGE_KEY, shape))
+
         return image_templates
 
-    def get_textbox_templates(self, slide_index=0) -> list[TextBox]:
+    def get_textbox_templates(self, slide_index=0, *target_patterns: str) -> list[TextBox]:
         """スライドが持つテキストボックスの情報を取得"""
         try:
-            textbox_templates = self.__get_contents(
-                content_type=config.TEXTBOX_KEY,
-                shape_type=config.SHAPES["textbox"],
-                slide_index=slide_index
-            )
+            shapes = self.prs.slides[slide_index].shapes
         except IndexError:
             raise IndexError("slide index out of range")
-        return textbox_templates
+        contents = []
+
+        for shape in shapes:
+            if shape.shape_type != config.SHAPES["textbox"]:
+                continue
+            for p in target_patterns:
+                if re.search(p, shape.text):
+                    contents.append(self.__set_content(config.TEXTBOX_KEY, shape))
+
+        return contents
 
     def get_number_of_slide(self):
         return len(self.prs.slides)
@@ -67,8 +78,9 @@ class PresentationReader():
         for shape in shapes:
             if shape.shape_type != shape_type:
                 continue
-            if not shape.text:
-                continue
+            if shape.has_text_frame:
+                if not shape.text:
+                    continue
             contents.append(self.__set_content(content_type, shape))
 
         return contents
@@ -111,7 +123,7 @@ class PresentationWriter():
             ベースとなるスライドのインデックス, by default 0
         """
         self.clear_pointing_images(base_slide_index)
-        self.clear_textboxes(base_slide_index)
+        self.clear_textboxes(base_slide_index, config.REGEX_POINTING_GROUP, config.REGEX_POINTING_LABEL)
 
         for __ in self.slides:
             dup_index = self.duplicate_slide(base_slide_index)
@@ -194,7 +206,7 @@ class PresentationWriter():
         """
         self.__clear_shape(config.SHAPES["image"], slide_index)
 
-    def clear_textboxes(self, slide_index=0) -> None:
+    def clear_textboxes(self, slide_index=0, *clear_patterns: str) -> None:
         """スライドのテキストボックスをクリアする。
 
         Parameters
@@ -202,7 +214,14 @@ class PresentationWriter():
         slide_index : int, optional
             対象スライドのインデックス, by default 0
         """
-        self.__clear_shape(config.SHAPES["textbox"], slide_index)
+        shapes = self.prs.slides[slide_index].shapes
+        for shape in shapes:
+            if not shape.shape_type == config.SHAPES["textbox"]:
+                continue
+            for p in clear_patterns:
+                if re.search(p, shape.text):
+                    XML_reference = shape._sp
+                    XML_reference.getparent().remove(XML_reference)
 
     def __clear_shape(self, shape_type=config.SHAPES["image"], slide_index=0) -> None:
         """スライドからshapeを削除する。
