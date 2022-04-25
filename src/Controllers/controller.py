@@ -105,7 +105,7 @@ class Controller():
         return dst_path
 
     def _set_laidout_images(self, label_part_index: int) -> SlideGenerator:
-        # TODO 適切な大きさに切り分ける & NG処理
+        # TODO 適切な大きさに切り分ける & エラーキャッチしてGUIに通知
         image_sorter = ImageSorter(self.input_images)
         grouped_images = image_sorter.labeling_images(label_part_index)
         total_number_of_contents = Helper.get_total_number_of_contents(grouped_images)
@@ -114,7 +114,7 @@ class Controller():
         return slide_generator
 
     def _set_sequence_images(self, label_part_index: int) -> SlideGenerator:
-        # TODO 適切な大きさに切り分ける & NG処理
+        # TODO 適切な大きさに切り分ける & エラーキャッチしてGUIに通知
         image_sorter = ImageSorter(self.input_images)
         image_sorter.sort_based_on_numeric_part(label_part_index)
         grouped_images = image_sorter.labeling_images(label_part_index)
@@ -125,7 +125,7 @@ class Controller():
         return slide_generator
 
     def _set_textboxes(self, slide_generator: SlideGenerator):
-        # TODO 適切な大きさに切り分ける & NG処理
+        # TODO 適切な大きさに切り分ける & エラーキャッチしてGUIに通知
         tb_sorter = TextBoxSorter(self.textbox_templates)
         tb_sorter.sort_based_on_label(config.REGEX_POINTING_GROUP, config.REGEX_POINTING_LABEL)
         sorted_textboxes = tb_sorter.sorted_textboxes
@@ -138,7 +138,7 @@ class Controller():
         p = pathlib.Path(values["-SRC_FOLDER-"])
         self.input_images = sorted([i for i in p.glob('**/*') if re.search(regex, str(i))])
 
-    def _receive_images_from_files(self, values: dict, delimiter=config.DELIMITER):
+    def _receive_images_from_files(self, values: dict, delimiter=config.FILES_BROWSE_DELIMITER):
         files = values["-SRC_FILES-"].split(delimiter)
         self.input_images = sorted([pathlib.Path(f) for f in files])
 
@@ -148,7 +148,7 @@ class Controller():
         slide_index = int(values["-TEMPLATE_INDEX-"] - 1) if values["-TEMPLATE_INDEX-"] else 0
         try:
             self.image_templates = self.reader.get_image_templates(slide_index)
-            self.textbox_templates = self.reader.get_textbox_templates(slide_index)
+            self.textbox_templates = self.reader.get_textbox_templates(slide_index, config.REGEX_POINTING_GROUP, config.REGEX_POINTING_LABEL)
         except IndexError:
             Popup.call_error_popup("存在しないスライドが選択されました。設定を確認してください。")
 

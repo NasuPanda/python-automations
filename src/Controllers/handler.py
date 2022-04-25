@@ -1,4 +1,4 @@
-from Controllers.controller import Controller
+from src.Controllers.controller import Controller
 
 
 class Handler:
