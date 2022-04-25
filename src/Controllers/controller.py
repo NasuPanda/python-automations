@@ -26,7 +26,7 @@ class Controller():
     def input_user_util_pwt(self, values):
         """ユーザー設定PowerPoint入力"""
         self.reader = PresentationReader(values["-USER_UTIL_PWT-"])
-        # 選択用にスライドの枚数を取得(1から)
+        # スライドの枚数を取得 ユーザに表示を合わせるため1からスタートする
         new_values = [i for i in range(1, self.reader.get_number_of_slide() + 1)]
         self._update_combo("-TEMPLATE_INDEX-", new_values)
         self._receive_templates(values)
@@ -67,7 +67,7 @@ class Controller():
     def click_submit(self, values):
         """処理の実行"""
         # 入力のバリデーション(失敗した場合中断)
-        if not Helper.validate_input(values):
+        if not self.validate_input(values):
             return
         # srcファイルのコピー(失敗した場合中断)
         if not (dst_path := self._copy_src_file(values)):
@@ -221,20 +221,25 @@ class Controller():
         image_preview = representative.name
         self._update("-LABEL_PART_PLACEFOLDER-", image_preview)
 
-
-class Helper():
-    def __init__(self) -> None:
-        pass
-
-    @staticmethod
-    def validate_input(values) -> bool:
+    # validation
+    def validate_input(self, values) -> bool:
+        """入力のバリデーション"""
+        # PowerPointが入力されていない場合
         if not values["-USER_UTIL_PWT-"]:
             Popup.call_error_popup("設定用PowerPointが入力されていません")
             return False
+        # 画像が入力されていない場合
         if not values["-SRC_FOLDER-"] and not values["-SRC_FILES-"]:
             Popup.call_error_popup("画像ファイルが入力されていません")
             return False
+        # PowerPointは入力されているがフォーマットが存在しない場合(PowerPoint入力確認後)
+        if not self.image_templates:
+            Popup.call_error_popup("選択されたPowerPointのスライドには四角形が存在しないため画像を出力できません。\n設定を確認してください。")
+            return False
         return True
+class Helper():
+    def __init__(self) -> None:
+        pass
 
     @staticmethod
     def open_result(output_path):
