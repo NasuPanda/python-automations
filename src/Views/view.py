@@ -6,8 +6,12 @@ import src.config as config
 """
 GUI Styles
 
-enabled_events: 通常イベントが発火しない要素に対してTrueを指定するとイベントが発火するようになる。
-disabled: 使用不可。イベントの発火をキャッチしてこの要素を切り替えることで使用の可不可を切り替える事ができる。
+enabled_events
+    通常イベントが発火しない要素に対してTrueを指定するとイベントが発火するようになる。
+    例) FolderBrowse → InputTextへの入力時のイベントをキャッチして何かする
+disabled
+    使用不可にする。
+    イベントの発火をキャッチしてこの要素を切り替えることで使用可/不可のコントロールが可能。
 """
 TITLE = "PowerPointFormatter"
 FONT = "MeiryoUI"
