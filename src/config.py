@@ -13,6 +13,9 @@ SHAPES = {
     "textbox": MSO_SHAPE_TYPE.TEXT_BOX
 }
 
+# delimiter (GUI filesbrowse)
+FILES_BROWSE_DELIMITER = ";"
+
 # delimiter (label)
 DELIMITER: str = "_"
 

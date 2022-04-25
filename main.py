@@ -1,6 +1,6 @@
-from Controllers.controller import Controller
-from Controllers.handler import Handler
-from Views.view import InterFace
+from src.Controllers.controller import Controller
+from src.Controllers.handler import Handler
+from src.Views.view import InterFace
 
 
 def main():

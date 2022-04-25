@@ -194,9 +194,6 @@ class TextBoxSorter():
             except TypeError:
                 pass
 
-        # 残りをappend
-        self.sorted_textboxes.append(copied_textboxes)
-
     @staticmethod
     def __search_number(textbox: TextBox, ret=float("inf")):
         """数値を探す。(ソート用)

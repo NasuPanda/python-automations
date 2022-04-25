@@ -1,5 +1,7 @@
 import PySimpleGUI as sg
 
+import src.config as config
+
 
 """
 GUI Styles
@@ -126,7 +128,8 @@ IMAGE_BROWSE_STYLES = {
         "tooltip": "画像ファイルを複数選択(jpg, png, bmpに対応)",
         "size": (15, 1),
         "font": (FONT, 10),
-        "file_types": (("画像ファイル", "*.jpg"), ("jpegファイル", "*.jpeg"), ("pngファイル", "*.png"), ("bmpファイル", "*.bmp")),
+        "file_types": (("pngファイル", "*.png"), ("jpgファイル", "*.jpg"), ("jpegファイル", "*.jpeg"), ("bmpファイル", "*.bmp")),
+        "files_delimiter": config.FILES_BROWSE_DELIMITER,
         "disabled": True,
     },
 }
