@@ -53,7 +53,7 @@ SELECT_LAYOUT_PATTERN_STYLES = {
 }
 
 # PowerPointの入力
-PWT_BROWSE_STYELES = {
+PWT_BROWSE_STYLES = {
     "FRAME": {
         "title": "設定用PowerPointの選択",
         # "title_color": 'red',  # TODO いい感じの色を選ぶ
@@ -199,7 +199,7 @@ class InterFace:
     def __init__(self):
         select_layout_pattern_frame = sg.Frame(
             layout=[
-                [sg.Radio("特定のレイアウトに配置", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN1_RADIO"])],
+                [sg.Radio("ラベル位置に配置(1画像:複数データ)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN1_RADIO"])],
                 [sg.Radio("順に並べる(1画像:1データ)", **SELECT_LAYOUT_PATTERN_STYLES["PATTERN2_RADIO"])],
             ], **SELECT_LAYOUT_PATTERN_STYLES["FRAME"]
         )
@@ -207,14 +207,14 @@ class InterFace:
         powerpoint_browse_frame = sg.Frame(
             layout=[
                 [
-                    sg.InputText(**PWT_BROWSE_STYELES["INPUT_TEXT"]),
-                    sg.FileBrowse("ファイル選択", **PWT_BROWSE_STYELES["FILE_BROWSE"]),
+                    sg.InputText(**PWT_BROWSE_STYLES["INPUT_TEXT"]),
+                    sg.FileBrowse("ファイル選択", **PWT_BROWSE_STYLES["FILE_BROWSE"]),
                 ],
                 [
-                    sg.T("使用するスライドを選択: ", **PWT_BROWSE_STYELES["SLIDE_DESC_TEXT"]),
-                    sg.Combo(**PWT_BROWSE_STYELES["COMBO_TEMPLATE_INDEX"]),
+                    sg.T("使用するスライドを選択: ", **PWT_BROWSE_STYLES["SLIDE_DESC_TEXT"]),
+                    sg.Combo(**PWT_BROWSE_STYLES["COMBO_TEMPLATE_INDEX"]),
                 ],
-            ], **PWT_BROWSE_STYELES["FRAME"]
+            ], **PWT_BROWSE_STYLES["FRAME"]
         )
 
         image_browse_frame = sg.Frame(
