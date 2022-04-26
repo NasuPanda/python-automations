@@ -80,6 +80,10 @@ fruits_1の場合は「fruits」がデータ名、「1」がラベル(連番)と
 2枚目
 ![順に貼り付け_出力 2](https://user-images.githubusercontent.com/85564407/165010628-b2cc1a2c-2767-4cdc-ac12-31311f456887.png)
 
+### GUIの操作
+
+TODO 書く
+
 ## 動作サンプルに使用した画像
 
 - [【フリーアイコン】 フルーツ](https://sozai.cman.jp/icon/food/fruits/)
