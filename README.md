@@ -82,7 +82,43 @@ fruits_1の場合は「fruits」がデータ名、「1」がラベル(連番)と
 
 ### GUIの操作
 
-TODO 書く
+#### 全体
+
+![image](https://user-images.githubusercontent.com/85564407/165257836-e0651fb7-fc15-401c-8996-34e1e3f443cd.png)
+
+#### フォーマットのレイアウトパターンを選択
+
+ラベル位置への貼付け(1画像:複数データ) or 順に並べる(1画像:1データの連番データ)を選択してください。
+
+![フォーマットパターン選択](https://user-images.githubusercontent.com/85564407/165257925-2ef1c50d-1aa1-4860-a57c-99c2c2c1d27e.png)
+
+#### 設定用(フォーマットを作成した)PowerPointの入力
+
+![入力前](https://user-images.githubusercontent.com/85564407/165258183-e9ec10a5-8492-4bf9-95d6-0547cdb7e735.png)
+
+![入力後](https://user-images.githubusercontent.com/85564407/165258364-e8dbb38c-f3ee-45dc-bbb6-f4e3546c6440.png)
+
+#### 画像の入力方法を選択・画像ファイルを入力
+
+![フォルダ選択](https://user-images.githubusercontent.com/85564407/165258498-f4b888d0-a8e4-4d25-87e5-c17e05c50d52.png)
+
+![ファイル選択](https://user-images.githubusercontent.com/85564407/165258555-3d9d3254-dcab-49a4-aceb-b3705fa8402e.png)
+
+![拡張子の選択](https://user-images.githubusercontent.com/85564407/165258701-41de7008-8700-4431-9ab8-554ad972c6a4.png)
+
+![ラベル箇所の選択](https://user-images.githubusercontent.com/85564407/165258853-f54c199f-aa63-4389-a1bf-fadf908cba17.png)
+
+画像ファイル名を `_` で区切った単語が表示されます。
+連番 or レイアウト(ラベル)に当たる箇所を選択してください。
+
+#### 出力ファイル名の入力・処理の実行
+
+![入力しなかった場合](https://user-images.githubusercontent.com/85564407/165259219-db480535-f07b-4ec4-8ea8-a0cc7b403b2e.png)
+
+「出力ファイルを開く」にチェックを入れると処理が終了した時に出力されたファイルを自動的に開きます。
+
+![入力した場合](https://user-images.githubusercontent.com/85564407/165259181-22924935-8bd4-430f-85b8-26f0cc8006ab.png)
+
 
 ## 動作サンプルに使用した画像
 
