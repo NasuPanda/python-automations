@@ -80,11 +80,12 @@ class Controller():
         elif values["-SELECT_PATTERN2-"]:
             slide_generator = self._set_sequence_images(label_part_index)
 
+        if not slide_generator:
+            self.delete_file(dst_path)
+            return
+
         if self.textbox_templates:
             slide_generator = self._set_textboxes(slide_generator)
-
-        # TODO 失敗した場合生成したファイルは削除する
-        # Helper.delete_file(dst_path)
 
         writer = PresentationWriter(dst_path, slide_generator.slides)
         writer.set_empty_slides(self._receive_template_slide_index(values))
@@ -93,45 +94,43 @@ class Controller():
         writer.save(dst_path)
 
         if values["-CHECK_OPEN_FILE-"]:
-            Helper.open_result(dst_path)
+            self.open_result(dst_path)
 
-        Helper.finish_process()
+        self.finish_process()
 
     def _copy_src_file(self, values) -> str | None:
         if values["-OUTPUT_NAME-"]:
-            dst_path = Helper.copy_file(values["-USER_UTIL_PWT-"], values["-OUTPUT_NAME-"])
+            dst_path = self.copy_file(values["-USER_UTIL_PWT-"], values["-OUTPUT_NAME-"])
         else:
-            dst_path = Helper.copy_file_and_append_timestamp(values["-USER_UTIL_PWT-"])
+            dst_path = self.copy_file_and_append_timestamp(values["-USER_UTIL_PWT-"])
         return dst_path
 
-    def _set_laidout_images(self, label_part_index: int) -> SlideGenerator:
+    def _set_laidout_images(self, label_part_index: int) -> SlideGenerator | None:
         try:
             image_sorter = ImageSorter(self.input_images)
             grouped_images = image_sorter.labeling_images(label_part_index)
-            total_number_of_contents = Helper.get_total_number_of_contents(grouped_images)
-            # FIXME: SlideGeneratorの初期化でエラーが起こりうる
+            total_number_of_contents = self.get_total_number_of_contents(grouped_images)
             slide_generator = SlideGenerator(self.image_templates, config.IMAGE_KEY, total_number_of_contents)
-            # FIXME: search_content_by_labelでエラーが起こりうる
             slide_generator.set_laidout_images_to_slides(grouped_images)
         except Exception as e:
-            Popup.call_error_popup(str(e))
+            Popup.call_error_popup(str(e), "設定を確認してください。")
+            # returnした時の初期
+            return
 
         return slide_generator
 
-    def _set_sequence_images(self, label_part_index: int) -> SlideGenerator:
+    def _set_sequence_images(self, label_part_index: int) -> SlideGenerator | None:
         try:
             image_sorter = ImageSorter(self.input_images)
-            # FIXME: sort_based_on_numeric_partでエラーが起こりうる
             image_sorter.sort_based_on_numeric_part(label_part_index)
             grouped_images = image_sorter.labeling_images(label_part_index)
-            total_number_of_contents = Helper.get_total_number_of_contents(grouped_images)
-            # FIXME: SlideGeneratorの初期化でエラーが起こりうる
+            total_number_of_contents = self.get_total_number_of_contents(grouped_images)
             slide_generator = SlideGenerator(self.image_templates, config.IMAGE_KEY, total_number_of_contents)
-            # FIXME: sort_contents_by_numeric_labelでエラーが起こりうる
             slide_generator.sort_template_images_by_numeric_label()
             slide_generator.set_sequence_images_to_slides(grouped_images)
         except Exception as e:
-            Popup.call_error_popup(str(e))
+            Popup.call_error_popup(str(e), "設定を確認してください。")
+            return
 
         return slide_generator
 
@@ -247,9 +246,6 @@ class Controller():
             Popup.call_error_popup("選択されたPowerPointのスライドには四角形が存在しないため画像を出力できません。\n設定を確認してください。")
             return False
         return True
-class Helper():
-    def __init__(self) -> None:
-        pass
 
     @staticmethod
     def open_result(output_path):
