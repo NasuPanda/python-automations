@@ -15,7 +15,27 @@ from src.Views.popup import Popup
 
 
 class Controller():
+    """コントローラ。
+
+    window: PySimpleGUI.Window
+        Windowオブジェクトのインスタンス。(イベント経由で値を受け取る)
+    reader: PresentationReader
+        PresentationReaderのインスタンス。
+    image_templates: list[Image]
+        テンプレートスライドから受け取るImageの情報。
+    textbox_templates: list[TextBox]
+        テンプレートスライドから受け取るTextBoxの情報。
+    input_images: list[pathlib.Path]
+        pathlib.Pathの配列。入力画像。
+    """
     def __init__(self, window) -> None:
+        """初期化。
+
+        Parameters
+        ----------
+        window : PySimpleGUI.Window
+            Windowオブジェクトのインスタンス。(イベント経由で値を受け取る)
+        """
         self.window = window
         self.reader: PresentationReader
         self.image_templates: list
