@@ -4,8 +4,12 @@ from pathlib import Path
 from typing import TypedDict
 
 import src.config as config
-import src.errors as errors
 from src.Models.content import TextBox
+
+
+# Error
+class SortBasePartNotNumberError(Exception):
+    """ソートの基準となる部分に数字以外が指定されたとき"""
 
 
 class LabeledImage(TypedDict):
@@ -58,9 +62,8 @@ class ImageSorter():
         try:
             self.image_paths = sorted(self.image_paths, key=lambda s: int(self.__get_partial(s.stem, numeric_part_index)))
         # 数値以外が基準に指定された場合弾く
-        # TODO インスタンスから直接呼ばれる
         except ValueError:
-            raise errors.SortBasePartNotNumberError("ラベルに数字以外の値が指定されました。")
+            raise SortBasePartNotNumberError("ラベルに数字以外の値が指定されました。")
 
     def sort_default(self):
         """デフォルト順にソートする。
