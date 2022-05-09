@@ -18,5 +18,4 @@ class Image(SlideContent, total=False):
 class TextBox(SlideContent, total=False):
     """テキストボックス"""
     text: str
-    # int: size
 
