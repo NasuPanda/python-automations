@@ -51,7 +51,7 @@ class Controller():
         # 画像が存在しないフォルダが選択された場合
         if not self.input_images:
             self._update("-SRC_FOLDER-", "")
-            Popup.call_error_popup("選択されたフォルダは画像が存在しません。")
+            Popup.call_error_popup("選択されたフォルダには画像が存在しません。")
             return
         self._update_select_label_part()
 
@@ -177,7 +177,10 @@ class Controller():
             self.image_templates = self.reader.get_image_templates(slide_index)
             self.textbox_templates = self.reader.get_textbox_templates(slide_index, config.REGEX_POINTING_GROUP, config.REGEX_POINTING_LABEL)
         except IndexError:
-            Popup.call_error_popup("存在しないスライドが選択されました。設定を確認してください。")
+            Popup.call_error_popup(
+                "存在しないスライドが選択されました。",
+                "設定を確認してください。"
+            )
 
     def _receive_label_part_index(self, values) -> int:
         """ラベル部分のインデックスを受け取る。"""
@@ -243,7 +246,10 @@ class Controller():
             return False
         # PowerPointは入力されているがフォーマットが存在しない場合(PowerPoint入力確認後)
         if not self.image_templates:
-            Popup.call_error_popup("選択されたPowerPointのスライドには四角形が存在しないため画像を出力できません。\n設定を確認してください。")
+            Popup.call_error_popup(
+                "選択されたPowerPointのスライドには四角形が存在しないため画像を出力できません。",
+                "設定を確認してください。"
+            )
             return False
         return True
 
@@ -259,7 +265,20 @@ class Controller():
 
     @staticmethod
     def copy_file_and_append_timestamp(src: str, dt_format='%y%m%d_%H%M') -> str | None:
-        """[現在時刻.拡張子]形式のコピーを作成"""
+        """[現在時刻.拡張子]形式のコピーを作成する。
+
+        Parameters
+        ----------
+        src : str
+            コピー元のファイルパス。
+        dt_format : str, optional
+            datetimeのstrftimeのフォーマット, by default '%y%m%d_%H%M'
+
+        Returns
+        -------
+        str | None
+            コピー先のパス。(コピーに成功した場合)
+        """
         dt_now = datetime.now()
         dt_now = dt_now.strftime(dt_format)
         p = pathlib.Path(src)
@@ -268,7 +287,10 @@ class Controller():
 
         # すでに同じタイムスタンプのファイルが存在する場合
         if glob.glob(dst):
-            Popup.call_error_popup("タイムスタンプが重複しています。\n1分以上経ってから再度実行するか、名前を指定してください。")
+            Popup.call_error_popup(
+                "タイムスタンプが重複しています。",
+                "1分以上経ってから再度実行するか、名前を指定してください。"
+            )
             return
         shutil.copy(src, dst)
         return dst
@@ -281,7 +303,11 @@ class Controller():
         try:
             shutil.copy(src, dst)
         except Exception:
-            Popup.call_error_popup('出力ファイル名が無効です。\n・重複した名前を指定している可能性があります。\n・次の文字は使用できません。\n  ¥ : / * ? " < > | ')
+            Popup.call_error_popup(
+                "出力ファイル名が無効です。",
+                "・重複した名前を指定している可能性があります。",
+                '・次の文字は使用できません。\n  ¥ : / * ? " < > | '
+            )
             return
         return dst
 
