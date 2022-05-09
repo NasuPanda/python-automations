@@ -99,6 +99,7 @@ class Controller():
         self.finish_process()
 
     def _copy_src_file(self, values) -> str | None:
+        """元となるファイルをコピーする。"""
         if values["-OUTPUT_NAME-"]:
             dst_path = self.copy_file(values["-USER_UTIL_PWT-"], values["-OUTPUT_NAME-"])
         else:
@@ -106,6 +107,7 @@ class Controller():
         return dst_path
 
     def _set_laidout_images(self, label_part_index: int) -> SlideGenerator | None:
+        """スライドをセットする。(ラベル位置)"""
         try:
             image_sorter = ImageSorter(self.input_images)
             grouped_images = image_sorter.labeling_images(label_part_index)
@@ -120,6 +122,7 @@ class Controller():
         return slide_generator
 
     def _set_sequence_images(self, label_part_index: int) -> SlideGenerator | None:
+        """スライドをセットする。(順序データ)"""
         try:
             image_sorter = ImageSorter(self.input_images)
             image_sorter.sort_based_on_numeric_part(label_part_index)
@@ -135,6 +138,7 @@ class Controller():
         return slide_generator
 
     def _set_textboxes(self, slide_generator: SlideGenerator):
+        """スライドにテキストボックスをセットする。"""
         tb_sorter = TextBoxSorter(self.textbox_templates)
         tb_sorter.sort_based_on_label(config.REGEX_POINTING_GROUP, config.REGEX_POINTING_LABEL)
         sorted_textboxes = tb_sorter.sorted_textboxes
@@ -297,7 +301,7 @@ class Controller():
 
     @staticmethod
     def copy_file(src: str, dst: str) -> str | None:
-        """コピーを作成"""
+        """srcをdstにコピーする。"""
         p = pathlib.Path(src)
         dst = f"{dst}{p.suffix}"
         try:
@@ -313,8 +317,7 @@ class Controller():
 
     @staticmethod
     def delete_file(path: str):
-        """ファイルを削除
-        """
+        """ファイルを削除する。"""
         try:
             os.remove(path)
         except FileNotFoundError:
@@ -322,6 +325,7 @@ class Controller():
 
     @staticmethod
     def get_total_number_of_contents(grouped_images: dict[str, list[LabeledImage]]):
+        """合計コンテンツ数を求める"""
         total_number_of_contents = 0
         [total_number_of_contents := total_number_of_contents + len(group) for group in grouped_images.values()]
         return total_number_of_contents
