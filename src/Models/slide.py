@@ -4,9 +4,25 @@ from copy import deepcopy
 from typing import Iterator, TypedDict, Optional
 
 import src.config as config
-import src.errors as errors
 from src.Models.sorter import LabeledImage
 from src.Models.content import Image, TextBox
+
+
+# Errors
+class LabelNotFoundError(Exception):
+    """ラベルが見つからないとき"""
+
+
+class GroupIdNotNumberError(Exception):
+    """GroupIDに数字以外が指定されたとき"""
+
+
+class LabelNotNumberError(Exception):
+    """ラベルに数字以外が指定されたとき"""
+
+
+class NumberOfLabelMissMatchError(Exception):
+    """コンテンツ数 ≠ グループ数×ラベル数のとき"""
 
 
 class ContentsGroup(TypedDict, total=False):
@@ -91,8 +107,7 @@ class Slide():
         for content in group[content_type]:
             if content["label"] == search_label:
                 return content
-        # TODO SlideGeneratorから呼ばれる
-        raise errors.LabelNotFoundError(f"存在しないラベルが指定されました: {search_label}")
+        raise LabelNotFoundError(f"PowerPointテンプレートに存在しないラベルが指定されました: {search_label}")
 
     def get_number_of_contents(self, content_type: str) -> int:
         """コンテンツ数を返す。
@@ -229,15 +244,13 @@ class TemplateSlide(Slide):
         try:
             group_ids: list[str] = sorted(set([i[0] for i in splits]), key=lambda i: int(i))
         except ValueError:
-            # TODO SlideGeneratorの初期化で呼ばれる
-            raise errors.GroupIdNotNumberError("ラベルに数字以外の値が指定されました。")
+            raise GroupIdNotNumberError("グループIDに数字以外の値が指定されました。")
 
         new_labels: set[str] = set([i[1] for i in splits])
 
         # labels = [1_A, 1_B, 2_A] のようにlabelの数が一致していない場合は弾く
         if len(template_contents) != len(group_ids) * len(new_labels):
-            # TODO SlideGeneratorの初期化で呼ばれる
-            raise errors.NumberOfLabelMissMatchError("ラベルの数が一致していません。")
+            raise NumberOfLabelMissMatchError("ラベルの数が一致していません。")
 
         # group_ids = [1, 2], new_labels = (A, B)
         # group 1 : label A, B / group2: label A, B
@@ -267,9 +280,8 @@ class TemplateSlide(Slide):
             self.contents[0][content_type] = sorted(
                 self.contents[0][content_type], key=lambda i: int(i["label"])
             )
-        # TODO SlideGeneratorのsortから呼ばれる
         except ValueError:
-            raise errors.LabelNotNumberError("ラベルに数字以外の値が指定されました。")
+            raise LabelNotNumberError("ラベルに数字以外の値が指定されました。")
 
     def set_textboxes(self, textboxes: list[TextBox]):
         """テキストボックスをセットする。
@@ -334,6 +346,13 @@ class SlideGenerator():
             テンプレートのコンテンツタイプ。
         total_number_of_contents : int
             コンテンツ数の合計。
+
+        Raise
+        ----------
+        GroupIdNotNumberError
+            template_slideの初期化: グループIDが数字で無い場合
+        NumberOfLabelMissMatchError
+            template_slideの初期化: ラベル数が一致していない場合
         """
         self.template_slide = TemplateSlide(template_contents, template_content_type)
         number_of_slide = math.ceil(total_number_of_contents / len(template_contents))
@@ -396,6 +415,11 @@ class SlideGenerator():
         ----------
         grouped_images : dict[str, list[LabeledImage]]
             グループ化された画像のリスト。
+
+        Raises
+        ----------
+        LabelNotFoundError
+            search_content_by_label: 存在しないラベルを指定した場合。
         """
         labled_image_generator = self.__generate_dict_items_generator(grouped_images)
 
@@ -465,6 +489,11 @@ class SlideGenerator():
     def sort_template_images_by_numeric_label(self):
         """テンプレートの画像をラベル順(数値順)にソートする。
         順序データの時にのみ使用し、数値以外のラベルを許容しない。
+
+        Raises
+        ----------
+        LabelNotNumberError
+            template_slide.sort_contents_by_numeric_label: 数値以外のラベルが指定された場合
         """
         self.template_slide.sort_contents_by_numeric_label(config.IMAGE_KEY)
 
