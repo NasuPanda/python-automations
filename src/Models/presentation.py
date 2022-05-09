@@ -10,6 +10,9 @@ from src.Models.content import Image, TextBox
 
 class PresentationReader():
     """プレゼンテーションを読み込むクラス。
+
+    prs: Presentation
+        pptx.Presentationオブジェクトのインスタンス。
     """
     def __init__(self, path: str) -> None:
         self.prs: Presentation = Presentation(path)
@@ -49,9 +52,11 @@ class PresentationReader():
         return contents
 
     def get_number_of_slide(self):
+        """スライド数を取得する"""
         return len(self.prs.slides)
 
     def __set_content(self, content_type: str, shape) -> Image | TextBox:
+        """shapeを元にコンテンツをセットする"""
         if content_type == config.IMAGE_KEY:
             return Image(
                 coordinates=(shape.left, shape.top),
@@ -67,31 +72,13 @@ class PresentationReader():
                 text=shape.text
             )
 
-    def __get_contents(self, content_type: str, shape_type, slide_index=0):
-        """特定のshape_typeを取得"""
-        try:
-            shapes = self.prs.slides[slide_index].shapes
-        except IndexError:
-            raise IndexError("slide index out of range")
-        contents = []
-
-        for shape in shapes:
-            if shape.shape_type != shape_type:
-                continue
-            if shape.has_text_frame:
-                if not shape.text:
-                    continue
-            contents.append(self.__set_content(content_type, shape))
-
-        return contents
-
 
 class PresentationWriter():
     """
     プレゼンテーションを出力するクラス。
 
     prs: Presentation
-        pptx.Presentationオブジェクト。
+        pptx.Presentationオブジェクトのインスタンス。
     slides: list[Slide]
         書き込みたい情報を持つSlideのリスト。
     slide_start_index: int
@@ -134,8 +121,7 @@ class PresentationWriter():
         self.remove_slide(base_slide_index)
 
     def add_images(self):
-        """スライドに画像を貼り付ける。
-        """
+        """スライドに画像を貼り付ける。"""
         current_index = self.slide_start_index
 
         for slide in self.slides:
@@ -146,8 +132,7 @@ class PresentationWriter():
             current_index += 1
 
     def add_textboxes(self):
-        """スライドにテキストボックスを貼り付ける。
-        """
+        """スライドにテキストボックスを貼り付ける。"""
         current_index = self.slide_start_index
 
         for slide in self.slides:
@@ -242,8 +227,7 @@ class PresentationWriter():
             XML_reference.getparent().remove(XML_reference)
 
     def __get_slide_index(self, slide) -> int:
-        """スライドのインデックスを取得する。
-        """
+        """スライドのインデックスを取得する。"""
         return self.prs.slides.index(slide)
 
     def __add_image(
@@ -253,8 +237,7 @@ class PresentationWriter():
             sizes: tuple[int, int],
             shapes
         ):
-        """スライドに画像を貼り付ける。
-        """
+        """スライドに画像を貼り付ける。"""
         shapes.add_picture(img, *coordinates, *sizes)
 
     def __add_textbox(
@@ -263,6 +246,7 @@ class PresentationWriter():
                 sizes: tuple[int, int],
                 shapes
         ):
+        """スライドにテキストボックスを貼り付ける。"""
         textbox = shapes.add_textbox(*coordinates, *sizes)
         textbox.text_frame.text = text
 
