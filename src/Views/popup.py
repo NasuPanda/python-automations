@@ -14,7 +14,8 @@ class Popup():
         pass
 
     @staticmethod
-    def call_error_popup(message="エラー"):
+    def call_error_popup(*messages: str):
+        message = "\n".join(messages)
         sg.popup(message, text_color="red", auto_close=True, auto_close_duration=3)
 
     @staticmethod
