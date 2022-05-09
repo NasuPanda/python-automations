@@ -135,6 +135,8 @@ fruits_1の場合は「fruits」がデータ名、「1」がラベル(連番)と
 
 ![入力しなかった場合](https://user-images.githubusercontent.com/85564407/165259219-db480535-f07b-4ec4-8ea8-a0cc7b403b2e.png)
 
+デフォルトでは`main.py`と同じフォルダに出力されます。
+
 ## 動作サンプルに使用した画像
 
 - [【フリーアイコン】 フルーツ](https://sozai.cman.jp/icon/food/fruits/)
