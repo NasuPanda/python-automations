@@ -2,6 +2,8 @@
 
 ① PowerPointで作成したフォーマットの位置に画像を出力 ②テキストをデータ名/ラベル名に置換出来るGUIツールです。
 
+![demo-gif](./samples/デモ/PowerPointFormatter_特定レイアウト_デモ.gif)
+
 ## 概要
 
 PowerPointで作成したフォーマットを使用して画像貼り付け・テキスト置換を行います。
