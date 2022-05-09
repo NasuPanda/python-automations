@@ -105,27 +105,37 @@ class Controller():
         return dst_path
 
     def _set_laidout_images(self, label_part_index: int) -> SlideGenerator:
-        # TODO 適切な大きさに切り分ける & エラーキャッチしてGUIに通知
-        image_sorter = ImageSorter(self.input_images)
-        grouped_images = image_sorter.labeling_images(label_part_index)
-        total_number_of_contents = Helper.get_total_number_of_contents(grouped_images)
-        slide_generator = SlideGenerator(self.image_templates, config.IMAGE_KEY, total_number_of_contents)
-        slide_generator.set_laidout_images_to_slides(grouped_images)
+        try:
+            image_sorter = ImageSorter(self.input_images)
+            grouped_images = image_sorter.labeling_images(label_part_index)
+            total_number_of_contents = Helper.get_total_number_of_contents(grouped_images)
+            # FIXME: SlideGeneratorの初期化でエラーが起こりうる
+            slide_generator = SlideGenerator(self.image_templates, config.IMAGE_KEY, total_number_of_contents)
+            # FIXME: search_content_by_labelでエラーが起こりうる
+            slide_generator.set_laidout_images_to_slides(grouped_images)
+        except Exception as e:
+            Popup.call_error_popup(str(e))
+
         return slide_generator
 
     def _set_sequence_images(self, label_part_index: int) -> SlideGenerator:
-        # TODO 適切な大きさに切り分ける & エラーキャッチしてGUIに通知
-        image_sorter = ImageSorter(self.input_images)
-        image_sorter.sort_based_on_numeric_part(label_part_index)
-        grouped_images = image_sorter.labeling_images(label_part_index)
-        total_number_of_contents = Helper.get_total_number_of_contents(grouped_images)
-        slide_generator = SlideGenerator(self.image_templates, config.IMAGE_KEY, total_number_of_contents)
-        slide_generator.sort_template_images_by_numeric_label()
-        slide_generator.set_sequence_images_to_slides(grouped_images)
+        try:
+            image_sorter = ImageSorter(self.input_images)
+            # FIXME: sort_based_on_numeric_partでエラーが起こりうる
+            image_sorter.sort_based_on_numeric_part(label_part_index)
+            grouped_images = image_sorter.labeling_images(label_part_index)
+            total_number_of_contents = Helper.get_total_number_of_contents(grouped_images)
+            # FIXME: SlideGeneratorの初期化でエラーが起こりうる
+            slide_generator = SlideGenerator(self.image_templates, config.IMAGE_KEY, total_number_of_contents)
+            # FIXME: sort_contents_by_numeric_labelでエラーが起こりうる
+            slide_generator.sort_template_images_by_numeric_label()
+            slide_generator.set_sequence_images_to_slides(grouped_images)
+        except Exception as e:
+            Popup.call_error_popup(str(e))
+
         return slide_generator
 
     def _set_textboxes(self, slide_generator: SlideGenerator):
-        # TODO 適切な大きさに切り分ける & エラーキャッチしてGUIに通知
         tb_sorter = TextBoxSorter(self.textbox_templates)
         tb_sorter.sort_based_on_label(config.REGEX_POINTING_GROUP, config.REGEX_POINTING_LABEL)
         sorted_textboxes = tb_sorter.sorted_textboxes
