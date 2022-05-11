@@ -162,7 +162,10 @@ class Controller():
         tb_sorter = TextBoxSorter(self.textbox_templates)
         tb_sorter.sort_based_on_label(config.REGEX_POINTING_GROUP, config.REGEX_POINTING_LABEL)
         sorted_textboxes = tb_sorter.sorted_textboxes
-        [slide_generator.set_textboxes_to_template(i) for i in sorted_textboxes]
+        for i in sorted_textboxes:
+            if not i:
+                continue
+            slide_generator.set_textboxes_to_template(i)
         slide_generator.set_textboxes_to_slides()
         return slide_generator
 
