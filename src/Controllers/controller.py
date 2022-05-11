@@ -118,12 +118,13 @@ class Controller():
 
         self.finish_process()
 
-    def _copy_src_file(self, values) -> str | None:
+    def _copy_src_file(self, values, dst_dir="../結果出力フォルダ") -> str | None:
         """元となるファイルをコピーする。"""
+        os.makedirs(dst_dir, exist_ok=True)
         if values["-OUTPUT_NAME-"]:
-            dst_path = self.copy_file(values["-USER_UTIL_PWT-"], values["-OUTPUT_NAME-"])
+            dst_path = self.copy_file(values["-USER_UTIL_PWT-"], values["-OUTPUT_NAME-"], dst_dir=dst_dir)
         else:
-            dst_path = self.copy_file_and_append_timestamp(values["-USER_UTIL_PWT-"])
+            dst_path = self.copy_file_and_append_timestamp(values["-USER_UTIL_PWT-"], dst_dir=dst_dir)
         return dst_path
 
     def _set_laidout_images(self, label_part_index: int) -> SlideGenerator | None:
@@ -291,13 +292,15 @@ class Controller():
         Popup.call_success_popup("処理が成功しました!")
 
     @staticmethod
-    def copy_file_and_append_timestamp(src: str, dt_format='%y%m%d_%H%M') -> str | None:
+    def copy_file_and_append_timestamp(src: str, dst_dir=".", dt_format='%y%m%d_%H%M') -> str | None:
         """[現在時刻.拡張子]形式のコピーを作成する。
 
         Parameters
         ----------
         src : str
             コピー元のファイルパス。
+        dst_dir: str, optional
+            コピー先のフォルダパス。
         dt_format : str, optional
             datetimeのstrftimeのフォーマット, by default '%y%m%d_%H%M'
 
@@ -310,7 +313,7 @@ class Controller():
         dt_now = dt_now.strftime(dt_format)
         p = pathlib.Path(src)
 
-        dst = f"{dt_now}{p.suffix}"
+        dst = f"{dst_dir}/{dt_now}{p.suffix}"
 
         # すでに同じタイムスタンプのファイルが存在する場合
         if glob.glob(dst):
@@ -323,10 +326,25 @@ class Controller():
         return dst
 
     @staticmethod
-    def copy_file(src: str, dst: str) -> str | None:
-        """srcをdstにコピーする。"""
+    def copy_file(src: str, dst: str, dst_dir=".") -> str | None:
+        """srcをdstにコピーする。
+
+        Parameters
+        ----------
+        src : str
+            コピー元のファイルパス。
+        dst : str
+            コピー先のファイル名。
+        dst_dir : str, optional
+            コピー先のフォルダパス, by default "./"
+
+        Returns
+        -------
+        str | None
+            コピー先のパス。
+        """
         p = pathlib.Path(src)
-        dst = f"{dst}{p.suffix}"
+        dst = f"{dst_dir}/{dst}{p.suffix}"
         try:
             shutil.copy(src, dst)
         except Exception:
