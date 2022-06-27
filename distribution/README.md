@@ -67,7 +67,7 @@ python get-pip.py
 
 `python -m pip install`を使って必要なパッケージをインストールする。
 
-しかし、場合によってはフォルダ内のpython.exeではなく自身のPCにインストールしたPythonが呼ばれ、グローバルにインストールされてしまうことがある。
+ただし、場合によってはフォルダ内のpython.exeではなく自身のPCにインストールしたPythonが呼ばれ、グローバルにインストールされてしまうことがある。
 
 `python.exe -m pip install`の方が安全。
 
@@ -79,9 +79,10 @@ python.exe -m pip install opencv-python
 python.exe -m pip list
 ```
 
-### 実行
+### 実行方法
 
-`python.exe`と同じ階層に以下のような`bat`ファイル(もしくは`.cmd`ファイル)を作成しておく。
+`python.exe`と同じ階層に以下のような`main.bat`(もしくは`main.cmd`ファイル)を作成しておく。
+`main.bat`を実行すると`main.py`が実行されるだけのもの。
 
 ```bat:main.bat
 rem このファイルの位置を作業ディレクトリに
@@ -90,17 +91,15 @@ cd /d %~dp0
 python.exe main.py
 ```
 
-`bat`を実行すると`main.py`が実行される。
-
 #### 配布用の`実行.bat`
 
 1つ上の階層に`main.bat`を呼び出すためだけの`実行.bat`を用意するのが最も簡単。
 
 ```bat:実行.bat
-python-3.6.5-embed-win32/main.cmd
+python-3.6.5-embed-win32/main.bat
 ```
 
-実際に配布する際は、`python-****-embed-win32`内に複数のプロジェクトを配置、それぞれを呼び出す`.bat`ファイルを用意するようにしていた。
+実際に配布する際は、`python-****-embed-win32`内に複数のプロジェクトを配置、それぞれの`main.py`を呼び出す`.bat`ファイルを用意するようにしていた。
 
 そうすることで、ユーザからはあたかも1つのフォルダをコピーしてくるだけで複数のツールを導入出来るかのように見える。~~お得~~
 
