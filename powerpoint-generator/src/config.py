@@ -1,7 +1,7 @@
+"""設定の切り出し"""
+
 from pptx.enum.shapes import MSO_SHAPE, MSO_SHAPE_TYPE
 
-
-"""Global variables"""
 
 # content type
 IMAGE_KEY: str = "image"
