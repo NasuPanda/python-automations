@@ -1,5 +1,13 @@
-"""par関連のエラー
+"""Errors
 """
+
+
+class ArgumentError(Exception):
+    """引数関連のエラー"""
+    pass
+
+
+# par関連のエラー
 class ParException(Exception):
     """parファイルのBaseException"""
     pass
@@ -10,8 +18,7 @@ class ParParseError(ParException):
     pass
 
 
-"""csv関連のエラー
-"""
+# csv関連のエラー
 class CSVException(Exception):
     """csvファイルのBaseException"""
     pass
@@ -27,8 +34,7 @@ class ColumnNotFoundError(CSVException):
     pass
 
 
-"""バリデーションエラー
-"""
+# バリデーションエラー
 class ValidationError(Exception):
     """バリデーションエラー"""
     pass
