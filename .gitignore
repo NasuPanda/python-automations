@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # ドメインに関わる物は除外する
 config.py
 
@@ -8,11 +7,3 @@ config.py
 *.xlsm
 *.pptx
 *.pptm
-=======
-_note/
-resources/
-*.pptx
-
-Pipfile
-Pipfile.lock
->>>>>>> powerpoint-generator/main
