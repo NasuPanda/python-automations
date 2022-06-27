@@ -1,5 +1,6 @@
 # ドメインに関わる物は除外する
-config.py
+par-parser/config.py
+par-parser/src/models/vi.py
 
 # データを含む拡張子は除外する
 *.csv
