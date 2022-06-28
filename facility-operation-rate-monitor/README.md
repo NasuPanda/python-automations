@@ -51,3 +51,17 @@ WANT
 - pynput
   - This library allows you to control and monitor input devices.
   - https://pynput.readthedocs.io/en/latest/
+
+## メモ
+
+### `join`メソッド
+
+- threading: https://docs.python.org/ja/3/library/threading.html#threading.Thread.join
+- pynput: https://pynput.readthedocs.io/en/latest/private.html?highlight=join#pynput._util.AbstractListener.join
+
+> スレッドが終了するまで待機します。
+> このメソッドは、 join() を呼ばれたスレッドが正常終了あるいは処理されない例外によって終了するか、オプションのタイムアウトが発生するまで、メソッドの呼び出し元のスレッドをブロックします。
+
+- joinが呼ばれたスレッドが終了するまで待機する。
+- joinが呼ばれたスレッドが終了するまで呼び出し元のスレッドをブロックする。
+- joinが呼ばれない場合、次の処理に移ってしまう = 先にメインスレッドが終了してしまう。
