@@ -5,71 +5,88 @@ from pynput.keyboard import Listener as KeyboardListener
 
 from timehelper import TimeHelper
 
+class InputDeviceMonitor():
+    """入力デバイスを監視する。
 
-def on_press(key):
-    print("Key pressed: {0}".format(key))
-    # コールバックがFalseを返す or 特定の例外を発生させると監視を終了
-    if key == keyboard.Key.esc:
-        return False
+    NOTE: join
+    keyboard_listener.join()
+    mouse_listener.join()
+
+    joinを呼び出したスレッドが終了するまで待機。
+    joinを呼び出したスレッドが終了するまで呼び出し元のスレッドをブロックする。
+    joinを呼ばない場合、次の処理に移ってしまう = 先にメインスレッドが終了してしまう。
+
+    joinを呼んでしまうとそこで処理がブロックされてしまうため、後の処理に回すことが出来ない。
+    が、joinの役割を考えるとjoinを呼び出さずともメインスレッドが終了しなければいいだけの話。
+
+    今回の要件は指定時間までスレッドにより入力デバイスを監視すること。
+    つまり、スレッドを動かした後はWhileで時刻を監視、指定時間を過ぎたら終了・・・のようにすれば良いだけ。
+
+    """
+    def __init__(self) -> None:
+        self.input_key_count = 0
+        self.click_count = 0
+        self.mouse_move_count = 0
+        self.keyboard_listener = KeyboardListener(on_press=self.on_press, on_release=self.on_release)
+        self.mouse_listener = MouseListener(on_move=self.on_move, on_click=self.on_click, on_scroll=self.on_scroll)
+
+    def start(self):
+        self.keyboard_listener.start()
+        self.mouse_listener.start()
+
+    def reset(self):
+        self.input_key_count = 0
+        self.click_count = 0
+        self.mouse_move_count = 0
+
+    def judge_count(self):
+        return self.input_key_count or self.click_count or self.mouse_move_count
+
+    def on_press(self, key):
+        self.input_key_count += 1
+
+    def on_release(self, key):
+        return
+
+    def on_move(self, x, y):
+        self.mouse_move_count += 1
+
+    def on_click(self, x, y, button, pressed):
+        if pressed:
+            self.click_count += 1
+
+    def on_scroll(self, x, y, dx, dy):
+        self.mouse_move_count += 1
 
 
-def on_release(key):
-    print("Key released: {0}".format(key))
+monitor = InputDeviceMonitor()
+monitor.start()
+current = TimeHelper.current()
+finish = TimeHelper.shift_minutes(current, 3)
+time_helper = TimeHelper(start=current, shift_step_min=1)
 
-def on_move(x, y):
-    print("Mouse moved to ({0}, {1})".format(x, y))
+print("開始時刻: ", TimeHelper.format(current))
+print("終了予定: ", TimeHelper.format(finish))
 
-def on_click(x, y, button, pressed):
-    if pressed:
-        print('Mouse clicked at ({0}, {1}) with {2}'.format(x, y, button))
-    else:
-        print('Mouse released at ({0}, {1}) with {2}'.format(x, y, button))
+# finish if current == finish
+while (
+    TimeHelper.get_hour_and_min(TimeHelper.current()) !=
+    TimeHelper.get_hour_and_min(finish)
+):
+    next_shift = time_helper.next_shift()
+    print("次の時間まで監視, 入力がなければ非稼働と判定", TimeHelper.format(next_shift))
 
-def on_scroll(x, y, dx, dy):
-    print('Mouse scrolled at ({0}, {1})({2}, {3})'.format(x, y, dx, dy))
-
-
-def monitoring_input_device():
-    keyboard_listener = KeyboardListener(on_press=on_press, on_release=on_release)
-    mouse_listener = MouseListener(on_move=on_move, on_click=on_click, on_scroll=on_scroll)
-
-    keyboard_listener.start()
-    mouse_listener.start()
-
-    # NOTE: join
-    # keyboard_listener.join()
-    # mouse_listener.join()
-
-    # joinを呼び出したスレッドが終了するまで待機。
-    # joinを呼び出したスレッドが終了するまで呼び出し元のスレッドをブロックする。
-    # joinを呼ばない場合、次の処理に移ってしまう = 先にメインスレッドが終了してしまう。
-
-    # joinを呼んでしまうとそこで処理がブロックされてしまうため、後の処理に回すことが出来ない。
-    # が、joinの役割を考えるとjoinを呼び出さずともメインスレッドが終了しなければいいだけの話。
-
-    # 今回の要件は指定時間までスレッドにより入力デバイスを監視すること。
-    # つまり、スレッドを動かした後はWhileで時刻を監視、指定時間を過ぎたら終了・・・のようにすれば良いだけ。
-
-    current = TimeHelper.current()
-    finish = TimeHelper.shift_minutes(current, 3)
-    time_helper = TimeHelper(start=current, shift_step_min=1)
-
-    # finish if current == finish
     while (
         TimeHelper.get_hour_and_min(TimeHelper.current()) !=
-        TimeHelper.get_hour_and_min(finish)
+        TimeHelper.get_hour_and_min(next_shift)
     ):
-        next_shift = time_helper.next_shift()
-        print("next shift", next_shift)
-        while (
-            TimeHelper.get_hour_and_min(TimeHelper.current()) !=
-            TimeHelper.get_hour_and_min(next_shift)
-        ):
-            pass
-        print("finish inner loop at", next_shift)
-    print("finish outer loop")
+        pass
+    print("1セクションの監視終了: ", TimeHelper.format(next_shift))
+    print(f"カウント クリック回数:{monitor.click_count} キー入力回数: {monitor.input_key_count} マウス移動回数: {monitor.mouse_move_count}")
+    judge = "入力有" if monitor.judge_count() else "入力無"
+    print(f"判定: {judge}")
 
+    monitor.reset()
 
-print("start")
-monitoring_input_device()
+print("終了: ", TimeHelper.format(finish))
 print("finish")
