@@ -2,15 +2,22 @@ import arrow
 
 
 class TimeHelper():
-    FORMATS = {
-        "short": "MM-DD HH:mm",
-        "long": "YYYY-MM-DD HH:mm:ss ZZ"
-    }
     """
     This class is a helper that offers methods to creating, shifting, and formatting times.
 
-    Example Usage:
+    NOTE:
+        This class dependent on arrow (Python library).
+        reference: https://arrow.readthedocs.io/en/latest
 
+    Class variables
+    ----------
+    FORMATS: dict[str, str]
+        The formats used for formatting arrow object.
+    LOCAL: "Asia/Tokyo"
+        The timezone info used for convert arrow object.
+
+    Example usage
+    ----------
         current = TimeHelper.current()
         # example: next day, at N (Today), N hours from now...
         finish = TimeHelper.shift_hours(current, 8)
@@ -29,6 +36,10 @@ class TimeHelper():
                 # Do something
     """
 
+    FORMATS = {
+        "short": "MM-DD HH:mm",
+        "long": "YYYY-MM-DD HH:mm:ss ZZ"
+    }
     LOCAL = "Asia/Tokyo"
 
     def __init__(self, start: arrow.arrow.Arrow, shift_step_min: int) -> None:
@@ -127,7 +138,7 @@ class TimeHelper():
 
     @classmethod
     def current(cls) -> arrow.arrow.Arrow:
-        """Get current time. (local)
+        """Get current time. (local time zone)
 
         Returns
         -------
