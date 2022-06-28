@@ -1,9 +1,8 @@
-import threading
-from pynput import keyboard
 from pynput.mouse import Listener as MouseListener
 from pynput.keyboard import Listener as KeyboardListener
 
 from timehelper import TimeHelper
+
 
 class InputDeviceMonitor():
     """入力デバイスを監視する。
