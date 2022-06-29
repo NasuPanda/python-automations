@@ -1,4 +1,5 @@
 # ドメインに関わる物は除外する
+domains/
 par-parser/config.py
 par-parser/src/models/vi.py
 
