@@ -1,5 +1,13 @@
 # Python配布方法
 
+## pyinstaller
+
+### auto-py-to-exe
+
+便利そう。使ったことはない。
+
+[Pythonファイルを超簡単にexeファイル化するGUIソフト - Qiita](https://qiita.com/osorezugoing/items/4ea5249c43c0ba8b89aa)
+
 ## Embeddable Python
 
 ここでは Python 3.6.5 の場合を書く。
