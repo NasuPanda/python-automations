@@ -2,8 +2,7 @@ import arrow
 
 
 class TimeHelper():
-    """
-    This class is a helper that offers methods to creating, shifting, and formatting times.
+    """This class is a helper that offers methods to creating, shifting, and formatting times.
 
     NOTE:
         This class dependent on arrow (Python library).

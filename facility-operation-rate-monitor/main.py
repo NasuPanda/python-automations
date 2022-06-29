@@ -3,7 +3,7 @@ from libs.timehelper import TimeHelper
 
 
 monitor = InputDeviceMonitor()
-monitor.start()
+monitor.start_listener()
 current = TimeHelper.current()
 finish = TimeHelper.shift_minutes(current, 3)
 time_helper = TimeHelper(start=current, shift_step_min=1)
@@ -26,13 +26,13 @@ while (
         pass
 
     print("1セクションの監視終了: ", TimeHelper.format(next_shift))
-    print(f"カウント クリック回数:{monitor.click_count} キー入力回数: {monitor.input_key_count} マウス移動回数: {monitor.mouse_move_count}")
+    print(f"カウント クリック回数:{monitor.click_count} キー入力回数: {monitor.keystroke_count} マウス移動回数: {monitor.mouse_movement_count}")
 
-    judge = "入力有" if monitor.judge_count() else "入力無"
+    judge = "入力有" if monitor.total_input_count else "入力無"
     print(f"判定: {judge}")
 
     monitor.reset_count()
 
-monitor.stop()
+monitor.stop_listener()
 print("終了: ", TimeHelper.format(finish))
 print("finish")
