@@ -4,42 +4,93 @@ from pynput.keyboard import Listener as KeyboardListener
 
 class InputDeviceMonitor():
     """Monitor input device.
+
+    NOTE:
+        This class dependent on pynput.
+        reference: https://pynput.readthedocs.io/en/latest
+
+    Instance variables
+    ----------
+    keystroke_count: int
+        Input key count.
+        Increments when fire on_press callback.
+    click_count: int
+        Click count.
+        Increments when fire on_click callback.
+    mouse_movement_count: int
+        Mouse movement count.
+        Increments when fire on_move ar on_scroll callback.
+    mouse_listener: pynput.mouse.Listenr
+        Mouse input event listener.
+    keyboard_listener: pynput.keyboard.Listener
+        Keyboard input event lister.
     """
     def __init__(self) -> None:
-        self.input_key_count = 0
-        self.click_count = 0
-        self.mouse_move_count = 0
-        self.keyboard_listener = KeyboardListener(on_press=self.on_press, on_release=self.on_release)
-        self.mouse_listener = MouseListener(on_move=self.on_move, on_click=self.on_click, on_scroll=self.on_scroll)
+        """Initialize an instance.
+        """
+        self.click_count: int = 0
+        self.keystroke_count: int = 0
+        self.mouse_movement_count: int = 0
 
-    def start(self):
+        self.mouse_listener: MouseListener = MouseListener(
+            on_move=self.on_move, on_click=self.on_click, on_scroll=self.on_scroll
+        )
+        self.keyboard_listener: KeyboardListener = KeyboardListener(
+            on_press=self.on_press, on_release=self.on_release
+        )
+
+    @property
+    def total_input_count(self) -> int:
+        """Returns total number of device input.
+
+        Returns
+        -------
+        int
+            total number of device input.
+        """
+        return self.keystroke_count + self.click_count + self.mouse_movement_count
+
+    def start_listener(self):
+        """Activate input event listener.
+        """
         self.keyboard_listener.start()
         self.mouse_listener.start()
 
-    def stop(self):
+    def stop_listener(self):
+        """Stop input event listener.
+        """
         self.keyboard_listener.stop()
         self.mouse_listener.stop()
 
     def reset_count(self):
-        self.input_key_count = 0
+        """Reset instance variables for counting.
+        """
         self.click_count = 0
-        self.mouse_move_count = 0
-
-    def judge_count(self):
-        return self.input_key_count or self.click_count or self.mouse_move_count
+        self.keystroke_count = 0
+        self.mouse_movement_count = 0
 
     def on_press(self, key):
-        self.input_key_count += 1
+        """Callback on press key. Increments keystroke count.
+        """
+        self.keystroke_count += 1
 
     def on_release(self, key):
-        return
+        """Callback on release key. Do nothing.
+        """
+        pass
 
     def on_move(self, x, y):
-        self.mouse_move_count += 1
+        """Callback on move mouse. Increments mouse movement count.
+        """
+        self.mouse_movement_count += 1
 
     def on_click(self, x, y, button, pressed):
+        """Callback on click mouse. If pressed, increments click count.
+        """
         if pressed:
             self.click_count += 1
 
     def on_scroll(self, x, y, dx, dy):
-        self.mouse_move_count += 1
+        """Callback on scroll mouse. Increments mouse movement count.
+        """
+        self.mouse_movement_count += 1
