@@ -137,7 +137,7 @@ class WriteVIDataToExcelEngine():
                 values=values,
                 start_index=self.writer.DATA_START_ADDRESSES[key]["row"],
                 base_axis_index=self.writer.DATA_START_ADDRESSES[key]["column"],
-                axis=1
+                axis=0
             )
         # 開始電圧, 終了電圧の書き込み
         self.writer.write_cell(value=vi_data.min_voltage, address=self.writer.VALUE_CELL_ADDRESSES["min_voltage"])

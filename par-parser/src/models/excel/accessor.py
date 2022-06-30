@@ -289,22 +289,22 @@ class ExcelAccessor():
         base_axis_index : int
             主軸のインデックス。
         axis : int, optional
-            軸方向。0 => 横軸, 1 => 縦軸, by default 0
+            軸方向。0 => 縦軸, 1 => 横軸, by default 0
         """
-        # 横方向: row固定, columnインクリメント
-        if axis == 0:
-            for i, value in enumerate(values):
-                self.ws.cell(
-                    row=base_axis_index,
-                    column=start_index + i,
-                    value=value
-                )
         # 縦方向: rowインクリメント, column固定
-        if axis == 1:
+        if axis == 0:
             for i, value in enumerate(values):
                 self.ws.cell(
                     row=start_index + i,
                     column=base_axis_index,
+                    value=value
+                )
+        # 横方向: row固定, columnインクリメント
+        if axis == 1:
+            for i, value in enumerate(values):
+                self.ws.cell(
+                    row=base_axis_index,
+                    column=start_index + i,
                     value=value
                 )
 
