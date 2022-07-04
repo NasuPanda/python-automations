@@ -1,5 +1,5 @@
 """VI-Ri
-ColeColeの.parファイルからVIデータを抽出, Riの値を算出してExcelへ出力する。
+ASCIIフォーマットの`.par`ファイルからVIデータを抽出, 抵抗値を算出してExcelへ出力する。
 Excelには Current[A], Voltage[V], Time[s], Current[μA], Ri[Ω], VIグラフが含まれる。
 """
 
