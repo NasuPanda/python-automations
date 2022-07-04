@@ -221,8 +221,8 @@ class ExcelAccessor():
             chart.legend.position = graph_src.legend
 
         # データの参照を定義, Chartオブジェクトへ追加
-        x_values = Reference(self.ws, **graph_src.x_references.members_as_dict())
-        y_values = Reference(self.ws, **graph_src.y_references.members_as_dict())
+        x_values = Reference(self.ws, **graph_src.x_references.members_as_dict)
+        y_values = Reference(self.ws, **graph_src.y_references.members_as_dict)
         series = Series(x_values, y_values)
         chart.series.append(series)
 
