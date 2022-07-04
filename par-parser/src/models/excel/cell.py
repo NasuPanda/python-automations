@@ -7,7 +7,8 @@ class Cell:
     row: int
     column: int
 
-    def get_members_as_dict(self) -> dict:
+    @property
+    def members_as_dict(self) -> dict:
         return {
             "value": self.value,
             "row": self.row,

@@ -8,6 +8,7 @@ class References:
     min_row: int
     max_row: int
 
+    @property
     def members_as_dict(self):
         # openpyxlのメソッドに合わせた形にしておく
         return {

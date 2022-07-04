@@ -12,4 +12,4 @@ class Sheet:
         self.cells.append(cell)
 
     def get_cells_as_dict(self):
-        return [cell.get_members_as_dict() for cell in self.cells]
+        return [cell.members_as_dict for cell in self.cells]
