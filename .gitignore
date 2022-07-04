@@ -9,3 +9,8 @@ par-parser/src/models/vi.py
 *.xlsm
 *.pptx
 *.pptm
+*.par
+
+# 不要なので除外
+__pycache__/
+*.lock
