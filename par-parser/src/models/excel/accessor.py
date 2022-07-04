@@ -9,6 +9,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 import config
 from src.models.excel.graph import Graph
 from src.utils.exceptions import ArgumentError
+from src.utils import helper as Helper
 
 
 class ExcelAccessor():
@@ -45,7 +46,7 @@ class ExcelAccessor():
         """
         self.wb: Workbook = xl.load_workbook(excel_path, data_only=data_only)
         self.ws: Worksheet = self.wb.worksheets[0]
-        self.excel_path: str = str(pathlib.Path(excel_path).resolve())
+        self.excel_path: str = Helper.resolve_relative_path(excel_path, needs_cast_str=True)
 
     @property
     def sheet_size(self) -> int:
@@ -123,7 +124,7 @@ class ExcelAccessor():
         app.Visible = False
         app.DisplayAlerts = False
         # 相対パスを解釈してくれないのでresolve()しておく
-        wb = app.Workbooks.Open(str(pathlib.Path(excel_path).resolve()))
+        wb = app.Workbooks.Open(Helper.resolve_relative_path(excel_path, needs_cast_str=True))
         wb.Save()
         app.Quit()
 

@@ -8,6 +8,7 @@ from src.models.parser import ParParser
 from src.models.excel.accessor import VIExcelAccessor
 from src.models.vi import VIData
 from src.utils.helper import CSVReader
+from src.utils import helper as Helper
 
 
 class ExtractVIDataFromParEngine():
@@ -56,9 +57,9 @@ class ExtractVIDataFromParEngine():
         str
             パース後の.csvファイルのPathオブジェクト。
         """
-        csv_dst_path = pathlib.Path(f"{config.CSV_DST_PATH}/{par_path.stem}.csv").resolve()
+        csv_dst_path = Helper.resolve_relative_path(f"{config.CSV_DST_PATH}/{par_path.stem}.csv")
         ParParser.parse_par_to_csv(str(par_path), str(csv_dst_path))
-        return csv_dst_path
+        return csv_dst_path  # type: ignore
 
     def extract_vi_data_from_csv_file(self, csv_path: str | pathlib.Path, data_name: str) -> VIData:
         """csv から VIデータを取り出す
@@ -100,9 +101,12 @@ class WriteVIDataToExcelEngine():
         to_excel_name : str
             出力先のExcelファイル名。
         """
-        format_excel_path = pathlib.Path(config.EXCEL_FORMAT_PATH).resolve()
+        format_excel_path = config.EXCEL_FORMAT_PATH
         self.writer = VIExcelAccessor(format_excel_path, data_only=False)
-        self.to_excel_path = pathlib.Path(f"{config.EXCEL_DST_PATH}/{to_excel_name}").resolve()
+        self.to_excel_path = Helper.resolve_relative_path(
+            f"{config.EXCEL_DST_PATH}/{to_excel_name}",
+            needs_cast_str=True
+        )
 
     def perform(self, vi_data_array: list[VIData]):
         """処理の実行

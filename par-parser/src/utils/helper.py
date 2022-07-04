@@ -1,9 +1,25 @@
 """軽い処理を書くモジュール
 """
 
+import pathlib
 import pandas as pd
 
 from src.utils.exceptions import CSVException, ColumnNotFoundError
+
+
+def resolve_relative_path(
+    path: pathlib.Path | str, needs_cast_str: bool = False
+) -> str | pathlib.Path:
+    """相対パスを解決する
+    """
+    if isinstance(path, str):
+        resolved_path = pathlib.Path(path).resolve()
+    else:
+        resolved_path = path.resolve()
+
+    if needs_cast_str:
+        return str(resolved_path)
+    return resolved_path
 
 
 class CSVReader():
