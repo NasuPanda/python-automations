@@ -39,7 +39,8 @@ class TimeHelper():
         "default": "YYMMDD",
         "short": "YYMMDD",
         "long": "YYYY-MM-DD HH:mm:ss ZZ",
-        "hour_and_min": "HHmm"
+        "month_and_day": "MM/DD",
+        "hour_and_min": "HH:mm"
     }
     LOCAL = "Asia/Tokyo"
 
@@ -139,6 +140,28 @@ class TimeHelper():
             Hour and minute.
         """
         return time.hour, time.minute
+
+    @classmethod
+    def is_faster_than(
+        cls,
+        expected_to_be_fast: arrow.arrow.Arrow,
+        expected_to_be_late: arrow.arrow.Arrow
+    ) -> bool:
+        """Return boolean of whether expected_to_be_fast is faster than expected_to_be_late or not.
+
+        Parameters
+        ----------
+        expected_fast : arrow.arrow.Arrow
+            Arrow object expected to be fast.
+        expected_late : arrow.arrow.Arrow
+            Arrow object expected to be late.
+
+        Returns
+        -------
+        bool
+            Boolean of whether expected_to_be_fast is faster than expected_to_be_late or not
+        """
+        return expected_to_be_fast.timestamp() > expected_to_be_late.timestamp()
 
     @classmethod
     def current(cls) -> arrow.arrow.Arrow:
