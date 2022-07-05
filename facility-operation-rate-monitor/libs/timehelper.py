@@ -36,8 +36,10 @@ class TimeHelper():
     """
 
     FORMATS = {
-        "short": "MM-DD HH:mm",
-        "long": "YYYY-MM-DD HH:mm:ss ZZ"
+        "default": "YYMMDD",
+        "short": "YYMMDD",
+        "long": "YYYY-MM-DD HH:mm:ss ZZ",
+        "hour_and_min": "HHmm"
     }
     LOCAL = "Asia/Tokyo"
 
@@ -54,7 +56,7 @@ class TimeHelper():
         self.time_shifter = self.iter_time_shifter(start, shift_step_min)
 
     def next_shift(self) -> arrow.arrow.Arrow:
-        """Get next shift.
+        """Return a next shift.
 
         Returns
         -------
@@ -65,7 +67,7 @@ class TimeHelper():
 
     @classmethod
     def shift_minutes(cls, current: arrow.arrow.Arrow, min: int) -> arrow.arrow.Arrow:
-        """Get shifted time. (minute)
+        """Return a shifted time. (minute)
 
         Parameters
         ----------
@@ -84,7 +86,7 @@ class TimeHelper():
 
     @classmethod
     def shift_hours(cls, current: arrow.arrow.Arrow, hour: int) -> arrow.arrow.Arrow:
-        """Get shifted time. (hour)
+        """Return a shifted time. (hour)
 
         Parameters
         ----------
@@ -102,26 +104,29 @@ class TimeHelper():
         return current.shift(hours=hour)
 
     @classmethod
-    def format(cls, time: arrow.arrow.Arrow, format="short") -> str:
-        """Format time.
+    def format(cls, time: arrow.arrow.Arrow, format="default") -> str:
+        """Format arrow object.
 
         Parameters
         ----------
         time : arrow.arrow.Arrow
             Target time object.
         format : str, optional
-            Format to use (defined cls.FORMATS) , by default "short"
+            Format to use (defined cls.FORMATS) , by default "default"
 
         Returns
         -------
         str
             Formatted time.
         """
-        return time.format(cls.FORMATS[format])
+        format = cls.FORMATS.get(format)
+        if format is None:
+            format = cls.FORMATS["default"]
+        return time.format(format)
 
     @classmethod
-    def get_hour_and_min(cls, time: arrow.arrow.Arrow) -> tuple[int, int]:
-        """Get hour and minute from Arrow object.
+    def get_hour_and_min_from_arrow(cls, time: arrow.arrow.Arrow) -> tuple[int, int]:
+        """Returns hour and minute from Arrow object.
 
         Parameters
         ----------
@@ -137,7 +142,7 @@ class TimeHelper():
 
     @classmethod
     def current(cls) -> arrow.arrow.Arrow:
-        """Get current time. (local time zone)
+        """Return a current time. (local time zone)
 
         Returns
         -------

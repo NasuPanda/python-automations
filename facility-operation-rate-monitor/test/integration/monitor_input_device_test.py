@@ -13,15 +13,15 @@ print("終了予定: ", TimeHelper.format(finish))
 
 # Finish if current == finish
 while (
-    TimeHelper.get_hour_and_min(TimeHelper.current()) !=
-    TimeHelper.get_hour_and_min(finish)
+    TimeHelper.get_hour_and_min_from_arrow(TimeHelper.current()) !=
+    TimeHelper.get_hour_and_min_from_arrow(finish)
 ):
     next_shift = time_helper.next_shift()
     print("次の時間まで監視, 入力がなければ非稼働と判定", TimeHelper.format(next_shift))
 
     while (
-        TimeHelper.get_hour_and_min(TimeHelper.current()) !=
-        TimeHelper.get_hour_and_min(next_shift)
+        TimeHelper.get_hour_and_min_from_arrow(TimeHelper.current()) !=
+        TimeHelper.get_hour_and_min_from_arrow(next_shift)
     ):
         pass
 
