@@ -65,3 +65,15 @@ WANT
 - joinが呼ばれたスレッドが終了するまで待機する。
 - joinが呼ばれたスレッドが終了するまで呼び出し元のスレッドをブロックする。
 - joinが呼ばれない場合、次の処理に移ってしまう = 先にメインスレッドが終了してしまう。
+
+### CPU負荷
+
+#### 監視時の負荷
+
+自身のPCだと12~13%程度上昇した。
+
+#### Pythonから監視する
+
+- How to get current cpu & ram usage
+  - https://stackoverflow.com/questions/276052/how-to-get-current-cpu-and-ram-usage-in-python
+- Monitoring Python process
