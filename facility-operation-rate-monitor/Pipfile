@@ -7,6 +7,9 @@ name = "pypi"
 arrow = "*"
 pywin32 = "*"
 pynput = "*"
+psutil = "*"
+pysimplegui = "*"
+pandas = "*"
 
 [dev-packages]
 

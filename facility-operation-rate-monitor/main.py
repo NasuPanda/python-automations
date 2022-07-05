@@ -1,8 +1,10 @@
-from libs.monitor import InputDeviceMonitor
+from time import sleep
+from libs.monitor import InputDeviceMonitor, HardwarePerformanceMonitor
 from libs.timehelper import TimeHelper
 
 
 monitor = InputDeviceMonitor()
+performance_monitor = HardwarePerformanceMonitor()
 monitor.start_listener()
 current = TimeHelper.current()
 finish = TimeHelper.shift_minutes(current, 3)
@@ -23,15 +25,20 @@ while (
         TimeHelper.get_hour_and_min(TimeHelper.current()) !=
         TimeHelper.get_hour_and_min(next_shift)
     ):
-        pass
+        performance_monitor.update_max_cpu_usage_if_needed()
+        performance_monitor.add_current_cpu_usage_to_cpu_usages()
 
     print("1セクションの監視終了: ", TimeHelper.format(next_shift))
     print(f"カウント クリック回数:{monitor.click_count} キー入力回数: {monitor.keystroke_count} マウス移動回数: {monitor.mouse_movement_count}")
 
     judge = "入力有" if monitor.total_input_count else "入力無"
     print(f"判定: {judge}")
+    print("CPU負荷の平均", performance_monitor.cpu_usage_average)
+    print(performance_monitor.cpu_usages_to_get_ave)
+    print("CPU負荷の最大値", performance_monitor.max_cpu_usage)
 
     monitor.reset_count()
+    performance_monitor.reset()
 
 monitor.stop_listener()
 print("終了: ", TimeHelper.format(finish))
