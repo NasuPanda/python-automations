@@ -51,8 +51,13 @@ WANT
 - pynput
   - This library allows you to control and monitor input devices.
   - https://pynput.readthedocs.io/en/latest/
+- psutil
+  - psutil (python system and process utilities) is a cross-platform library for retrieving information on running processes and system utilization (CPU, memory, disks, network, sensors) in Python. It is useful mainly for system monitoring, profiling, limiting process resources and the management of running processes. It implements many functionalities offered by UNIX command line tools such as: ps, top, lsof, netstat, ifconfig, who, df, kill, free, nice, ionice, iostat, iotop, uptime, pidof, tty, taskset, pmap. psutil currently supports the following platforms:
+  - https://psutil.readthedocs.io/en/latest/
 
-## メモ
+---
+メモ
+---
 
 ### `join`メソッド
 
@@ -66,14 +71,55 @@ WANT
 - joinが呼ばれたスレッドが終了するまで呼び出し元のスレッドをブロックする。
 - joinが呼ばれない場合、次の処理に移ってしまう = 先にメインスレッドが終了してしまう。
 
-### CPU負荷
+## CPU負荷の監視
 
-#### 監視時の負荷
-
-自身のPCだと12~13%程度上昇した。
-
-#### Pythonから監視する
-
+- PySimpleGUIのCPU監視GUIサンプル
+  - これは想定している形式ではない
+  - https://github.com/PySimpleGUI/PySimpleGUI-Rainmeter-CPU-Cores/blob/master/PySimpleGUI_Rainmeter_CPU_Cores.py
 - How to get current cpu & ram usage
   - https://stackoverflow.com/questions/276052/how-to-get-current-cpu-and-ram-usage-in-python
 - Monitoring Python process
+  - `psutil.Process()`を引数無しで呼び出すと現在のプロセス=実行中の`**.py`が対象になる
+- https://www.thepythoncode.com/article/make-process-monitor-python
+
+
+
+### 監視時の負荷
+
+自身のPCだと12~13%程度上昇した。
+
+### Pythonから監視する
+
+やりたいこと
+
+- CPU負荷, メモリ使用率をプロセスごとに表示する
+- 怪しいプロセスを監視対象として登録出来る機能を持つスクリプトを別で書く
+  - 監視用スクリプトが参照するファイルに設定を追記する
+  - pidだと変化するはずなので、名前を参照する
+
+#### `cpu_percent`
+
+https://psutil.readthedocs.io/en/latest/#psutil.cpu_percent
+
+```py
+import psutil
+# blocking
+psutil.cpu_percent(interval=1) # => 2.0
+
+# non-blocking (percentage since last call)
+psutil.cpu_percent(interval=None) # => 2.9
+
+# blocking, per-cpu
+psutil.cpu_percent(interval=1, percpu=True) # => [2.0, 1.0]
+```
+
+#### `Process`
+
+https://psutil.readthedocs.io/en/latest/#process-class
+
+`Process`クラスは各プロセスを表すクラス。
+インスタンスの初期化には`pid`を使う。
+
+#### `memory_info`
+
+https://psutil.readthedocs.io/en/latest/#psutil.Process.memory_info
