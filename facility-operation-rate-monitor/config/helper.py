@@ -66,13 +66,13 @@ def __find_sequential_number(string: str) -> int | None:
     ))
 
 
-def __find_the_string_has_the_largest_sequential_number(strings: list[str]) -> str:
-    """Find the one has the largest sequential number from strings.
+def __find_the_filepath_has_the_largest_sequential_number(paths: list[pathlib.Path]) -> pathlib.Path:
+    """Find the one has the largest sequential number from paths.
 
     Parameters
     ----------
-    strings : list[str]
-        Target strings.
+    paths : list[pathlib.Path]
+        Target paths.
 
     Returns
     -------
@@ -82,18 +82,18 @@ def __find_the_string_has_the_largest_sequential_number(strings: list[str]) -> s
     Raises
     ------
     NumberNotFoundError
-        When strings doesn't have valid string.
+        When paths doesn't have valid string.
     """
     numbers = []
-    for name in strings:
-        numbers.append(__find_sequential_number(name))
+    for path in paths:
+        numbers.append(__find_sequential_number(str(path)))
     if not any(numbers):
-        raise NumberNotFoundError(f"Sequential number is not found from {strings}\nMust includes underscore.")
+        raise NumberNotFoundError(f"Sequential number is not found from {paths}\nMust includes underscore.")
     # Get index of largest number and return value
-    return strings[strings.index(max(numbers))]
+    return paths[paths.index(max(numbers))]
 
 
-def __assign_sequential_number(string: str) -> str:
+def __assign_sequential_number(path: pathlib.Path) -> str:
     """Assign sequential number and return.
 
     - If sequential number doesn't exist, assign 1
@@ -101,22 +101,22 @@ def __assign_sequential_number(string: str) -> str:
 
     Parameters
     ----------
-    string : str
-        Target string.
+    path : pathlib.Path
+        Target path.
 
     Returns
     -------
     str
         String after assigning sequential number.
     """
-    number = __find_sequential_number(string)
+    number = __find_sequential_number(str(path))
     if number:
         incremented_sequential_number = number + 1
         new_underscore_and_number = "_" + str(incremented_sequential_number)
-        return REGEX_UNDERSCORE_AND_NUMBER.sub(new_underscore_and_number, string)
+        return REGEX_UNDERSCORE_AND_NUMBER.sub(new_underscore_and_number, str(path))
 
-    # If string doesn't have part of underscore and number, assign underscore and sequential number.
-    return f"{string}_1"
+    # If path doesn't have part of underscore and number, assign underscore and sequential number.
+    return f"{path.stem}_1{path.suffix}"
 
 
 def resolve_filename_conflict(filepath: str, dst_folder: str) -> str:
@@ -141,18 +141,16 @@ def resolve_filename_conflict(filepath: str, dst_folder: str) -> str:
     if not paths_has_duplicate_filename:
         return filepath
 
-    # Path object must be cast to str
-    filenames_has_duplicate_name = [path.stem for path in paths_has_duplicate_filename]
     # If there is one file has duplicate name, assign 1
-    if len(filenames_has_duplicate_name) == 1:
-        return __assign_sequential_number(filenames_has_duplicate_name[0])
+    if len(paths_has_duplicate_filename) == 1:
+        return __assign_sequential_number(paths_has_duplicate_filename[0])
     # If there are multiple files has duplicate name, find largest number and assign incremented number
     else:
-        file_has_the_largest_sequential_num = __find_the_string_has_the_largest_sequential_number(filenames_has_duplicate_name)
+        file_has_the_largest_sequential_num = __find_the_filepath_has_the_largest_sequential_number(paths_has_duplicate_filename)
         return __assign_sequential_number(file_has_the_largest_sequential_num)
 
 
-def log_file_name(attached_string: str, extension: str = "csv") -> str:
+def log_file_name(attached_string: str, extension: str = ".csv") -> str:
     """Returns the log file name.
     - Format is `YYMMDD-YYMMDD_attached_string.extension`
         - `YYMMDD-YYMMDD` is first to last day of this month.
@@ -162,7 +160,7 @@ def log_file_name(attached_string: str, extension: str = "csv") -> str:
     attached_name : str
         Attached name to the end.
     extension : str, optional
-        File extension, by default "csv"
+        File extension, by default ".csv"
 
     Returns
     -------
@@ -175,7 +173,7 @@ def log_file_name(attached_string: str, extension: str = "csv") -> str:
     last_day = timehelper.format(
         timehelper.last_day_of_this_month(), "short"
     )
-    return f"{first_day}-{last_day}_{attached_string}.{extension}"
+    return f"{first_day}-{last_day}_{attached_string}{extension}"
 
 
 def log_file_path(log_folder: str, log_filename: str) -> str:
