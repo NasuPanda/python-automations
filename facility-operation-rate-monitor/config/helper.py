@@ -1,10 +1,15 @@
+from dataclasses import replace
 import re
 import pathlib
+
+import ruamel.yaml
 
 from libs import timehelper
 from libs.exceptions import NumberNotFoundError
 
 
+# YAML instance to load and write yaml
+yaml = ruamel.yaml.YAML()
 # regex of matching underscore and number
 REGEX_UNDERSCORE_AND_NUMBER = re.compile("_[0-9]+")
 # regex of matching number
@@ -190,3 +195,20 @@ def log_file_path(log_folder: str, log_filename: str) -> str:
     """
     log_folder_absolute_path = str(pathlib.Path(log_folder).resolve())
     return f"{log_folder_absolute_path}/{log_filename}"
+
+
+def is_nested_dict(dictionary: dict):
+    for value in dictionary.values():
+        if isinstance(value, dict):
+            return True
+    return False
+
+
+def load_yaml(yaml_path: str):
+    with open(yaml_path, mode='r+', encoding="utf-8") as stream:
+        return yaml.load(stream)
+
+
+def update_yaml(yaml_path: str, write_data: dict):
+    with open(yaml_path, 'w') as stream:
+        yaml.dump(write_data, stream=stream)
