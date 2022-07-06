@@ -1,13 +1,26 @@
-from libs.timehelper import TimeHelper
+from libs.timehelper import TimeShifter
+from libs import timehelper
 
 
-current = TimeHelper.current()
-three_minutes_later = TimeHelper.shift_minutes(current, min=3)
+# time helper
+print("*" * 50)
+print("time helper module")
+current = timehelper.current()
+three_minutes_later = timehelper.shift_minutes(current, min=3)
+first_day = timehelper.first_day_of_this_month()
+last_day = timehelper.last_day_of_this_month()
 
-print(f"current: {TimeHelper.format(current)}")
-print(f"3 minutes later: {TimeHelper.format(three_minutes_later)}")
 
-time_helper = TimeHelper(current, 15)
+print(f"current: {timehelper.format(current)}")
+print(f"3 minutes later: {timehelper.format(three_minutes_later)}")
+print(f"formatted first day: {timehelper.format(first_day)}")
+print(f"formatted last day: {timehelper.format(last_day)}")
+
+# TimeShifter
+print("*" * 50)
+print("TimeShifter class")
+
+time_shifter = TimeShifter(current, 15)
 
 for _ in range(5):
-    print(TimeHelper.format(time_helper.next_shift()))
+    print(timehelper.format(time_shifter.next_shift()))
