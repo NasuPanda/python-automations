@@ -137,11 +137,56 @@ def resolve_filename_conflict(filepath: str, dst_folder: str) -> str:
         return filepath
 
     # Path object must be cast to str
-    file_names_has_duplicate_filename = [path.stem for path in paths_has_duplicate_filename]
+    filenames_has_duplicate_name = [path.stem for path in paths_has_duplicate_filename]
     # If there is one file has duplicate name, assign 1
-    if len(file_names_has_duplicate_filename) == 1:
-        return __assign_sequential_number(file_names_has_duplicate_filename[0])
+    if len(filenames_has_duplicate_name) == 1:
+        return __assign_sequential_number(filenames_has_duplicate_name[0])
     # If there are multiple files has duplicate name, find largest number and assign incremented number
     else:
-        file_has_the_largest_sequential_num = __find_the_string_has_the_largest_sequential_number(file_names_has_duplicate_filename)
+        file_has_the_largest_sequential_num = __find_the_string_has_the_largest_sequential_number(filenames_has_duplicate_name)
         return __assign_sequential_number(file_has_the_largest_sequential_num)
+
+
+def log_file_name(attached_string: str, extension: str = "csv") -> str:
+    """Returns the log file name.
+    - Format is `YYMMDD-YYMMDD_attached_string.extension`
+        - `YYMMDD-YYMMDD` is first to last day of this month.
+
+    Parameters
+    ----------
+    attached_name : str
+        Attached name to the end.
+    extension : str, optional
+        File extension, by default "csv"
+
+    Returns
+    -------
+    str
+        Log file name.
+    """
+    first_day = timehelper.format(
+        timehelper.first_day_of_this_month(), "short"
+    )
+    last_day = timehelper.format(
+        timehelper.last_day_of_this_month(), "short"
+    )
+    return f"{first_day}-{last_day}_{attached_string}.{extension}"
+
+
+def log_file_path(log_folder: str, log_filename: str) -> str:
+    """Returns the log file absolute path.
+
+    Parameters
+    ----------
+    log_folder : str
+        Log file location.
+    log_filename : str
+        Log file name.
+
+    Returns
+    -------
+    str
+        Log file absolute path.
+    """
+    log_folder_absolute_path = str(pathlib.Path(log_folder).resolve())
+    return f"{log_folder_absolute_path}/{log_filename}"
