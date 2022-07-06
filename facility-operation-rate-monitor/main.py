@@ -1,28 +1,29 @@
 from libs.monitor import InputDeviceMonitor, HardwarePerformanceMonitor
-from libs.timehelper import TimeHelper
+from libs import timehelper
+from libs.timehelper import TimeShifter
 
 
 monitor = InputDeviceMonitor()
 performance_monitor = HardwarePerformanceMonitor()
 monitor.start_listener()
-current = TimeHelper.current()
-finish = TimeHelper.shift_minutes(current, 3)
-time_helper = TimeHelper(start=current, shift_step_min=1)
+current = timehelper.current()
+finish = timehelper.shift_minutes(current, 3)
+time_shifter = TimeShifter(start=current, shift_step_min=1)
 
-print("開始時刻: ", TimeHelper.format(current, "long"))
-print("終了予定: ", TimeHelper.format(finish, "long"))
+print("開始時刻: ", timehelper.format(current, "long"))
+print("終了予定: ", timehelper.format(finish, "long"))
 
 # Finish if current == finish
-while TimeHelper.is_faster_than(finish, TimeHelper.current()):
-    next_shift = time_helper.next_shift()
-    print("次の時間まで監視, 入力がなければ非稼働と判定", TimeHelper.format(next_shift, "long"))
+while timehelper.is_faster_than(finish, timehelper.current()):
+    next_shift = time_shifter.next_shift()
+    print("次の時間まで監視, 入力がなければ非稼働と判定", timehelper.format(next_shift, "long"))
 
-    while TimeHelper.is_faster_than(next_shift, TimeHelper.current()):
+    while timehelper.is_faster_than(next_shift, timehelper.current()):
         # パフォーマンスモニターの値を更新
         performance_monitor.add_current_cpu_usage_to_cpu_usages()
         performance_monitor.add_current_memory_usage_to_memory_usages()
 
-    print("1セクションの監視終了: ", TimeHelper.format(next_shift, "long"))
+    print("1セクションの監視終了: ", timehelper.format(next_shift, "long"))
     print(f"カウント クリック回数:{monitor.click_count} キー入力回数: {monitor.keystroke_count} マウス移動回数: {monitor.mouse_movement_count}")
 
     judge = "入力有" if monitor.total_input_count else "入力無"
@@ -34,5 +35,5 @@ while TimeHelper.is_faster_than(finish, TimeHelper.current()):
     performance_monitor.reset()
 
 monitor.stop_listener()
-print("終了: ", TimeHelper.format(finish, "long"))
+print("終了: ", timehelper.format(finish, "long"))
 print("finish")
