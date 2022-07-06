@@ -139,12 +139,13 @@ def is_faster_than(expected_to_be_fast: Arrow, expected_to_be_late: Arrow) -> bo
 
 
 def current() -> Arrow:
-    """Return a current time. (local time zone)
+    """Return an arrow object of current time.
+    Note: Return a converted time to local time zone.
 
     Returns
     -------
     Arrow
-        Current time.
+        Arrow object of current time.
     """
     return arrow.utcnow().to(LOCAL)
 
