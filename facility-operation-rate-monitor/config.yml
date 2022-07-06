@@ -1,9 +1,9 @@
 # 監視間隔(分で指定)
 monitor_interval_minutes: 5
 # ログフォルダ名
-log_folder: 設備稼働率_ログ
+log_folder: "./test/fixtures/duplication_exist"
 # 設備名
-facility_name: 'Facility_A'
+facility_name: 'facility_A'
 # CSVの定義
 csv_columns:
   data: 日付
@@ -11,5 +11,5 @@ csv_columns:
   existence_of_input: 入力有無
   cpu_usage: CPU負荷[%]
   # モニタリング対象のプロセス
-  monitored_process:
+  # monitored_process:
 
