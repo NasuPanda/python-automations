@@ -197,18 +197,32 @@ def log_file_path(log_folder: str, log_filename: str) -> str:
     return f"{log_folder_absolute_path}/{log_filename}"
 
 
-def is_nested_dict(dictionary: dict):
-    for value in dictionary.values():
-        if isinstance(value, dict):
-            return True
-    return False
+def load_yaml(yaml_path: str) -> dict:
+    """Load yaml data as a dictionary.
 
+    Parameters
+    ----------
+    yaml_path : str
+        YAML file path.
 
-def load_yaml(yaml_path: str):
+    Returns
+    -------
+    dict
+        Loaded data.
+    """
     with open(yaml_path, mode='r+', encoding="utf-8") as stream:
         return yaml.load(stream)
 
 
-def update_yaml(yaml_path: str, write_data: dict):
+def update_yaml(yaml_path: str, writing_data: dict):
+    """Write data to yaml.
+
+    Parameters
+    ----------
+    yaml_path : str
+        YAML file path.
+    write_data : dict
+        writing data.
+    """
     with open(yaml_path, 'w') as stream:
-        yaml.dump(write_data, stream=stream)
+        yaml.dump(writing_data, stream=stream)
