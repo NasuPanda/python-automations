@@ -12,3 +12,15 @@ class InvalidFormatError(TimeHelperError):
     """When time helper receives an invalid format.
     """
     pass
+
+
+class ConfigError(Exception):
+    """Base exception of config.
+    """
+    pass
+
+
+class NumberNotFoundError(ConfigError):
+    """When number is not found.
+    """
+    pass
