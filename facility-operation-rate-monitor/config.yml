@@ -13,5 +13,11 @@ csv_columns:
 # TODO 後から設定できるようにする
 # TODO ログCSVに列数が追加されると面倒なのでCPUのデータも欲しい場合別でファイルを作成する
 monitored_processes:
+  names:
+    - Taskmgr.exe
+    - QaseeClient.exe
+  cpu_usage_thresholds:
+    - 3.0
+    - 0.1
 
 
