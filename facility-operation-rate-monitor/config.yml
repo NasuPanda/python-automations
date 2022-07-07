@@ -12,6 +12,6 @@ csv_columns:
 # モニタリング対象のプロセス
 # TODO 後から設定できるようにする
 # TODO ログCSVに列数が追加されると面倒なのでCPUのデータも欲しい場合別でファイルを作成する
-monitored_process:
+monitored_processes:
 
 
