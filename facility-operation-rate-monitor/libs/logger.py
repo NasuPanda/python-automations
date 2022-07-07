@@ -11,14 +11,14 @@ class Log():
     def __init__(self) -> None:
         self.date_column: str = self.__data_column()
         self.time_column: str = self.__time_column()
-        self.existence_of_input_column: int = self.__existence_of_input_column()
+        self.facility_operation_status_column: int = self.__facility_operation_status_column()
 
     @property
     def data_row_as_dict(self) -> dict[str, str | int]:
         return {
             config.CSV_COLUMNS["date"]: self.date_column,
             config.CSV_COLUMNS["time"]: self.time_column,
-            config.CSV_COLUMNS["existence_of_input"]: self.existence_of_input_column,
+            config.CSV_COLUMNS["facility_operation_status"]: self.facility_operation_status_column,
         }
 
     def __data_column(self) -> str:
@@ -27,7 +27,7 @@ class Log():
     def __time_column(self) -> str:
         return timehelper.format(timehelper.current(), "short_time")
 
-    def __existence_of_input_column(self, *flags: bool) -> int:
+    def __facility_operation_status_column(self, *flags: bool) -> int:
         # TODO キーマウス等の入力を受け取り判定する
         # TODO プロセスの稼働状況を受け取り判定する
         return 0

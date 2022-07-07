@@ -1,14 +1,14 @@
 # 監視間隔(分で指定)
 monitor_interval_minutes: 5
 # ログフォルダ名
-log_folder: "./test/fixtures/duplication_exist"
+log_folder: "./logs"
 # 設備名
 facility_name: 'facility_A'
 # CSVの定義
 csv_columns:
   date: 日付
   time: 時刻
-  existence_of_input: 入力有無
+  facility_operation_status: 稼働状況
 # モニタリング対象のプロセス
 # TODO 後から設定できるようにする
 # TODO ログCSVに列数が追加されると面倒なのでCPUのデータも欲しい場合別でファイルを作成する
