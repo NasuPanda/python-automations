@@ -218,7 +218,6 @@ class ProcessesMonitor():
         """
         # If pid is changed, update Process instance.
         if process_instance and process_instance.pid != current_process.pid:
-            print("pid is changed, so update.")
             # Update has_process_been_executed before update instance.
             self.update_has_process_been_executed_by_a_process(process_instance.name)
 
@@ -256,7 +255,6 @@ class ProcessesMonitor():
         - If process doesn't exist, do noting.
         """
         if self.has_process_been_executed:
-            print("Process has been executed. Return here.")
             return
 
         for process_name in self.monitored_process_names:
@@ -264,20 +262,15 @@ class ProcessesMonitor():
 
             # If process exist in current process list.
             if current_process:
-                print("Process exists: ", process_name)
                 # If has a Process instance, update process instance if needed, and update max cpu usage.
                 if process_instance := self.__process_instance(process_name):
-                    print("Instance exists, so update instance if needed")
                     updated_process_instance = self.__update_process_instance_if_needed(process_instance, current_process)
                     updated_process_instance.update_max_cpu_usage_if_needed()
                 # If doesn't have a Process instance, create instance and update max cpu usage.
                 else:
-                    print("Instance doesn't exist, so create instance")
                     new_process_instance = self.__create_and_set_process_instance(process_name, current_process)
                     new_process_instance.update_max_cpu_usage_if_needed()
             # If process doesn't exist current process list, do nothing.
-            else:
-                print("Process doesn't exist", process_name)
 
         # Update self.has_process_been_executed with updated Process instance.
         self.update_has_process_been_executed_by_all_processes()
@@ -301,7 +294,6 @@ class ProcessesMonitor():
             return
 
         if process.max_cpu_usage >= threshold:
-            print("Over threshold", process_name, process.max_cpu_usage)
             self.has_process_been_executed = True
 
     def update_has_process_been_executed_by_all_processes(self):
