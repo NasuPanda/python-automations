@@ -245,6 +245,14 @@ class ProcessesMonitor():
         self.__set_process_instance(process_name, new_process_instance)
         return new_process_instance
 
+    def __init_monitored_process(self):
+        """Initialize or reset self.monitored_process
+        """
+        d = {}
+        for key in self.monitored_process_names:
+            d[key] = None
+        self.monitored_processes = d
+
     def update_process_instance_and_has_process_been_executed(self):
         """Update process instance and has_process_been_executed if needed.
 
@@ -279,6 +287,7 @@ class ProcessesMonitor():
         """Reset has_process_been_executed.
         """
         self.has_process_been_executed = False
+        self.__init_monitored_process()
 
     def update_has_process_been_executed_by_a_process(self, process_name: str):
         """Update has_process_been_executed by a process.
