@@ -34,8 +34,8 @@ FORMATS = {
     "default": "YYMMDD",
     "short": "YYMMDD",
     "long": "YYYY-MM-DD HH:mm:ss ZZ",
-    "month_and_day": "MM/DD",
-    "hour_and_min": "HH:mm"
+    "short_date": "MM/DD",
+    "short_time": "HH:mm",
 }
 LOCAL = "Asia/Tokyo"
 
