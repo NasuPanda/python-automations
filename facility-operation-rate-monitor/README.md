@@ -119,6 +119,26 @@ psutil.cpu_percent(interval=None) # => 2.9
 psutil.cpu_percent(interval=1, percpu=True) # => [2.0, 1.0]
 ```
 
+NOTE: 監視間隔に注意
+
+メソッド呼び出し感覚が短すぎると必ず0.0を返す。
+必ずCPU関連のメソッド単体で呼び出すか、呼び出し前に待つようにする。
+
+```py
+print(proc.cpu_usage(1))
+print(proc.name())
+
+# => 3.1
+# => Taskmgr.exe
+
+print(proc.name())
+print(proc.cpu_usage(1))
+
+# => Taskmgr.exe
+# => 0.0
+```
+
+
 #### `Process`
 
 https://psutil.readthedocs.io/en/latest/#process-class
