@@ -27,7 +27,7 @@ class Log():
     def __time_column(self) -> str:
         return timehelper.format(timehelper.current(), "short_time")
 
-    def __existence_of_input_column(self) -> int:
+    def __existence_of_input_column(self, *flags: bool) -> int:
         # TODO キーマウス等の入力を受け取り判定する
         # TODO プロセスの稼働状況を受け取り判定する
         return 0
@@ -41,6 +41,7 @@ class Logger():
     def write_log(self):
         self.__create_log_file_if_needed()
         log = self.__new_log()
+
         with open(self.log_filepath, "a", encoding="utf8", newline="") as f:
             writer = csv.DictWriter(f, self.headers)
             writer.writerow(log.data_row_as_dict)
@@ -49,7 +50,7 @@ class Logger():
         return Log()
 
     def __create_log_file_if_needed(self):
-        if self.__exist_log_file:
+        if self.__exist_log_file():
             return
         with open(self.log_filepath, "w", encoding="utf8", newline="") as f:
             writer = csv.DictWriter(f, self.headers)
