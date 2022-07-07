@@ -26,7 +26,7 @@ while timehelper.is_faster_than(finish, timehelper.current()):
     print("1セクションの監視終了: ", timehelper.format(next_shift, "long"))
     print(f"カウント クリック回数:{monitor.click_count} キー入力回数: {monitor.keystroke_count} マウス移動回数: {monitor.mouse_movement_count}")
 
-    judge = "入力有" if monitor.total_input_count else "入力無"
+    judge = "入力有" if monitor.existence_of_input else "入力無"
     print(f"判定: {judge}")
     print("CPU負荷の平均", performance_monitor.cpu_usage_average)
     print("メモリ使用量の平均", performance_monitor.memory_usage_average)

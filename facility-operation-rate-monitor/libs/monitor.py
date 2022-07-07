@@ -6,9 +6,12 @@ from pynput.keyboard import Listener as KeyboardListener
 class InputDeviceMonitor():
     """Monitor input device.
 
-    NOTE:
-        This class dependent on pynput.
-        reference: https://pynput.readthedocs.io/en/latest
+    NOTE
+    - This class dependent on pynput.
+        - reference: https://pynput.readthedocs.io/en/latest
+
+    - All callbacks stop the input device listener when called.
+        - It's enough for the listener to be able to monitor only the existence of input.
 
     Instance variables
     ----------
@@ -41,15 +44,17 @@ class InputDeviceMonitor():
         )
 
     @property
-    def total_input_count(self) -> int:
-        """Returns total number of device input.
+    def existence_of_input(self) -> bool:
+        """Returns Existence of input.
 
         Returns
         -------
         int
-            total number of device input.
+            Existence of input.
         """
-        return self.keystroke_count + self.click_count + self.mouse_movement_count
+        return bool(
+            self.keystroke_count + self.click_count + self.mouse_movement_count
+        )
 
     def start_listener(self):
         """Activate input event listener.
@@ -74,6 +79,7 @@ class InputDeviceMonitor():
         """Callback on press key. Increments keystroke count.
         """
         self.keystroke_count += 1
+        self.stop_listener()
 
     def on_release(self, key):
         """Callback on release key. Do nothing.
@@ -84,17 +90,20 @@ class InputDeviceMonitor():
         """Callback on move mouse. Increments mouse movement count.
         """
         self.mouse_movement_count += 1
+        self.stop_listener()
 
     def on_click(self, x, y, button, pressed):
         """Callback on click mouse. If pressed, increments click count.
         """
         if pressed:
             self.click_count += 1
+            self.stop_listener()
 
     def on_scroll(self, x, y, dx, dy):
         """Callback on scroll mouse. Increments mouse movement count.
         """
         self.mouse_movement_count += 1
+        self.stop_listener()
 
 
 class HardwarePerformanceMonitor():
