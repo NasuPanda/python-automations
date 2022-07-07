@@ -10,12 +10,21 @@ csv_columns:
   time: 時刻
   facility_operation_status: 稼働状況
 # モニタリング対象のプロセス
-# TODO 後から設定できるようにする
-# TODO ログCSVに列数が追加されると面倒なのでCPUのデータも欲しい場合別でファイルを作成する
+# - プロセス名はタスクマネージャ上でプロセスの「プロパティ」を選択することで見ることが出来る
+# - CPU負荷のしきい値はプロセス名と対応する位置に記述する
+# 例
+  # names:
+  #   - Taskmgr.exe
+  #   - QaseeClient.exe
+  # cpu_usage_thresholds:
+  #   - 3.0
+  #   - 0.1
 monitored_processes:
+  # 監視したいプロセス名
   names:
     - Taskmgr.exe
     - QaseeClient.exe
+  # 稼働判定とするCPU負荷のしきい値
   cpu_usage_thresholds:
     - 3.0
     - 0.1
