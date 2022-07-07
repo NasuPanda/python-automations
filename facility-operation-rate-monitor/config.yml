@@ -1,5 +1,7 @@
 # 監視間隔(分で指定)
 monitor_interval_minutes: 5
+# 停止時間 低: 負荷高, 信憑性高 / 高: 負荷低, 信憑性低
+sleep_time: 1
 # ログフォルダ名
 log_folder: "./logs"
 # 設備名
@@ -9,6 +11,7 @@ csv_columns:
   date: 日付
   time: 時刻
   facility_operation_status: 稼働状況
+
 # モニタリング対象のプロセス
 # - プロセス名はタスクマネージャ上でプロセスの「プロパティ」を選択することで見ることが出来る
 # - CPU負荷のしきい値はプロセス名と対応する位置に記述する
@@ -27,6 +30,6 @@ monitored_processes:
   # 稼働判定とするCPU負荷のしきい値
   cpu_usage_thresholds:
     - 3.0
-    - 0.1
+    - 0.5
 
 
