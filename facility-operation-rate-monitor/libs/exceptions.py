@@ -2,6 +2,12 @@
 """
 
 
+class ReadOnlyError(ValueError):
+    """When attempting to change the value of a read-only property.
+    """
+    pass
+
+
 class TimeHelperError(Exception):
     """Base exception of time helper.
     """
@@ -22,5 +28,29 @@ class ConfigError(Exception):
 
 class NumberNotFoundError(ConfigError):
     """When number is not found.
+    """
+    pass
+
+
+class ArrayLengthNotMatchError(ConfigError):
+    """When array length not matched.
+    """
+    pass
+
+
+class MonitorError(Exception):
+    """Base exception of monitor module.
+    """
+    pass
+
+
+class ProcessTooManyError(MonitorError):
+    """When process is too many.
+    """
+    pass
+
+
+class InitializerError(MonitorError):
+    """When failure to initialize an instance.
     """
     pass
