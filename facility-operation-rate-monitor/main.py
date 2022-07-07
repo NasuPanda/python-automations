@@ -1,10 +1,11 @@
-from libs.monitor import InputDeviceMonitor, HardwarePerformanceMonitor
+from libs.monitors.device import InputDeviceMonitor
+from libs.monitors.system import SystemPerformanceMonitor
 from libs import timehelper
 from libs.timehelper import TimeShifter
 
 
 monitor = InputDeviceMonitor()
-performance_monitor = HardwarePerformanceMonitor()
+performance_monitor = SystemPerformanceMonitor()
 monitor.start_listener()
 current = timehelper.current()
 finish = timehelper.shift_minutes(current, 3)

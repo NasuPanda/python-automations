@@ -1,4 +1,4 @@
-from libs.monitor import InputDeviceMonitor
+from libs.monitors.device import InputDeviceMonitor
 from libs import timehelper
 from libs.timehelper import TimeShifter
 
