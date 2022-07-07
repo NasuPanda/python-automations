@@ -95,7 +95,7 @@ class Logger():
         self.__create_log_file_if_needed()
         log = self.__create_log_row(*flags)
 
-        with open(self.log_filepath, "a", encoding="utf8", newline="") as f:
+        with open(self.log_filepath, "a", encoding="utf_8_sig", newline="") as f:
             writer = csv.DictWriter(f, self.headers)
             writer.writerow(log.data_row_as_dict)
 
@@ -104,7 +104,7 @@ class Logger():
         """
         if self.__exist_log_file():
             return
-        with open(self.log_filepath, "w", encoding="utf8", newline="") as f:
+        with open(self.log_filepath, "w", encoding="utf_8_sig", newline="") as f:
             writer = csv.DictWriter(f, self.headers)
             writer.writeheader()
 

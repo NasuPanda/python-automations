@@ -149,3 +149,14 @@ https://psutil.readthedocs.io/en/latest/#process-class
 #### `memory_info`
 
 https://psutil.readthedocs.io/en/latest/#psutil.Process.memory_info
+
+## CSV書き込み
+
+`utf8`だけだと文字化けする。
+`utf_8_sig`を指定する。
+
+```py
+with open(self.log_filepath, "a", encoding="utf_8_sig", newline="") as f:
+    writer = csv.DictWriter(f, self.headers)
+    writer.writerow(log.data_row_as_dict)
+```
