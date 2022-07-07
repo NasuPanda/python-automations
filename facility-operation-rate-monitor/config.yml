@@ -10,6 +10,8 @@ csv_columns:
   time: 時刻
   existence_of_input: 入力有無
   cpu_usage: CPU負荷[%]
-  # モニタリング対象のプロセス
-  # monitored_process:
+# モニタリング対象のプロセス
+# TODO 後から設定できるようにする
+monitored_process:
+
 
