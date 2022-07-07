@@ -25,10 +25,12 @@ Example usage
             # Do something
 """
 
+import time
 import arrow
 from arrow.arrow import Arrow
-from libs.exceptions import InvalidFormatError
 
+from libs.exceptions import InvalidFormatError
+from config import config
 
 FORMATS = {
     "default": "YYMMDD",
@@ -38,6 +40,12 @@ FORMATS = {
     "short_time": "HH:mm",
 }
 LOCAL = "Asia/Tokyo"
+
+
+def sleep():
+    """Delay execution for configured time.
+    """
+    time.sleep(config.SLEEP_TIME)
 
 
 def shift_minutes(current: Arrow, min: int) -> Arrow:

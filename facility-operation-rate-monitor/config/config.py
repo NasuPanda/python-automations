@@ -7,6 +7,7 @@ CONFIG_YAML_PATH: str = "./config.yml"
 config_data = helper.load_yaml(CONFIG_YAML_PATH)
 
 MONITOR_INTERVAL_MINUTES: int = config_data["monitor_interval_minutes"]
+SLEEP_TIME: int = config_data["sleep_time"]
 FACILITY_NAME: str = config_data["facility_name"]
 
 MONITORED_PROCESSES: list[str] | None = config_data["monitored_processes"]["names"]
