@@ -1,3 +1,4 @@
+import csv
 from dataclasses import replace
 import re
 import pathlib
@@ -176,7 +177,7 @@ def log_file_name(attached_string: str, extension: str = ".csv") -> str:
     return f"{first_day}-{last_day}_{attached_string}{extension}"
 
 
-def log_file_path(log_folder: str, log_filename: str) -> str:
+def log_file_fullpath(log_folder: str, log_filename: str) -> str:
     """Returns the log file absolute path.
 
     Parameters
@@ -193,6 +194,36 @@ def log_file_path(log_folder: str, log_filename: str) -> str:
     """
     log_folder_absolute_path = str(pathlib.Path(log_folder).resolve())
     return f"{log_folder_absolute_path}/{log_filename}"
+
+
+def need_to_recreate_log_file(log_file_path: str, new_csv_columns: list[str]) -> bool:
+    """Returns a boolean indicating whether or not the log file needs to be recreated.
+
+    NOTE: If columns differ between existing and new logs, logs must be recreated
+
+    Parameters
+    ----------
+    log_file_path : str
+        Log file path.
+    new_csv_columns : list[str]
+        CSV columns.
+
+    Returns
+    -------
+    bool
+        Boolean of indicating whether or not the log file needs to be recreated.
+    """
+    if pathlib.Path(log_file_path).exists():
+        with open(log_file_path, "r", encoding="utf8") as f:
+            reader = csv.reader(f)
+            for row in reader:
+                # Just look at the first line and return T/F immediately.
+                if row != new_csv_columns:
+                    return True
+                else:
+                    return False
+    # If log file path doesn't exist, return F
+    return False
 
 
 def load_yaml(yaml_path: str) -> dict:
@@ -213,14 +244,14 @@ def load_yaml(yaml_path: str) -> dict:
 
 
 def update_yaml(yaml_path: str, writing_data: dict):
-    """Write data to yaml.
+    """Write a dictionary data to yaml.
 
     Parameters
     ----------
     yaml_path : str
         YAML file path.
     write_data : dict
-        writing data.
+        Writing data in dict format.
     """
     with open(yaml_path, 'w') as stream:
         yaml.dump(writing_data, stream=stream)
