@@ -32,7 +32,6 @@ class SystemPerformanceMonitor():
         self.max_memory_usage: float = 0.0
         self.memory_usages_to_get_ave: list[float] = []
 
-    @property
     def cpu_usage_average(self) -> float:
         """Return a cpu usage (%) average value.
 
@@ -45,7 +44,6 @@ class SystemPerformanceMonitor():
             sum(self.cpu_usages_to_get_ave) / len(self.cpu_usages_to_get_ave)
         )
 
-    @property
     def memory_usage_average(self) -> float:
         """Return a memory usage (%) average value.
 
