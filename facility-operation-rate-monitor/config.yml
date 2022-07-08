@@ -10,7 +10,8 @@ facility_name: 'facility_A'
 csv_columns:
   date: 日付
   time: 時刻
-  facility_operation_status: 稼働状況
+  man-hour: 実作業有無
+  machine_time: マシンタイム
 
 # モニタリング対象のプロセス
 # - プロセス名はタスクマネージャ上でプロセスの「プロパティ」を選択することで見ることが出来る

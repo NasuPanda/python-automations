@@ -43,7 +43,7 @@ class InputDeviceMonitor():
         )
 
     @property
-    def existence_of_input(self) -> bool:
+    def has_received_input(self) -> bool:
         """Returns Existence of input.
 
         Returns
