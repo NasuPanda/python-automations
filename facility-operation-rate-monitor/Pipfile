@@ -8,9 +8,6 @@ arrow = "*"
 pywin32 = "*"
 pynput = "*"
 psutil = "*"
-pysimplegui = "*"
-pandas = "*"
-pyyaml = "*"
 "ruamel.yaml" = "*"
 
 [dev-packages]
