@@ -21,7 +21,20 @@ TASK_SESSION_LOCK = 7
 TASK_SESSION_UNLOCK = 8
 
 
-def register_task(scheduler, state_change, name, command):
+def register_task(scheduler, state_change: int, name: str, command: str):
+    """Register task to windows task scheduler.
+
+    Parameters
+    ----------
+    scheduler
+        win32client TaskScheduler object.
+    state_change : int
+        State change enum.
+    name : str
+        Task name.
+    command : str
+        Executed task command path.
+    """
     folder = scheduler.GetFolder("\\")
 
     definition = scheduler.NewTask(0)
@@ -44,11 +57,25 @@ def register_task(scheduler, state_change, name, command):
     )
 
 
-def resolve_relative_path(path: str):
-    return fr"{str(pathlib.Path(path).resolve())}"
+def resolve_relative_path(relative_path: str) -> str:
+    """Relative path to absolute path.
+
+    Parameters
+    ----------
+    relative_path : str
+        Relative path.
+
+    Returns
+    -------
+    str
+        Resolved absolute path.
+    """
+    return fr"{str(pathlib.Path(relative_path).resolve())}"
 
 
 def main():
+    """Main function.
+    """
     scheduler = win32com.client.Dispatch(TASK_SCHEDULE_SERVICE)
     scheduler.Connect()
     lock_command = resolve_relative_path("./test/register_task/lock.bat")
