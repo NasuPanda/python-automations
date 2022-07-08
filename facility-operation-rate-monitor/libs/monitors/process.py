@@ -1,7 +1,7 @@
 import psutil
 
 from config import config
-from libs.exceptions import ReadOnlyError, ProcessTooManyError, InitializerError
+from utils.exceptions import ReadOnlyError, ProcessTooManyError, InitializerError
 
 
 class Process():

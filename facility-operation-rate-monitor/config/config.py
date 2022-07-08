@@ -1,5 +1,5 @@
 from config import helper
-from libs.exceptions import ArrayLengthNotMatchError
+from utils.exceptions import ArrayLengthNotMatchError
 
 
 # Load config yaml.
