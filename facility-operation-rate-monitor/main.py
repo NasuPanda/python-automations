@@ -1,4 +1,7 @@
 def record_current_process_pid():
+    """Record current process pid to temp file.
+    NOTE: For kill current process from `.bat`.
+    """
     import psutil
     from config import config
 
@@ -8,6 +11,8 @@ def record_current_process_pid():
 
 
 def main():
+    """Main function.
+    """
     from libs.logger import Logger
     from libs.monitors.device import InputDeviceMonitor
     from libs.monitors.process import ProcessesMonitor
