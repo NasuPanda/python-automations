@@ -2,8 +2,9 @@ from config import helper
 from utils.exceptions import ArrayLengthNotMatchError
 
 
+CURRENT_PID_FILE = r"./temp/current_pid"
 # Load config yaml.
-CONFIG_YAML_PATH: str = "./config.yml"
+CONFIG_YAML_PATH: str = r"./config.yml"
 config_data = helper.load_yaml(CONFIG_YAML_PATH)
 
 MONITOR_INTERVAL_MINUTES: int = config_data["monitor_interval_minutes"]
