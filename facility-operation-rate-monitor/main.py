@@ -28,12 +28,15 @@ while True:
     print("1セクションの監視終了: ", timehelper.format(next_shift, "long"))
     print(f"クリック回数:{device_monitor.click_count} キー入力回数: {device_monitor.keystroke_count} マウス移動回数: {device_monitor.mouse_movement_count}")
 
-    device_input = "入力有" if device_monitor.existence_of_input else "入力無"
+    device_input = "入力有" if device_monitor.has_received_input else "入力無"
     print(f"デバイス入力: {device_input}")
     process_status = "稼働" if process_monitor.has_process_been_executed else "非稼働"
     print(f"プロセスの稼働: {process_status}")
 
-    logger.write_log(device_monitor.existence_of_input, process_monitor.has_process_been_executed)
+    logger.write_log(
+        has_received_input=device_monitor.has_received_input,
+        has_process_been_executed=process_monitor.has_process_been_executed
+    )
     print("*" * 50)
 
     device_monitor.stop_listener()

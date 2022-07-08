@@ -6,17 +6,21 @@ from libs import timehelper
 
 
 class LogRow():
-    def __init__(self, *flags: bool) -> None:
+    def __init__(self, has_received_input: bool, has_process_been_executed: bool) -> None:
         """Initialize an instance.
 
         Parameters
         ----------
-        flags: bool
-            Flags indicating facility operation status.
+        has_received_input : bool
+            A flag indicating man-hour status.
+        has_process_been_executed : bool
+            A flag indicating machine time status.
+            If process has been executed, this flag is True.
         """
         self.date_column: str = self.__date_column()
         self.time_column: str = self.__time_column()
-        self.facility_operation_status_column: int = self.__facility_operation_status_column(*flags)
+        self.man_hour_column: int = self.__man_hour_column(has_received_input)
+        self.machine_time_column: int = self.__machine_time_column(has_process_been_executed)
 
     @property
     def data_row_as_dict(self) -> dict[str, str | int]:
@@ -30,7 +34,8 @@ class LogRow():
         return {
             config.CSV_COLUMNS["date"]: self.date_column,
             config.CSV_COLUMNS["time"]: self.time_column,
-            config.CSV_COLUMNS["facility_operation_status"]: self.facility_operation_status_column,
+            config.CSV_COLUMNS["man-hour"]: self.man_hour_column,
+            config.CSV_COLUMNS["machine_time"]: self.machine_time_column,
         }
 
     def __date_column(self) -> str:
@@ -53,23 +58,40 @@ class LogRow():
         """
         return timehelper.format(timehelper.current(), "short_time")
 
-    def __facility_operation_status_column(self, *flags: bool) -> int:
-        """Facility operation status column in csv log.
+    def __man_hour_column(self, has_received_input: bool) -> int:
+        """Man-hour status column in csv log.
 
         Parameters
         ----------
-        flags: bool
-            Flags indicating facility operation status.
+        has_received_input: bool
+            A flag indicating man-hour status.
 
         Returns
         -------
         int
-            Facility operation status column value.
+            Man-hour status column value.
             running: 1, sleeping: 0.
         """
-        if any(flags):
-            return 1
-        return 0
+        return int(has_received_input)
+
+    def __machine_time_column(self, has_process_been_executed: bool):
+        """Machine time status column in csv log.
+        NOTE: If man-hour column is 1(running status), this colum is absolutely 0.
+
+        Parameters
+        ----------
+        has_process_been_executed : bool
+            A flag indicating machine time status.
+
+        Returns
+        -------
+        int
+            Machine time status column value.
+            running: 1, sleeping: 0.
+        """
+        if self.man_hour_column:
+            return 0
+        return int(has_process_been_executed)
 
 
 class Logger():
@@ -84,16 +106,19 @@ class Logger():
         self.log_filepath: str = log_filepath
         self.headers: list[str] = list(config.CSV_COLUMNS.values())
 
-    def write_log(self, *flags: bool):
+    def write_log(self, has_received_input: bool, has_process_been_executed: bool):
         """Write log to log file.
 
         Parameters
         ----------
-        flags: bool
-            Flags indicating facility operation status.
+        has_received_input : bool
+            A flag indicating man-hour status.
+        has_process_been_executed : bool
+            A flag indicating machine time status.
+            If process has been executed, this flag is True.
         """
         self.__create_log_file_if_needed()
-        log = self.__create_log_row(*flags)
+        log = self.__create_log_row(has_received_input, has_process_been_executed)
 
         with open(self.log_filepath, "a", encoding="utf_8_sig", newline="") as f:
             writer = csv.DictWriter(f, self.headers)
@@ -119,17 +144,20 @@ class Logger():
         return pathlib.Path(self.log_filepath).exists()
 
     @classmethod
-    def __create_log_row(cls, *flags: bool) -> LogRow:
+    def __create_log_row(cls, has_received_input: bool, has_process_been_executed: bool) -> LogRow:
         """Create log row.
 
         Parameters
         ----------
-        flags: bool
-            Flags indicating facility operation status.
+        has_received_input : bool
+            A flag indicating man-hour status.
+        has_process_been_executed : bool
+            A flag indicating machine time status.
+            If process has been executed, this flag is True.
 
         Returns
         -------
         LogRow
             Created LogRow instance.
         """
-        return LogRow(*flags)
+        return LogRow(has_received_input, has_process_been_executed)
