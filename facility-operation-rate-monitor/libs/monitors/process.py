@@ -270,8 +270,10 @@ class ProcessesMonitor():
 
             # If process exist in current process list.
             if current_process:
+                # Python3.8↑ can use walrus operator. Like this: if process_instance := ...
                 # If has a Process instance, update process instance if needed, and update max cpu usage.
-                if process_instance := self.__process_instance(process_name):
+                process_instance = self.__process_instance(process_name)
+                if process_instance:
                     updated_process_instance = self.__update_process_instance_if_needed(process_instance, current_process)
                     updated_process_instance.update_max_cpu_usage_if_needed()
                 # If doesn't have a Process instance, create instance and update max cpu usage.
