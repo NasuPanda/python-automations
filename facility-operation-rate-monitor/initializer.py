@@ -8,6 +8,7 @@ import pathlib
 import win32com.client
 
 
+# Enumerations reference: https://docs.microsoft.com/ja-jp/windows/win32/api/taskschd/#enumerations
 TASK_SCHEDULE_SERVICE = "Schedule.Service"
 TASK_TRIGGER_SESSION_STATE_CHANGE = 11
 TASK_ACTION_EXEC = 0

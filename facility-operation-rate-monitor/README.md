@@ -182,6 +182,90 @@ with open(self.log_filepath, "a", encoding="utf_8_sig", newline="") as f:
 
 ## 自動起動
 
-- [Python の win32gui を使ってアクティブウインドウの記録を取るスクリプトを作ってみた - Qiita](https://qiita.com/aikige/items/d7bdf26e2cb376268ed0)
 - [スクリプトを使ってWindowsのロック・アンロック時に実行するタスクを登録する - Qiita](https://qiita.com/aikige/items/140c51ec87a1b67996b6)
+- [homeBinWin/setup at master · aikige/homeBinWin](https://github.com/aikige/homeBinWin/tree/master/setup)
 - https://stackoverflow.com/questions/26160900/is-there-a-way-to-add-a-task-to-the-windows-task-scheduler-via-python-3
+
+### タスクスケジューラを扱う
+
+トリガー等の指定には定数を使う。~~わかりにくい~~
+
+https://docs.microsoft.com/ja-jp/windows/win32/api/taskschd/#enumerations
+
+```py
+import win32com.client
+
+
+TASK_SCHEDULE_SERVICE = "Schedule.Service"
+TASK_TRIGGER_SESSION_STATE_CHANGE = 11
+TASK_ACTION_EXEC = 0
+TASK_CREATE_OR_UPDATE = 6
+TASK_LOGON_NONE = 0
+NO_USER = ""
+NO_PASSWORD = ""
+
+TASK_SESSION_LOCK = 7
+TASK_SESSION_UNLOCK = 8
+
+scheduler = win32com.client.Dispatch(TASK_SCHEDULE_SERVICE)
+scheduler.Connect()
+
+def register_task(scheduler, state_change, name, command):
+    folder = scheduler.GetFolder("\\")
+
+    definition = scheduler.NewTask(0)
+
+    trigger = definition.Triggers.Create(TASK_TRIGGER_SESSION_STATE_CHANGE)
+    trigger.StateChange = state_change
+
+    action = definition.Actions.Create(TASK_ACTION_EXEC)
+    action.Path = command
+    # 引数をセットしたい場合
+    # action.Arguments = arguments
+
+    folder.RegisterTaskDefinition(
+        name,
+        definition,
+        TASK_CREATE_OR_UPDATE,
+        NO_USER,
+        NO_PASSWORD,
+        TASK_LOGON_NONE
+    )
+
+register_task(
+    scheduler=scheduler,
+    state_change=TASK_SESSION_LOCK,
+    name="When Lock",
+    command=lock_command
+)
+```
+
+例えば`python foo.py`を実行したいなら、`command`(`action.Path`)に`python.exe`のパスを指定し、引数`arguments`(`action.Arguments`)に`foo.py`のパスを指定する。
+
+### win32clientのデバッグ
+
+win32clientは以下のような例外しか出ず、そのままだとよくわからない。
+
+```py
+(-2147352567, '例外が発生しました。', (0, None, None, None, 0, -2147024891), None)
+```
+
+`win32api.FormatMessage`を使うとエラーメッセージを確認出来る。
+
+```py
+import win32api
+
+win32api.FormatMessage(-2147024891)
+# => 'アクセスが拒否されました。\r\n'
+```
+
+### バッチファイルのデバッグ
+
+Windowsバッチファイルで何らかのスクリプトを実行した場合、実行終了時にすぐにウィンドウが閉じてしまい、結果がよくわからない。
+
+実行後に止めたい場合は`pause`を使う。
+
+```bat
+pause
+```
+
