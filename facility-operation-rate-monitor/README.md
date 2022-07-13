@@ -180,7 +180,7 @@ with open(self.log_filepath, "a", encoding="utf_8_sig", newline="") as f:
     writer.writerow(log.data_row_as_dict)
 ```
 
-## 自動起動
+## 自動起動 ( Windows前提 )
 
 - [スクリプトを使ってWindowsのロック・アンロック時に実行するタスクを登録する - Qiita](https://qiita.com/aikige/items/140c51ec87a1b67996b6)
 - [homeBinWin/setup at master · aikige/homeBinWin](https://github.com/aikige/homeBinWin/tree/master/setup)
@@ -269,3 +269,11 @@ Windowsバッチファイルで何らかのスクリプトを実行した場合�
 pause
 ```
 
+## `.vbs`によりバッチファイルを非表示に
+
+以下のようなスクリプトを使うことでバッチファイルを非表示にすることが出来る。
+
+```vb
+Set ws = CreateObject("Wscript.Shell")
+ws.run "cmd /c exec.bat", vbhide
+```
