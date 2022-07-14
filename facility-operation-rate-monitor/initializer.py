@@ -34,6 +34,9 @@ def register_task(scheduler, state_change: int, name: str, command: str, priorit
         Task name.
     command : str
         Executed task command path.
+    priority: int
+        Task priority, by default 7.
+        see also: https://docs.microsoft.com/ja-jp/windows/win32/taskschd/tasksettings-priority
     """
     folder = scheduler.GetFolder("\\")
 
@@ -43,7 +46,7 @@ def register_task(scheduler, state_change: int, name: str, command: str, priorit
     trigger = definition.Triggers.Create(TASK_TRIGGER_SESSION_STATE_CHANGE)
     trigger.StateChange = state_change
 
-    # Set priority
+    # Set priority: https://docs.microsoft.com/ja-jp/windows/win32/taskschd/tasksettings-priority
     definition.Settings.Priority = priority
 
     # Set executed action

@@ -190,7 +190,9 @@ with open(self.log_filepath, "a", encoding="utf_8_sig", newline="") as f:
 
 トリガー等の指定には定数を使う。~~わかりにくい~~
 
-https://docs.microsoft.com/ja-jp/windows/win32/api/taskschd/#enumerations
+- 例: https://docs.microsoft.com/ja-jp/windows/win32/taskschd/daily-trigger-example--scripting-
+- 定数について: https://docs.microsoft.com/ja-jp/windows/win32/api/taskschd/#enumerations
+- `scheduler.NewTask`の返り値: https://docs.microsoft.com/ja-jp/windows/win32/taskschd/taskfolder-registertaskdefinition
 
 ```py
 import win32com.client
