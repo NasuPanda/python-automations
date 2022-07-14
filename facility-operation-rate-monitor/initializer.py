@@ -21,7 +21,7 @@ TASK_SESSION_LOCK = 7
 TASK_SESSION_UNLOCK = 8
 
 
-def register_task(scheduler, state_change: int, name: str, command: str):
+def register_task(scheduler, state_change: int, name: str, command: str, priority: int = 7):
     """Register task to windows task scheduler.
 
     Parameters
@@ -39,9 +39,14 @@ def register_task(scheduler, state_change: int, name: str, command: str):
 
     definition = scheduler.NewTask(0)
 
+    # Set trigger
     trigger = definition.Triggers.Create(TASK_TRIGGER_SESSION_STATE_CHANGE)
     trigger.StateChange = state_change
 
+    # Set priority
+    definition.Settings.Priority = priority
+
+    # Set executed action
     action = definition.Actions.Create(TASK_ACTION_EXEC)
     action.Path = command
     # If you need arguments
