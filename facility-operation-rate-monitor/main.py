@@ -1,6 +1,6 @@
 def record_current_process_pid():
     """Record current process pid to temp file.
-    NOTE: For kill current process from `.bat`.
+    NOTE: For kill current process by `.bat`.
     """
     import psutil
     from config import config
@@ -19,7 +19,7 @@ def main():
     from libs import timehelper
     from libs.timehelper import TimeShifter
 
-    # Record current process pid for kill current process from bat.
+    # Record current process pid for kill current process by bat.
     record_current_process_pid()
 
     process_monitor = ProcessesMonitor()
