@@ -13,7 +13,7 @@ def record_current_process_pid():
 def main():
     """Main function.
     """
-    from libs.logger import Logger
+    from libs.log.logger import Logger
     from libs.monitors.device import InputDeviceMonitor
     from libs.monitors.process import ProcessesMonitor
     from libs import timehelper
