@@ -12,7 +12,7 @@ class VerticalExcel():
         self.data_groups: list[ColumnGroup] = []
         self.columns: list[Column] = []
 
-    def find_group_by(self, name: str | None = None, index: int | None = None):
+    def find_group_by(self, name: str | None = None, index: int | None = None) -> ColumnGroup | None:
         try:
             if name is not None:
                 group = [group for group in self.data_groups if group.name == name][0]
@@ -20,10 +20,8 @@ class VerticalExcel():
                 group = self.data_groups[index]
             else:
                 raise GroupNotFoundError
-        except (IndexError, GroupNotFoundError) as e:
-            print(e)
-            print("指定されたグループが存在しません")
-            raise GroupNotFoundError(f"invalid arguments name:{name}, index:{index}")
+        except (IndexError, GroupNotFoundError):
+            return
 
         return group
 
@@ -44,6 +42,8 @@ class VerticalExcel():
         group_index: int | None = None
     ):
         group = self.find_group_by(name=group_name, index=group_index)
+        if group is None:
+            raise GroupNotFoundError(f"Group not found: {group}")
         group.add_column(column_title)
 
     def add_cell_to_column_belongs_to_group(
@@ -55,6 +55,8 @@ class VerticalExcel():
         column_index: int | None = None
     ):
         group = self.find_group_by(name=group_name, index=group_index)
+        if group is None:
+            raise GroupNotFoundError(f"Group not found: {group}")
         column = group.find_column_by(title=column_title, index=column_index)
         column.add_cell(value)
 
