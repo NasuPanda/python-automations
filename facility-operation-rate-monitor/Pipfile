@@ -11,6 +11,7 @@ psutil = "*"
 "ruamel.yaml" = "*"
 pandas = "*"
 openpyxl = "*"
+pysimplegui = "*"
 
 [dev-packages]
 flake8 = "*"
