@@ -11,39 +11,38 @@ class LogAnalyzer():
     MAN_HOUR_COLUMN = "実作業有無"
     MACHINE_TIME_COLUMN = "マシンタイム"
 
-    def __init__(self, df: pd.DataFrame) -> None:
-        """Initialize an instance.
+    @classmethod
+    def perform(cls, df: pd.DataFrame) -> tuple[int, int]:
+        """Calculate time delta whole df, and reflects time delta to instance variables.
 
         Parameters
         ----------
         df : pd.DataFrame
             pd.DataFrame instance.
 
-        See also
-        ----------
-        Gets df from log.reader.LogReader
+        Returns
+        -------
+        tuple[int, int]
+            man_hour_min, machine_time_min
         """
-        self.df = df
-        self.df_length = len(df)
-        self.man_hour_min: int = 0
-        self.machine_time_min: int = 0
+        df_length = len(df)
+        man_hour_min = machine_time_min = 0
 
-    def perform(self) -> None:
-        """Calculate time delta whole df, and reflects time delta to instance variables.
-        """
         # i, j = (0, 1), (1, 2), (2, 3), ...
-        for i, j in zip(range(self.df_length), range(1, self.df_length)):
+        for i, j in zip(range(df_length), range(1, df_length)):
             # Calculate time delta (min)
-            from_time_series, to_time_series = self.df.iloc[i], self.df.iloc[j]
+            from_time_series, to_time_series = df.iloc[i], df.iloc[j]
             time_delta_min = timehelper.calculate_time_delta_as_min(
-                self.__time_str_to_dict(from_time_series[self.TIME_COLUMN]),
-                self.__time_str_to_dict(to_time_series[self.TIME_COLUMN])
+                cls.__time_str_to_dict(from_time_series[cls.TIME_COLUMN]),
+                cls.__time_str_to_dict(to_time_series[cls.TIME_COLUMN])
             )
             # Reflects time_delta_min to instance variables according to flags.
-            if to_time_series[self.MAN_HOUR_COLUMN]:
-                self.man_hour_min += time_delta_min
-            elif to_time_series[self.machine_time_min]:
-                self.machine_time_min += time_delta_min
+            if to_time_series[cls.MAN_HOUR_COLUMN]:
+                man_hour_min += time_delta_min
+            elif to_time_series[cls.MACHINE_TIME_COLUMN]:
+                machine_time_min += time_delta_min
+
+        return man_hour_min, machine_time_min
 
     @classmethod
     def __time_str_to_dict(cls, time: str) -> dict[str, int]:
