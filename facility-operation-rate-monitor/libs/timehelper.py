@@ -10,6 +10,8 @@ FORMATS: dict[str, str]
     The formats used for formatting arrow object.
 LOCAL: "Asia/Tokyo"
     The timezone info used for convert arrow object.
+SAMPLE: arrow.arrow.Arrow
+    Arrow instance used to calculate minutes and seconds.
 
 Example usage
 ----------
@@ -30,7 +32,6 @@ import arrow
 from arrow.arrow import Arrow
 
 from utils.exceptions import InvalidFormatError
-from config import config
 
 FORMATS = {
     "default": "YYMMDD",
@@ -41,12 +42,18 @@ FORMATS = {
     "short_time": "HH:mm",
 }
 LOCAL = "Asia/Tokyo"
+SAMPLE = arrow.get(2000, 1, 1)
 
 
-def sleep():
+def sleep(sleep_time_sec: int):
     """Delay execution for configured time.
+
+    Parameters
+    ----------
+    sleep_time_sec : int
+        sleep time (second).
     """
-    time.sleep(config.SLEEP_TIME)
+    time.sleep(sleep_time_sec)
 
 
 def shift_minutes(current: Arrow, min: int) -> Arrow:
@@ -85,6 +92,45 @@ def shift_hours(current: Arrow, hour: int) -> Arrow:
         Shifted time.
     """
     return current.shift(hours=hour)
+
+
+def calculate_time_delta_as_sec(from_time: dict[str, int], to_time: dict[str, int]) -> int:
+    """Returns time delta from from_time to to_time as a second.
+
+    Parameters
+    ----------
+    from_time : dict[str, int]
+        From time dict for kwargs.
+    to_time : dict[str, int]
+        To time dict kwargs.
+
+    Returns
+    -------
+    int
+        Time delta (second)
+    """
+    before = SAMPLE.replace(**from_time)
+    after = SAMPLE.replace(**to_time)
+    time_delta = after - before
+    return time_delta.seconds
+
+
+def calculate_time_delta_as_min(from_time: dict[str, int], to_time: dict[str, int]) -> int:
+    """Returns time delta from from_time to to_time as a minute.
+
+    Parameters
+    ----------
+    from_time : dict[str, int]
+        From time dict for kwargs.
+    to_time : dict[str, int]
+        To time dict for kwargs.
+
+    Returns
+    -------
+    float
+        Time delta (minute)
+    """
+    return int(calculate_time_delta_as_sec(from_time, to_time) / 60)
 
 
 def format(time: Arrow, format="default") -> str:
