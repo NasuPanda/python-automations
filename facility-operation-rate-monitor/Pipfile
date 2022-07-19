@@ -9,6 +9,7 @@ pywin32 = "*"
 pynput = "*"
 psutil = "*"
 "ruamel.yaml" = "*"
+pandas = "*"
 
 [dev-packages]
 flake8 = "*"
