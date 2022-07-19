@@ -10,6 +10,7 @@ pynput = "*"
 psutil = "*"
 "ruamel.yaml" = "*"
 pandas = "*"
+openpyxl = "*"
 
 [dev-packages]
 flake8 = "*"
