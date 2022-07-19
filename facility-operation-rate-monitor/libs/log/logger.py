@@ -46,7 +46,7 @@ class LogRow():
         str
             Date column value.
         """
-        return timehelper.format(timehelper.current(), "short_date")
+        return timehelper.format(timehelper.current(), "normal")
 
     def __time_column(self) -> str:
         """Time column in csv log.

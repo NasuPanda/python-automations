@@ -35,6 +35,7 @@ from config import config
 FORMATS = {
     "default": "YYMMDD",
     "short": "YYMMDD",
+    "normal": "YYYY-MM-DD",
     "long": "YYYY-MM-DD HH:mm:ss ZZ",
     "short_date": "MM/DD",
     "short_time": "HH:mm",
