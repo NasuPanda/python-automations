@@ -163,7 +163,6 @@ class ColumnGroup:
         TooManyColumnError
             カラムが設定値よりも多くなる場合。
         """
-        print(self.column_range)
         if self.current_index_of_column > self.column_range[1]:
             raise TooManyColumnError("columnが設定値よりも多いです")
 
