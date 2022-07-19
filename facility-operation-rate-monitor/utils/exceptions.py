@@ -68,7 +68,53 @@ class InitializeError(LogError):
     pass
 
 
-class ColumnNotFoundError(LogError):
+class LogColumnNotFoundError(LogError):
     """When failure to search a column from df.
+    """
+    pass
+
+
+class ExcelError(Exception):
+    """Base exception of excel module.
+    """
+    pass
+
+
+class GroupNotFoundError(ExcelError):
+    """When failure to find group from excel.
+    """
+    pass
+
+
+class InvalidRangeError(ExcelError):
+    """When specified invalid range.
+    """
+    pass
+
+
+class InvalidAddressError(ExcelError):
+    """When specified invalid address.
+    """
+    pass
+
+
+class ExcelColumnNotFoundError(ExcelError):
+    """When failure to find column from excel.
+    """
+    pass
+
+
+class TooManyColumnError(ExcelError):
+    """When attempting to set too many columns.
+    """
+    pass
+
+
+class ExcelRowNotFoundError(ExcelError):
+    """When failure to find row from excel.
+    """
+
+class TooManyRowError(ExcelError):
+    """When attempting to set too many rows.
     """
     pass

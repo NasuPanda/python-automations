@@ -1,6 +1,6 @@
 import pandas as pd
 
-from utils.exceptions import InitializeError, ColumnNotFoundError
+from utils.exceptions import InitializeError
 
 
 class LogReader():
