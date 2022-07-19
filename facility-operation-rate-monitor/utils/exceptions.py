@@ -54,3 +54,21 @@ class InitializerError(MonitorError):
     """When failure to initialize an instance.
     """
     pass
+
+
+class LogError(Exception):
+    """Base exception of log module.
+    """
+    pass
+
+
+class InitializeError(LogError):
+    """When failure to initialize an instance.
+    """
+    pass
+
+
+class ColumnNotFoundError(LogError):
+    """When failure to search a column from df.
+    """
+    pass
