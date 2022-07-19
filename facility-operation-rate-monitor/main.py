@@ -18,6 +18,7 @@ def main():
     from libs.monitors.process import ProcessesMonitor
     from libs import timehelper
     from libs.timehelper import TimeShifter
+    from config import config
 
     # Record current process pid for kill current process by bat.
     record_current_process_pid()
@@ -26,6 +27,8 @@ def main():
     current = timehelper.current()
     time_shifter = TimeShifter(start=current, shift_step_min=1)
     logger = Logger()
+    # First log data for calculate time delta.
+    logger.write_log(has_received_input=False, has_process_been_executed=False)
 
     # for debug
     # print("開始時刻: ", timehelper.format(current, "long"))
@@ -39,7 +42,7 @@ def main():
 
         while timehelper.is_faster_than(next_shift, timehelper.current()):
             process_monitor.update_process_instance_and_has_process_been_executed()
-            timehelper.sleep()
+            timehelper.sleep(config.SLEEP_TIME)
 
         # for debug
         # print("1セクションの監視終了: ", timehelper.format(next_shift, "long"))
