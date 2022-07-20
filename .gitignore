@@ -14,3 +14,6 @@ par-parser/src/models/vi.py
 # 不要なので除外
 __pycache__/
 *.lock
+tmp/
+temp/
+credentials/
