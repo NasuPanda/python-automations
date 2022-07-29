@@ -215,9 +215,9 @@ def main():
             else:
                 # Set excel path
                 if values["-DIST_EXCEL-"]:
-                    excel_path = f"{values['-DIST_EXCEL-']}.xlsx"
+                    excel_path = f"../解析結果出力先/{values['-DIST_EXCEL-']}.xlsx"
                 else:
-                    excel_path = f"{timehelper.format(timehelper.current())}_設備稼働率ログ解析.xlsx"
+                    excel_path = f"../解析結果出力先/{timehelper.format(timehelper.current())}_設備稼働率ログ解析.xlsx"
 
                 try:
                     write_excel(excel_path=excel_path, csv_folder=csv_folder, csv_paths=csv_paths)
