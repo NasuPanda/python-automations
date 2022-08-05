@@ -1,18 +1,7 @@
 # Pythonのlinter / formatter
 
-## black
 
-コードフォーマッタ。
 
-```shell
-# インストール
-pip install black
-
-# 整形の実行
-black [ファイル名]
-```
-
-### VSCodeにおける設定
 
 `which black` (Winなら `where` ) を実行、 `black` のパスを調べる。
 
@@ -87,5 +76,39 @@ import mylib
     "source.organizeImports": true,
   },
   // ...
+}
+```
+
+## mypy
+
+Pythonの型チェッカー。
+
+```shell
+# インストール
+pip install mypy
+```
+
+### VSCodeにおける設定
+
+- `which mypy` (Winなら `where` ) を実行、 `mypy` のパスを調べる。
+- mypyの型チェックに引っかかったところでエラーが出るわけでも規約違反なわけでも無いので、警告レベルは information にしておく
+
+1. mypy で検索をかけ、PATHを入力
+2. Python › Linting: Mypy Enabled を有効に
+3. Python › Linting › Mypy Category Severity の Error / Note を information に
+4. Python › Linting: Mypy Args に任意の設定を [The mypy command line - mypy 0.971 documentation](https://mypy.readthedocs.io/en/stable/command_line.html) から追加
+
+```json
+{
+  "python.linting.mypyArgs": [
+        "--ignore-missing-imports",
+        "--show-column-numbers",
+        "--no-pretty",
+        "--warn-return-any",
+        "--no-implicit-optional",
+        "--disallow-untyped-calls",
+        "--disallow-untyped-defs",
+        "--follow-imports=skip"
+    ],
 }
 ```

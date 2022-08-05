@@ -1,6 +1,7 @@
-import pathlib
-import mylib
 import abc
+import pathlib
+
+import mylib
 
 print("foooooo")
 
