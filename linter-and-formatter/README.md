@@ -27,3 +27,24 @@ black [ファイル名]
 
 format on save を `true` にしておけば、保存時にフォーマッタが走るようになる。
 
+
+## flake8
+
+Pythonのリンター。
+
+```shell
+# インストール
+pip install flake8
+
+# チェック
+flake8 [ファイル名]
+```
+
+### VSCodeにおける設定
+
+- `which flake8` (Winなら `where` ) を実行、 `flake8` のパスを調べる。
+- flake8 はあくまでリンターなので、警告レベルに留めておくべき。
+
+1. flake8 path と検索し、調べたパスを入力
+2. flake8 と検索し、 Python › Linting › Flake8 Category Severity E/F/W を全て warning にする
+3. flake8 Args に任意の設定を追加 : max-line-length, ignore(無視するルール), etc...
