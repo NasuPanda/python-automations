@@ -48,3 +48,44 @@ flake8 [ファイル名]
 1. flake8 path と検索し、調べたパスを入力
 2. flake8 と検索し、 Python › Linting › Flake8 Category Severity E/F/W を全て warning にする
 3. flake8 Args に任意の設定を追加 : max-line-length, ignore(無視するルール), etc...
+
+## isort
+
+`import` の順番を整形してくれる。
+
+```shell
+# インストール
+pip install isort
+
+# 実行
+isort [ファイル名]
+```
+
+```python
+# 実行前
+import mylib
+import pathlib
+import abc
+
+# 実行後
+import abc
+import pathlib
+
+import mylib
+```
+### VSCodeの設定
+
+`which isort` (Winなら `where` ) を実行、 `isort` のパスを調べる。
+
+1. isort と入力、 Python › Sort Imports: Path に調べたパスを入力
+2. 以下のように `settings.json` を編集、保存時に自動実行されるようにしておく
+
+```json
+{
+  // ...
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": true,
+  },
+  // ...
+}
+```
