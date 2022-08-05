@@ -1,9 +1,5 @@
-import abc
-import pathlib
+print("foo")
 
-import mylib
-
-print("foooooo")
 
 a = 5
 b = 10

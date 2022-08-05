@@ -1,7 +1,6 @@
 # Pythonのlinter / formatter
 
-
-
+## black
 
 `which black` (Winなら `where` ) を実行、 `black` のパスを調べる。
 
@@ -15,7 +14,6 @@
 ※ Editor: Default Formatter により規定のフォーマッタが設定されているとそちらが優先されてしまうため `null` にしておく。
 
 format on save を `true` にしておけば、保存時にフォーマッタが走るようになる。
-
 
 ## flake8
 
