@@ -44,6 +44,8 @@ webdriver-manager = "^3.8.3"
 
 - [10分で理解する Beautiful Soup - Qiita](https://qiita.com/Chanmoro/items/db51658b073acddea4ac)
   - 基本的な使い方から実践的なテクニックまで、さっくりまとまっている
+- https://www.crummy.com/software/BeautifulSoup/bs4/doc/#kinds-of-objects
+  - Beautiful Soup のオブジェクトについて
 
 ## 使い方
 
