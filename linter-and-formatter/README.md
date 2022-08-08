@@ -110,3 +110,16 @@ pip install mypy
     ],
 }
 ```
+
+## 番外: VSCodeでモジュールの補完・解析用のパスを通す
+
+`settings.json` を開き、以下のような設定を追加する。
+
+```json
+    "python.analysis.extraPaths": [
+        '/Users/usr/dev/foo/.venv/lib/python3.9/site-packages'
+    ],
+    "python.autoComplete.extraPaths": [
+        '/Users/usr/dev/foo/.venv/lib/python3.9/site-packages'
+    ]
+```
