@@ -1,21 +1,22 @@
-# TODO bs4 VS Selenium でパフォーマンス計測してみる
-
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-url = "https://tonarinoyj.jp/series"
-manga_title = "ワンパンマン"
 
-driver = webdriver.Chrome(ChromeDriverManager().install())
-driver.get(url)
+def find_latest_episode_url_and_title_from_title():
+    url = "https://tonarinoyj.jp/series"
+    manga_title = "ワンパンマン"
 
-title_element = driver.find_element("xpath", f"//h4[text()='{manga_title}']")
-manga_container = title_element.find_element("xpath", "../..")
-manga_container.find_element("css selector", ".episode-link-container .link-latest a").click()
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver.get(url)
 
-manga_url = driver.current_url
-latest_manga_title = driver.title
+    title_element = driver.find_element("xpath", f"//h4[text()='{manga_title}']")
+    manga_container = title_element.find_element("xpath", "../..")
+    manga_container.find_element("css selector", ".episode-link-container .link-latest a").click()
 
-driver.quit()
+    manga_url = driver.current_url
+    latest_manga_title = driver.title
 
-print(f"{latest_manga_title} : {manga_url}")
+    driver.quit()
+
+    print(f"{latest_manga_title} : {manga_url}")
