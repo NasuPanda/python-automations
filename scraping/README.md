@@ -56,6 +56,8 @@ CSSセレクタを書いてタグを取得出来る。
 
 Beautiful Soup は関係なく一般的なCSSセレクターの書き方の話になるが、 `:soup-contains` を使うと指定したテキストを含む要素が取得出来る。
 
+[Pseudo Classes - Soup Sieve](https://facelessuser.github.io/soupsieve/selectors/pseudo-classes/#:-soup-contains)
+
 ```py
 soup = bs4.BeautifulSoup(driver.page_source, "html.parser")
 results = soup.select("h4:-soup-contains('ワンパンマン')")
@@ -76,6 +78,10 @@ print([t.get_text(strip=True) for t in tag_items])
 ```
 
 # Selenium
+
+## 参考
+
+- [Selenium webdriverよく使う操作メソッドまとめ - Qiita](https://qiita.com/mochio/items/dc9935ee607895420186#%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB)
 
 ## webdriver-managerを使う
 
@@ -104,11 +110,17 @@ driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
 driver.get("https://www.example.com/")
 ```
 
-## 使い方
+## URLを開く
 
-Selenium で要素を取得する場合、大抵操作を目的としている。
+`get` を使う。
+URLを使って直接ページ遷移したい時も同様。
 
-### `find_**`
+```py
+driver.get(url)
+```
+
+
+## `find_**`
 
 `find_**` 系のメソッドで条件に合致する要素を取得出来る。
 
@@ -117,11 +129,55 @@ elements = driver.find_elements("css selector", ".series-table-list")
 pprint.pprint(elements)
 ```
 
-### URLを開く
-
-`get` を使う。
-URLを使って直接ページ遷移したい時も同様。
+`selenium.webdriver.common.by.By` を `import` することで使用するか、文字列を直接指定する。
 
 ```py
-driver.get(url)
+from selenium.webdriver.common.by import By
+
+driver.find_element(By.XPATH, '//button[text()="Some text"]')
+driver.find_elements(By.XPATH, '//button')
+
+# 文字列
+ID = "id"
+NAME = "name"
+XPATH = "xpath"
+LINK_TEXT = "link text"
+PARTIAL_LINK_TEXT = "partial link text"
+TAG_NAME = "tag name"
+CLASS_NAME = "class name"
+CSS_SELECTOR = "css selector"
+```
+
+### xpath
+
+親ノードの取得やテキスト検索など、CSSセレクターのみだと面倒な検索も簡単に可能。
+
+```py
+# テキスト検索
+element = driver.find_element("xpath", f"//h4[text()='{manga_title}']")
+
+# 親ノードの取得
+element.find_element("xpath", "../..")
+```
+
+## プロパティ
+
+### タイトル
+
+```py
+driver.title
+```
+
+### ページのソース(HTML)の取得
+
+Beautiful Soup にそのまま渡してパースする、など。
+
+```py
+driver.page_source
+```
+
+### URLの取得
+
+```py
+driver.current_url
 ```
