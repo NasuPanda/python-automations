@@ -1,5 +1,7 @@
 # ドメインに関わる物は除外する
-domains/
+**/domains/**
+**/under_proxy/**
+**/credentials/**
 par-parser/config.py
 par-parser/src/models/vi.py
 
@@ -12,8 +14,7 @@ par-parser/src/models/vi.py
 *.par
 
 # 不要なので除外
-__pycache__/
+**/__pycache__/**
 *.lock
-tmp/
-temp/
-credentials/
+**/tmp/**
+**/temp/**
