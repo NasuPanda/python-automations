@@ -51,7 +51,6 @@ def find_latest_episode_url_and_title_by_title() -> None:
 
 
 # TODO
-# 最新話のURLを取得する処理
 # driver を使い回すはずなので、クラスを定義する？
 # sqliteに書き出す処理
 # 更新有無を確認する処理
@@ -63,17 +62,24 @@ driver.get(PROVIDER_URL)
 soup = bs4.BeautifulSoup(driver.page_source, "html.parser")
 ongoing_titles = soup.select_one(".series-table-list")
 if isinstance(ongoing_titles, bs4.element.Tag):
-    for i, tag in enumerate(ongoing_titles.find_all("li")):
+    for i, tag in enumerate(ongoing_titles.select("li.subpage-table-list-item")):
         title = tag.select_one("h4")
         link = tag.select_one(".link-latest a")
 
-        print(i, "*" * 20)
+        # 漫画のタイトルを取得
         if isinstance(title, bs4.element.Tag):
             manga_title = title.get_text()
             print(manga_title)
+
+        # 最新話のURLとタイトルを取得
         if isinstance(link, bs4.element.Tag):
             latest_episode_url = link["href"]
+
+            driver.get(latest_episode_url)  # type: ignore
+            latest_episode_title = driver.title
+
             print(latest_episode_url)
+            print(latest_episode_title)
 else:
     print("Not found.")
 
