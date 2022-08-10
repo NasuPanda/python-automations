@@ -84,6 +84,7 @@ print([t.get_text(strip=True) for t in tag_items])
 ## 参考
 
 - [Selenium webdriverよく使う操作メソッドまとめ - Qiita](https://qiita.com/mochio/items/dc9935ee607895420186#%E3%81%AF%E3%81%98%E3%82%81%E3%81%AB)
+- [Selenium - ページの読み込みが完了するまで待つ(python)](https://codechacha.com/ja/selenium-explicit-implicit-wait/)
 
 ## webdriver-managerを使う
 
@@ -160,6 +161,9 @@ element = driver.find_element("xpath", f"//h4[text()='{manga_title}']")
 
 # 親ノードの取得
 element.find_element("xpath", "../..")
+
+# value で検索
+button_login = driver.find_element("xpath", "//input[@value='ログイン']")
 ```
 
 ## プロパティ
