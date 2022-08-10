@@ -12,7 +12,7 @@ PROVIDER_URL: Final = "https://tonarinoyj.jp/series"
 MANGA_TITLE: Final = "ワンパンマン"
 
 
-def find_latest_episode__url_by_title(page_source: str, title: str) -> str | None:
+def find_latest_episode_url_by_title(page_source: str, title: str) -> str | None:
     """タイトルを元に最新話のURLを取得"""
     soup = bs4.BeautifulSoup(page_source, "html.parser")
     manga_title_tag = soup.select_one(f"h4:-soup-contains('{title}')")
@@ -50,37 +50,32 @@ def find_latest_episode_url_and_title_by_title() -> None:
     driver.quit()
 
 
-# TODO
-# driver を使い回すはずなので、クラスを定義する？
-# sqliteに書き出す処理
-# 更新有無を確認する処理
-# Lineで通知する処理
+def find_titles_and_latest_episode_url():
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+    driver.get(PROVIDER_URL)
 
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-driver.get(PROVIDER_URL)
+    soup = bs4.BeautifulSoup(driver.page_source, "html.parser")
+    ongoing_titles = soup.select_one(".series-table-list")
+    if isinstance(ongoing_titles, bs4.element.Tag):
+        for i, tag in enumerate(ongoing_titles.select("li.subpage-table-list-item")):
+            title = tag.select_one("h4")
+            link = tag.select_one(".link-latest a")
 
-soup = bs4.BeautifulSoup(driver.page_source, "html.parser")
-ongoing_titles = soup.select_one(".series-table-list")
-if isinstance(ongoing_titles, bs4.element.Tag):
-    for i, tag in enumerate(ongoing_titles.select("li.subpage-table-list-item")):
-        title = tag.select_one("h4")
-        link = tag.select_one(".link-latest a")
+            # 漫画のタイトルを取得
+            if isinstance(title, bs4.element.Tag):
+                manga_title = title.get_text()
+                print(manga_title)
 
-        # 漫画のタイトルを取得
-        if isinstance(title, bs4.element.Tag):
-            manga_title = title.get_text()
-            print(manga_title)
+            # 最新話のURLとタイトルを取得
+            if isinstance(link, bs4.element.Tag):
+                latest_episode_url = link["href"]
 
-        # 最新話のURLとタイトルを取得
-        if isinstance(link, bs4.element.Tag):
-            latest_episode_url = link["href"]
+                driver.get(latest_episode_url)  # type: ignore
+                latest_episode_title = driver.title
 
-            driver.get(latest_episode_url)  # type: ignore
-            latest_episode_title = driver.title
+                print(latest_episode_url)
+                print(latest_episode_title)
+    else:
+        print("Not found.")
 
-            print(latest_episode_url)
-            print(latest_episode_title)
-else:
-    print("Not found.")
-
-driver.quit()
+    driver.quit()
