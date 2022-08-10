@@ -21,14 +21,14 @@ class Parser:
         self._soup: bs4.BeautifulSoup = bs4.BeautifulSoup(html, "html.parser")
 
     def parse_ongoing_titles(self) -> dict[str, str]:
-        ongoing_title_and_latest_episode_url = {}
+        ongoing_titles_and_latest_episode_url = {}
 
         ongoing_title_tags = self.__select_tag(".series-table-list")
         for tag in self.__select_tags("li.subpage-table-list-item", ongoing_title_tags):
             manga_title, latest_episode_url = self.select_title_and_latest_episode_url(tag)
-            ongoing_title_and_latest_episode_url[manga_title] = latest_episode_url
+            ongoing_titles_and_latest_episode_url[manga_title] = latest_episode_url
 
-        return ongoing_title_and_latest_episode_url
+        return ongoing_titles_and_latest_episode_url
 
     def select_title_and_latest_episode_url(self, manga_tag: Tag) -> tuple[str, str]:
         title = self.__select_tag("h4", tag=manga_tag).get_text()
