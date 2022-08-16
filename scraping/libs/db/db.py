@@ -44,6 +44,9 @@ class DataBase:
             table_name (str): テーブル名。
             table_info (str | None, optional): 作成するテーブルのカラム情報を持つクエリ。デフォルトは None 。
         """
+        if self.table_exists(table_name):
+            return
+
         query = (
             f"CREATE TABLE IF NOT EXISTS {table_name}({table_info})"
             if table_info
@@ -51,6 +54,10 @@ class DataBase:
         )
         self.cursor.execute(query)
         self._commit()
+
+    def table_exists(self, table_name: str) -> bool:
+        self.cursor.execute(f"SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='{table_name}'")
+        return False if self.cursor.fetchone()[0] == 0 else True
 
     def close(self) -> None:
         """接続を閉じる。"""
@@ -61,7 +68,7 @@ class DataBase:
         """DBに加えた変更をコミットする。"""
         self.connection.commit()
 
-    def select(self, columns: tuple[str, ...], limit: None | int = None) -> list[tuple]:
+    def select(self, columns: tuple[str, ...], where: str | None = None, limit: int | None = None) -> list[tuple]:
         """対象カラムのデータ。
 
         Args:
@@ -71,7 +78,10 @@ class DataBase:
         Returns:
             list[tuple]: 取得したデータ。
         """
-        self.cursor.execute(f"SELECT {self.column_to_query(columns)} FROM {self.table_name}")
+        query = f"SELECT {self.column_to_query(columns)} FROM {self.table_name}"
+        query = query + f"WHERE {where}" if where is not None else query
+        query = query + f"LIMIT {limit}" if limit else query
+        self.cursor.execute(query)
         rows = self.cursor.fetchall()
 
         number_of_data = len(rows) - limit if limit else 0
