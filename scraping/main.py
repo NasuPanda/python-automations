@@ -3,6 +3,11 @@ from typing import Final
 
 from libs.driver import WebDriver
 
+# TODO
+# sqliteに書き出す処理
+# 更新有無を確認する処理
+# Lineで通知する処理
+
 PROVIDER_URL: Final = "https://tonarinoyj.jp/series"
 MANGA_TITLE: Final = "ワンパンマン"
 
