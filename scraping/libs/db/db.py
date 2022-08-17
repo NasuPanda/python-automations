@@ -7,6 +7,7 @@ class DataBase:
     """データベースを抽象化するクラス。
 
     Example Usage:
+
     db_path = "TEST.db"
     table_name = "users"
     table_info = "id INTEGER PRIMARY KEY AUTOINCREMENT, name STRING, email STRING"
@@ -98,7 +99,7 @@ class DataBase:
         """
         return self.select(columns, limit=1)[0]
 
-    def insert(self, columns: tuple[str, ...], *values: dict[str, str]) -> None:
+    def insert(self, columns: tuple[str, ...], *values: dict[str, str | int]) -> None:
         """データをDBに挿入する。
 
         Args:
