@@ -18,25 +18,39 @@ class InvalidColumnError(DBError):
     pass
 
 
+def dict_factory(cursor: sqlite3.Cursor, row: sqlite3.Row) -> dict:
+    result = {}
+    for i, column in enumerate(cursor.description):
+        result[column[0]] = row[i]
+    return result
+
+
 class DataBase:
     """データベースを抽象化するクラス。
 
-    Example Usage:
+    table_info = \"\"\"
+    id integer unique primary key autoincrement,
+    title string unique,
+    latest_episode_url string unique,
+    latest_episode_title string unique
+    "\"\"\
 
-    db_path = "TEST.db"
-    table_name = "users"
-    table_info = "id INTEGER PRIMARY KEY AUTOINCREMENT, name STRING, email STRING"
-
-    model = DataBase(db_path, table_name, table_info)
-
-    model.insert(
-        ("name", "email"),
-        {"name": "alice", "email": "alice@email.com"},
-        {"name": "bob", "email": "bob@gmail.com"},
+    db = DataBase(
+        database_path,
+        common.TONARINOYJ_TABLE_NAME,
+        common.ALL_COLUMNS["tonarinoyj"],
+        common.UPDATABLE_COLUMNS["tonarinoyj"],
+        table_info,
     )
-    model.select(("name", "email"))
 
-    model.close()
+    db.insert(
+        ("title", "latest_episode_url", "latest_episode_title"),
+        {
+            "title": "ワンパンマン",
+            "latest_episode_url": "0123456789",
+            "latest_episode_title": "[第XXX話] ワンパンマン",
+        },
+    )
     """
 
     def __init__(
@@ -56,6 +70,8 @@ class DataBase:
         """
         self.table_name = table_name
         self.connection = sqlite3.connect(db_path)
+        # select の結果を辞書に変更
+        self.connection.row_factory = dict_factory
         self.cursor = self.connection.cursor()
         self.columns = columns
         self.updatable_columns = updatable_columns
@@ -82,7 +98,8 @@ class DataBase:
 
     def table_exists(self, table_name: str) -> bool:
         self.cursor.execute(f"SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='{table_name}'")
-        return False if self.cursor.fetchone()[0] == 0 else True
+        # NOTE: 返り値は {クエリ: 値} の辞書
+        return False if self.cursor.fetchone()["COUNT(*)"] == 0 else True
 
     def close(self) -> None:
         """接続を閉じる。"""
@@ -99,7 +116,7 @@ class DataBase:
         where: dict[str, str | int] | None = None,
         limit: int | None = None,
         where_logical_operator: common.LOGICAL_OPERATOR = "AND",
-    ) -> list[tuple]:
+    ) -> list[dict]:
         """対象カラムのデータ。
 
         Args:
@@ -114,17 +131,15 @@ class DataBase:
 
         query = f"SELECT {self.column_to_query(columns)} FROM {self.table_name}"
         # オプショナルな引数を渡されたていた場合queryに追加していく
+        # NOTE: 間の空白を忘れないこと
         query = (
-            query + f"WHERE {self.to_where_statements(where, where_logical_operator)}" if where is not None else query
+            query + f" WHERE {self.to_where_statements(where, where_logical_operator)}" if where is not None else query
         )
-        query = query + f"LIMIT {limit}" if limit else query
+        query = query + f" LIMIT {limit}" if limit else query
         self.cursor.execute(query)
-        rows = self.cursor.fetchall()
+        return self.cursor.fetchall()
 
-        number_of_data = len(rows) - limit if limit else 0
-        return rows[number_of_data:]
-
-    def select_last(self, columns: tuple[str, ...]) -> tuple:
+    def select_last(self, columns: tuple[str, ...]) -> dict:
         """対象カラムの最後のデータを取得。
 
         Args:
