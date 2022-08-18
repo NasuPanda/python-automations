@@ -6,6 +6,14 @@ from typing import Literal
 LOGICAL_OPERATOR = Literal["AND", "OR"]
 
 
+class DBError(Exception):
+    pass
+
+
+class InvalidColumnError(DBError):
+    pass
+
+
 class DataBase:
     """データベースを抽象化するクラス。
 
@@ -27,7 +35,14 @@ class DataBase:
     model.close()
     """
 
-    def __init__(self, db_path: str, table_name: str, table_info: str | None = None) -> None:
+    def __init__(
+        self,
+        db_path: str,
+        table_name: str,
+        columns: tuple[str, ...],
+        updatable_columns: tuple[str, ...],
+        table_info: str | None = None,
+    ) -> None:
         """インスタンスの初期化。
 
         Args:
@@ -38,6 +53,8 @@ class DataBase:
         self.table_name = table_name
         self.connection = sqlite3.connect(db_path)
         self.cursor = self.connection.cursor()
+        self.columns = columns
+        self.updatable_columns = updatable_columns
 
         self.create_table_if_not_exists(table_name, table_info)
 
@@ -88,6 +105,9 @@ class DataBase:
         Returns:
             list[tuple]: 取得したデータ。
         """
+        if where:
+            self.verify_where_statements(where)
+
         query = f"SELECT {self.column_to_query(columns)} FROM {self.table_name}"
         query = (
             query + f"WHERE {self.to_where_statements(where, where_logical_operator)}" if where is not None else query
@@ -117,6 +137,9 @@ class DataBase:
             columns (tuple[str, ...]): 対象カラム名。
             values (dict[str, str]): 対象データ。
         """
+        self.verify_columns(columns)
+        self.verify_value_to_insert(values)
+
         # 対象カラムの数だけプレースホルダを用意 ex:(?, ?, ?)
         placeholders = ",".join("?" * len(columns))
         # query: INSERT INTO table(column1, column2, ...) VALUES(?, ?, ...)
@@ -139,6 +162,9 @@ class DataBase:
         where: dict[str, str | int],
         where_logical_operator: LOGICAL_OPERATOR = "AND",
     ) -> None:
+        self.verify_value_to_update(to_update)
+        self.verify_where_statements(where)
+
         query = f"""
             UPDATE {self.table_name}
             SET {self.to_set_statements(to_update)}
@@ -149,6 +175,8 @@ class DataBase:
         self._commit()
 
     def delete(self, where: dict[str, str | int], where_logical_operator: LOGICAL_OPERATOR = "AND") -> None:
+        self.verify_where_statements(where)
+
         query = f"""
             DELETE FROM {self.table_name}
             WHERE {self.to_where_statements(where, where_logical_operator)}
@@ -195,3 +223,22 @@ class DataBase:
             query = f"{key}='{value}'" if type(value) == str else f"{key}={value}"
             queries.append(query)
         return f" {where_logical_operator} ".join(queries)
+
+    def verify_columns(self, columns: tuple[str, ...]) -> None:
+        for column in columns:
+            if column not in self.columns:
+                raise InvalidColumnError(f"This column is invalid {column}")
+
+    def verify_where_statements(self, where_statements: dict[str, str | int]) -> None:
+        for key in where_statements.keys():
+            if key not in self.columns:
+                raise InvalidColumnError(f"This column is invalid: {key}")
+
+    def verify_value_to_update(self, to_update: dict[str, str | int]) -> None:
+        for key in to_update.keys():
+            if key not in self.updatable_columns:
+                raise InvalidColumnError(f"This column is invalid: {key}")
+
+    def verify_value_to_insert(self, to_insert: dict[str, str | int]) -> None:
+        # update のエイリアスとして記入
+        self.verify_value_to_update(to_insert)
