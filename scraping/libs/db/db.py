@@ -123,6 +123,19 @@ class DataBase:
 
         self._commit()
 
+    def update(self, updated: dict[str, str | int], where: str) -> None:
+        set_statements = self.to_set_statements(updated)
+        query = f"UPDATE {self.table_name} SET {set_statements} WHERE {where}"
+        self.connection.execute(query)
+
+        self._commit()
+
+    def delete(self, where: str) -> None:
+        query = f"DELETE FROM {self.table_name} WHERE {where}"
+        self.connection.execute(query)
+
+        self._commit()
+
     @classmethod
     def column_to_query(cls, columns: tuple[str, ...]) -> str:
         """Tuple形式のカラムをSQLクエリで使える文字列にフォーマットする。
@@ -142,3 +155,12 @@ class DataBase:
         # NOTE: ' と () は削除しておく。
         # SELECT は カラム名が ' で囲われているとエラーが出るため。
         return query.translate(str.maketrans({"'": None, "(": None, ")": None}))
+
+    @classmethod
+    def to_set_statements(cls, to_update: dict[str, str | int]) -> str:
+        queries = []
+        for key, value in to_update.items():
+            # value が文字列型なら ''シングルクォーテーション で囲み、そうでないならそのまま
+            query = f"{key}='{value}'" if type(value) == str else f"{key}={value}"
+            queries.append(query)
+        return ", ".join(queries)
