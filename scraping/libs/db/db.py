@@ -1,9 +1,13 @@
+"""
+TODO docsの整備
+"""
+
 from __future__ import annotations
 
 import sqlite3
 from typing import Literal
 
-LOGICAL_OPERATOR = Literal["AND", "OR"]
+from libs import common
 
 
 class DBError(Exception):
@@ -94,7 +98,7 @@ class DataBase:
         columns: tuple[str, ...],
         where: dict[str, str | int] | None = None,
         limit: int | None = None,
-        where_logical_operator: LOGICAL_OPERATOR = "AND",
+        where_logical_operator: common.LOGICAL_OPERATOR = "AND",
     ) -> list[tuple]:
         """対象カラムのデータ。
 
@@ -109,6 +113,7 @@ class DataBase:
             self.verify_where_statements(where)
 
         query = f"SELECT {self.column_to_query(columns)} FROM {self.table_name}"
+        # オプショナルな引数を渡されたていた場合queryに追加していく
         query = (
             query + f"WHERE {self.to_where_statements(where, where_logical_operator)}" if where is not None else query
         )
@@ -130,7 +135,7 @@ class DataBase:
         """
         return self.select(columns, limit=1)[0]
 
-    def insert(self, columns: tuple[str, ...], values: dict[str, str | int]) -> None:
+    def insert(self, columns: tuple[str, ...], values: common.CHANGEABLE_VALUES) -> None:
         """データをDBに挿入する。
 
         Args:
@@ -138,7 +143,6 @@ class DataBase:
             values (dict[str, str]): 対象データ。
         """
         self.verify_columns(columns)
-        self.verify_value_to_insert(values)
 
         # 対象カラムの数だけプレースホルダを用意 ex:(?, ?, ?)
         placeholders = ",".join("?" * len(columns))
@@ -158,9 +162,9 @@ class DataBase:
 
     def update(
         self,
-        to_update: dict[str, str | int],
+        to_update: common.CHANGEABLE_VALUES,
         where: dict[str, str | int],
-        where_logical_operator: LOGICAL_OPERATOR = "AND",
+        where_logical_operator: common.LOGICAL_OPERATOR = "AND",
     ) -> None:
         self.verify_value_to_update(to_update)
         self.verify_where_statements(where)
@@ -174,7 +178,7 @@ class DataBase:
 
         self._commit()
 
-    def delete(self, where: dict[str, str | int], where_logical_operator: LOGICAL_OPERATOR = "AND") -> None:
+    def delete(self, where: dict[str, str | int], where_logical_operator: common.LOGICAL_OPERATOR = "AND") -> None:
         self.verify_where_statements(where)
 
         query = f"""
@@ -206,7 +210,7 @@ class DataBase:
         return query.translate(str.maketrans({"'": None, "(": None, ")": None}))
 
     @classmethod
-    def to_set_statements(cls, to_update: dict[str, str | int]) -> str:
+    def to_set_statements(cls, to_update: common.CHANGEABLE_VALUES) -> str:
         queries = []
         for key, value in to_update.items():
             # value が文字列型なら ''シングルクォーテーション で囲み、そうでないならそのまま
@@ -234,11 +238,11 @@ class DataBase:
             if key not in self.columns:
                 raise InvalidColumnError(f"This column is invalid: {key}")
 
-    def verify_value_to_update(self, to_update: dict[str, str | int]) -> None:
+    def verify_value_to_update(self, to_update: common.CHANGEABLE_VALUES) -> None:
         for key in to_update.keys():
             if key not in self.updatable_columns:
                 raise InvalidColumnError(f"This column is invalid: {key}")
 
-    def verify_value_to_insert(self, to_insert: dict[str, str | int]) -> None:
+    def verify_value_to_insert(self, to_insert: common.CHANGEABLE_VALUES) -> None:
         # update のエイリアスとして記入
         self.verify_value_to_update(to_insert)
