@@ -3,6 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
+from libs import common
 from libs.parser.providers import TonarinoyjParser
 
 
@@ -12,8 +13,8 @@ class WebDriver:
         options.add_argument("--headless")
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 
-    def parse_ongoing_titles_in_tonarinoyj(self, url: str) -> dict[str, str]:
-        self.get(url)
+    def parse_ongoing_titles_in_tonarinoyj(self) -> dict[str, str]:
+        self.get(common.PROVIDER_URLS["tonarinoyj"])
         parser = TonarinoyjParser(self.current_page_source)
         return parser.parse_ongoing_titles()
 

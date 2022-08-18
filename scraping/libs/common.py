@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import Final, Literal, TypedDict, Union
 
-LOGICAL_OPERATOR = Literal["AND", "OR"]
+PROVIDER_URLS: Final = {
+    "jumpplus": "https://shonenjumpplus.com/series",
+    "tonarinoyj": "https://tonarinoyj.jp/series",
+    "shosetsu": "https://ncode.syosetu.com/",
+}
 
 SHOSETSU_TABLE_NAME: Final = "shosetsu"
 JUMPPLUS_TABLE_NAME: Final = "jumpplus"
@@ -30,6 +34,8 @@ UPDATABLE_COLUMNS: Final = {
         "latest_episode_title",
     ),
 }
+
+LOGICAL_OPERATOR = Literal["AND", "OR"]
 
 
 class JumpplusChangeableValues(TypedDict, total=False):
