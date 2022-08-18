@@ -3,7 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 
-from libs.parser import Parser
+from libs.parser.providers import TonarinoyjParser
 
 
 class WebDriver:
@@ -14,7 +14,7 @@ class WebDriver:
 
     def parse_ongoing_titles_in_tonarinoyj(self, url: str) -> dict[str, str]:
         self.get(url)
-        parser = Parser(self.current_page_source)
+        parser = TonarinoyjParser(self.current_page_source)
         return parser.parse_ongoing_titles()
 
     def get(self, url: str) -> None:
