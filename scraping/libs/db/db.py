@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import sqlite3
+from typing import Literal
+
+LOGICAL_OPERATOR = Literal["AND", "OR"]
 
 
 class DataBase:
@@ -69,7 +72,13 @@ class DataBase:
         """DBに加えた変更をコミットする。"""
         self.connection.commit()
 
-    def select(self, columns: tuple[str, ...], where: str | None = None, limit: int | None = None) -> list[tuple]:
+    def select(
+        self,
+        columns: tuple[str, ...],
+        where: dict[str, str | int] | None = None,
+        limit: int | None = None,
+        where_logical_operator: LOGICAL_OPERATOR = "AND",
+    ) -> list[tuple]:
         """対象カラムのデータ。
 
         Args:
@@ -80,7 +89,9 @@ class DataBase:
             list[tuple]: 取得したデータ。
         """
         query = f"SELECT {self.column_to_query(columns)} FROM {self.table_name}"
-        query = query + f"WHERE {where}" if where is not None else query
+        query = (
+            query + f"WHERE {self.to_where_statements(where, where_logical_operator)}" if where is not None else query
+        )
         query = query + f"LIMIT {limit}" if limit else query
         self.cursor.execute(query)
         rows = self.cursor.fetchall()
@@ -123,15 +134,26 @@ class DataBase:
 
         self._commit()
 
-    def update(self, updated: dict[str, str | int], where: str) -> None:
-        set_statements = self.to_set_statements(updated)
-        query = f"UPDATE {self.table_name} SET {set_statements} WHERE {where}"
+    def update(
+        self,
+        to_update: dict[str, str | int],
+        where: dict[str, str | int],
+        where_logical_operator: LOGICAL_OPERATOR = "AND",
+    ) -> None:
+        query = f"""
+            UPDATE {self.table_name}
+            SET {self.to_set_statements(to_update)}
+            WHERE {self.to_where_statements(where, where_logical_operator)}
+            """
         self.connection.execute(query)
 
         self._commit()
 
-    def delete(self, where: str) -> None:
-        query = f"DELETE FROM {self.table_name} WHERE {where}"
+    def delete(self, where: dict[str, str | int], where_logical_operator: LOGICAL_OPERATOR = "AND") -> None:
+        query = f"""
+            DELETE FROM {self.table_name}
+            WHERE {self.to_where_statements(where, where_logical_operator)}
+            """
         self.connection.execute(query)
 
         self._commit()
@@ -164,3 +186,13 @@ class DataBase:
             query = f"{key}='{value}'" if type(value) == str else f"{key}={value}"
             queries.append(query)
         return ", ".join(queries)
+
+    @classmethod
+    def to_where_statements(
+        cls, to_where: dict[str, str | int], where_logical_operator: Literal["AND", "OR"] = "AND"
+    ) -> str:
+        queries = []
+        for key, value in to_where.items():
+            query = f"{key}='{value}'" if type(value) == str else f"{key}={value}"
+            queries.append(query)
+        return f" {where_logical_operator} ".join(queries)
