@@ -110,7 +110,7 @@ class DataBase:
         """
         return self.select(columns, limit=1)[0]
 
-    def insert(self, columns: tuple[str, ...], *values: dict[str, str | int]) -> None:
+    def insert(self, columns: tuple[str, ...], values: dict[str, str | int]) -> None:
         """データをDBに挿入する。
 
         Args:
@@ -123,15 +123,14 @@ class DataBase:
         # NOTE: columns と placeholders に 括弧() を忘れないこと
         query = f"INSERT INTO {self.table_name}({self.column_to_query(columns)}) VALUES({placeholders})"
 
-        for value_dict in values:
-            insert_data = []
-            for column in columns:
-                try:
-                    insert_data.append(value_dict[column])
-                except KeyError:
-                    raise sqlite3.ProgrammingError(f"The column '{column}' is doesn't exist in {value_dict}.")
-            self.cursor.execute(query, insert_data)
+        insert_data = []
+        for column in columns:
+            try:
+                insert_data.append(values[column])
+            except KeyError:
+                raise sqlite3.ProgrammingError(f"The column '{column}' is doesn't exist in {values}.")
 
+        self.cursor.execute(query, insert_data)
         self._commit()
 
     def update(
