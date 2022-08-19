@@ -18,7 +18,7 @@ class WebDriver:
             options.add_argument("--headless")
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         # 待機時間の指定
-        self.wait = WebDriverWait(self.driver, 20)
+        self.wait = WebDriverWait(self.driver, 30)
 
     def parse_ongoing_titles_in_tonarinoyj(self) -> dict[str, str]:
         self.get(common.PROVIDER_URLS["tonarinoyj"])
@@ -27,6 +27,7 @@ class WebDriver:
 
     def parse_latest_episode_url_in_jumpplus(self, first_episode_url: str) -> str:
         self.get(first_episode_url)
+        self.scroll_by_y(500)
 
         self.wait.until(
             expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "a.series-episode-list-container"))
@@ -46,6 +47,9 @@ class WebDriver:
 
     def quit(self) -> None:
         self.driver.quit()
+
+    def scroll_by_y(self, height: int) -> None:
+        self.driver.execute_script("window.scrollTo(0, " + str(height) + ");")
 
     @property
     def current_url(self) -> str:

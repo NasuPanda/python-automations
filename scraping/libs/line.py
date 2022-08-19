@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Final
 
 import requests
@@ -15,8 +17,17 @@ class LineNotification:
         LINEに通知する
         """
         headers = {"Authorization": f"Bearer {credentials.LINE_NOTIFY_TOKEN}"}
-        data = {"message": f"message: {self.message}"}
+        # 末尾の改行を消しておく
+        data = {"message": "\n" + self.message.strip()}
         requests.post(self.API_URL, headers=headers, data=data)
 
-    def add_message(self, message: str) -> None:
-        self.message += "\n" + message
+    def add_message_of_work_update(self, provider: str, updated_work_title_and_url: dict[str, list[str]]) -> None:
+        self.message += f"★ {provider}の更新\n"
+
+        if len(updated_work_title_and_url["title"]) == 0:
+            self.message += "無し\n"
+
+        for title, url in zip(updated_work_title_and_url["title"], updated_work_title_and_url["url"]):
+            self.message += f"{title}\n{url}\n"
+
+        self.message += "\n"
