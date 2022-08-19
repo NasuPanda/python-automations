@@ -116,7 +116,7 @@ class DataBase:
         where: dict[str, str | int] | None = None,
         limit: int | None = None,
         where_logical_operator: common.LOGICAL_OPERATOR = "AND",
-    ) -> list[dict]:
+    ) -> list[common.CHANGEABLE_VALUES]:
         """対象カラムのデータ。
 
         Args:
@@ -139,7 +139,7 @@ class DataBase:
         self.cursor.execute(query)
         return self.cursor.fetchall()
 
-    def select_last(self, columns: tuple[str, ...]) -> dict:
+    def select_last(self, columns: tuple[str, ...]) -> common.CHANGEABLE_VALUES:
         """対象カラムの最後のデータを取得。
 
         Args:
