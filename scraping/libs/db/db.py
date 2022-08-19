@@ -150,14 +150,14 @@ class DataBase:
         """
         return self.select(columns, limit=1)[0]
 
-    def insert(self, columns: tuple[str, ...], values: common.CHANGEABLE_VALUES) -> None:
+    def insert(self, to_insert_values: common.CHANGEABLE_VALUES) -> None:
         """データをDBに挿入する。
 
         Args:
             columns (tuple[str, ...]): 対象カラム名。
             values (dict[str, str]): 対象データ。
         """
-        self.verify_columns(columns)
+        columns = tuple(to_insert_values.keys())
 
         # 対象カラムの数だけプレースホルダを用意 ex:(?, ?, ?)
         placeholders = ",".join("?" * len(columns))
@@ -168,9 +168,9 @@ class DataBase:
         insert_data = []
         for column in columns:
             try:
-                insert_data.append(values[column])
+                insert_data.append(to_insert_values[column])
             except KeyError:
-                raise sqlite3.ProgrammingError(f"The column '{column}' is doesn't exist in {values}.")
+                raise sqlite3.ProgrammingError(f"The column '{column}' is doesn't exist in {to_insert_values}.")
 
         self.cursor.execute(query, insert_data)
         self._commit()
