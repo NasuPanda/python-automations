@@ -54,3 +54,13 @@ class JumpplusParser(BaseParser):
 class ShosetsuParser(BaseParser):
     def __init__(self, html: str) -> None:
         super().__init__(html)
+
+    def parse_latest_episode_number_and_title(self) -> tuple[int, str]:
+        novel_episode_list = self._select_tags(".novel_sublist2")
+        try:
+            latest_episode_title = self._select_tag("a", novel_episode_list[-1])
+        except IndexError:
+            raise TagNotFoundError(f"Link doesn't exist\n{novel_episode_list}")
+
+        latest_episode_number = len(novel_episode_list)
+        return latest_episode_number, latest_episode_title.text

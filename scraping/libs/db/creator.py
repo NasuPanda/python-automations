@@ -79,4 +79,3 @@ def create_jumpplus_table(database_path: str) -> None:
             "latest_episode_title": "[第68話]ダンダダン",
         },
     )
-    print(db.select(("*",), {"title": "ダンダダン"}))

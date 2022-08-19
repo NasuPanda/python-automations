@@ -8,7 +8,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 from libs import common
-from libs.parser.providers import JumpplusParser, TonarinoyjParser
+from libs.parser.providers import JumpplusParser, ShosetsuParser, TonarinoyjParser
 
 
 class WebDriver:
@@ -18,7 +18,7 @@ class WebDriver:
             options.add_argument("--headless")
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
         # 待機時間の指定
-        self.wait = WebDriverWait(self.driver, 10)
+        self.wait = WebDriverWait(self.driver, 20)
 
     def parse_ongoing_titles_in_tonarinoyj(self) -> dict[str, str]:
         self.get(common.PROVIDER_URLS["tonarinoyj"])
@@ -34,8 +34,12 @@ class WebDriver:
         parser = JumpplusParser(self.current_page_source)
         return parser.parse_latest_episode_url()
 
-    def parse_tracking_titles_in_shosetsu(self) -> dict[str, str]:
-        return {"k": "v"}
+    def parse_tracking_title_in_shosetsu(self, novel_code: str) -> tuple[int, str]:
+        url = common.PROVIDER_URLS["shosetsu"] + novel_code
+        self.get(url)
+
+        parser = ShosetsuParser(self.current_page_source)
+        return parser.parse_latest_episode_number_and_title()
 
     def get(self, url: str) -> None:
         self.driver.get(url)

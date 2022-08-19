@@ -85,4 +85,41 @@ def find_latest_url_in_jumpplus() -> None:
 
 
 def find_latest_url_in_shosetsu() -> None:
-    SHOSETSU_TITLE = ""
+    SHOSETSU_TITLE = "Ｒｅ：ゼロから始める異世界生活"
+
+    db = DataBase(
+        "./db/DATA.db",
+        common.SHOSETSU_TABLE_NAME,
+        common.ALL_COLUMNS["shosetsu"],
+        common.UPDATABLE_COLUMNS["shosetsu"],
+    )
+    current_record = db.select(("*",), {"title": SHOSETSU_TITLE})[0]
+
+    driver = WebDriver()
+    latest_episode_number, latest_episode_title = driver.parse_tracking_title_in_shosetsu(current_record["ncode"])  # type: ignore
+
+    # 判定部分
+    if latest_episode_number != current_record["latest_episode_number"]:  # type: ignore
+        print("needs update!")
+
+        print("before_update", current_record)
+        db.update(
+            {"latest_episode_number": latest_episode_number, "latest_episode_title": latest_episode_title},
+            {"title": SHOSETSU_TITLE},
+        )
+        print(
+            "after update",
+            db.select(("latest_episode_number", "latest_episode_title"), where={"title": SHOSETSU_TITLE})[0],
+        )
+    else:
+        print("doesn't need update!")
+
+
+def main() -> None:
+    find_latest_url_in_jumpplus()
+    find_latest_url_in_tonarinoyj()
+    find_latest_url_in_shosetsu()
+
+
+if __name__ == "__main__":
+    main()
