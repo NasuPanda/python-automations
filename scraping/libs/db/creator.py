@@ -20,12 +20,11 @@ def create_shosetsu_table(database_path: str) -> None:
     )
 
     db.insert(
-        ("ncode", "title", "latest_episode_number", "latest_episode_title"),
         common.ShosetsuChangeableValues(
             ncode="n2267be",
             title="Ｒｅ：ゼロから始める異世界生活",
-            latest_episode_number=585,
-            latest_episode_title="第七章７５　『I know』",
+            latest_episode_number=584,
+            latest_episode_title=r"第七章７４　『イドラ・ミサンガ』",
         ),
     )
 
@@ -47,10 +46,9 @@ def create_tonarinoyj_table(database_path: str) -> None:
     )
 
     db.insert(
-        ("title", "latest_episode_url", "latest_episode_title"),
         {
             "title": "ワンパンマン",
-            "latest_episode_url": "3270375685396151729",
+            "latest_episode_url": r"https://tonarinoyj.jp/episode/3270375685396151729",
             "latest_episode_title": "[第214話] ワンパンマン",
         },
     )
@@ -60,6 +58,7 @@ def create_jumpplus_table(database_path: str) -> None:
     table_info = """
     id integer unique primary key autoincrement,
     title string unique,
+    first_episode_url string unique,
     latest_episode_url string unique,
     latest_episode_title string unique
     """
@@ -73,10 +72,11 @@ def create_jumpplus_table(database_path: str) -> None:
     )
 
     db.insert(
-        ("title", "latest_episode_url", "latest_episode_title"),
         {
             "title": "ダンダダン",
-            "latest_episode_url": "3269632237310729754",
-            "latest_episode_title": "[第69話]ダンダダン",
+            "first_episode_url": r"https://shonenjumpplus.com/episode/3269632237310729754",
+            "latest_episode_url": r"https://shonenjumpplus.com/episode/3270375685401141568",
+            "latest_episode_title": "[第68話]ダンダダン",
         },
     )
+    print(db.select(("*",), {"title": "ダンダダン"}))

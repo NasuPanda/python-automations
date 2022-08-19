@@ -13,7 +13,7 @@ JUMPPLUS_TABLE_NAME: Final = "jumpplus"
 TONARINOYJ_TABLE_NAME: Final = "tonarinoyj"
 
 ALL_COLUMNS: Final = {
-    "jumpplus": ("id", "title", "latest_episode_title", "latest_episode_url"),
+    "jumpplus": ("id", "title", "first_episode_url", "latest_episode_title", "latest_episode_url"),
     "tonarinoyj": ("id", "title", "latest_episode_title", "latest_episode_url"),
     "shosetsu": (
         "id",
@@ -25,7 +25,7 @@ ALL_COLUMNS: Final = {
 }
 
 UPDATABLE_COLUMNS: Final = {
-    "jumpplus": ("title", "latest_episode_title", "latest_episode_url"),
+    "jumpplus": ("title", "first_episode_url", "latest_episode_title", "latest_episode_url"),
     "tonarinoyj": ("title", "latest_episode_title", "latest_episode_url"),
     "shosetsu": (
         "ncode",
@@ -40,6 +40,7 @@ LOGICAL_OPERATOR = Literal["AND", "OR"]
 
 class JumpplusChangeableValues(TypedDict, total=False):
     title: str
+    first_episode_url: str
     latest_episode_title: str
     latest_episode_url: str
 
