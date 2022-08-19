@@ -33,3 +33,24 @@ class TonarinoyjParser(BaseParser):
         if isinstance(latest_episode_url, list):
             latest_episode_url = latest_episode_url[0]
         return title, latest_episode_url
+
+
+class JumpplusParser(BaseParser):
+    def __init__(self, html: str) -> None:
+        super().__init__(html)
+
+    def parse_latest_episode_url(self) -> str:
+        link_tag = self._select_tag("a.series-episode-list-container")
+        try:
+            latest_episode_url = link_tag["href"]
+        except KeyError:
+            raise TagNotFoundError(f"Link doesn't exist\n{link_tag}")
+
+        if isinstance(latest_episode_url, list):
+            latest_episode_url = latest_episode_url[0]
+        return latest_episode_url
+
+
+class ShosetsuParser(BaseParser):
+    def __init__(self, html: str) -> None:
+        super().__init__(html)

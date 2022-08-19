@@ -1,22 +1,41 @@
+import requests
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 
 from libs import common
-from libs.parser.providers import TonarinoyjParser
+from libs.parser.providers import JumpplusParser, TonarinoyjParser
 
 
 class WebDriver:
-    def __init__(self) -> None:
+    def __init__(self, headless: bool = True) -> None:
         options = Options()
-        options.add_argument("--headless")
+        if headless:
+            options.add_argument("--headless")
         self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+        # 待機時間の指定
+        self.wait = WebDriverWait(self.driver, 10)
 
     def parse_ongoing_titles_in_tonarinoyj(self) -> dict[str, str]:
         self.get(common.PROVIDER_URLS["tonarinoyj"])
         parser = TonarinoyjParser(self.current_page_source)
         return parser.parse_ongoing_titles()
+
+    def parse_latest_episode_url_in_jumpplus(self, first_episode_url: str) -> str:
+        self.get(first_episode_url)
+
+        self.wait.until(
+            expected_conditions.presence_of_element_located((By.CSS_SELECTOR, "a.series-episode-list-container"))
+        )
+        parser = JumpplusParser(self.current_page_source)
+        return parser.parse_latest_episode_url()
+
+    def parse_tracking_titles_in_shosetsu(self) -> dict[str, str]:
+        return {"k": "v"}
 
     def get(self, url: str) -> None:
         self.driver.get(url)
