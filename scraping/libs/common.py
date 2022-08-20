@@ -38,6 +38,11 @@ UPDATABLE_COLUMNS: Final = {
 LOGICAL_OPERATOR = Literal["AND", "OR"]
 
 
+class UpdatedTitlesAndUrls(TypedDict):
+    title: list[str]
+    url: list[str]
+
+
 class JumpplusChangeableValues(TypedDict, total=False):
     title: str
     first_episode_url: str

@@ -6,8 +6,16 @@ from libs.driver import WebDriver
 from libs.line import LineNotification
 
 
-def find_latest_url_in_tonarinoyj(manga_titles: list[str]) -> dict[str, list[str]]:
-    updated_titles_and_urls: dict[str, list[str]] = {"title": [], "url": []}
+def find_latest_url_in_tonarinoyj(manga_titles: list[str]) -> common.UpdatedTitlesAndUrls:
+    """となりのヤングジャンプから最新話のタイトルとURLを取得する。
+
+    Args:
+        manga_titles (list[str]): 対象作品のタイトル。
+
+    Returns:
+        common.UpdatedTitlesAndUrls: 対象作品のタイトルとURL。
+    """
+    updated_titles_and_urls: common.UpdatedTitlesAndUrls = {"title": [], "url": []}
     driver = WebDriver()
     db = DataBase(
         "./db/DATA.db",
@@ -17,14 +25,15 @@ def find_latest_url_in_tonarinoyj(manga_titles: list[str]) -> dict[str, list[str
     )
 
     for manga_title in manga_titles:
-        # 最新話のURLを取得
+        record_before_update = db.select(("latest_episode_url", "latest_episode_title"), where={"title": manga_title})[
+            0
+        ]
+
         ongoing_titles_and_latest_episode_url = driver.parse_ongoing_titles_in_tonarinoyj()
         latest_episode_url = ongoing_titles_and_latest_episode_url[manga_title]
-        # 最新話のタイトルを取得
+
         driver.get(latest_episode_url)
         latest_episode_title = driver.current_title
-
-        record_before_update = db.select(("latest_episode_url", "latest_episode_title"), where={"title": "ワンパンマン"})[0]
 
         if latest_episode_url != record_before_update["latest_episode_url"]:  # type: ignore
             db.update(
@@ -39,8 +48,16 @@ def find_latest_url_in_tonarinoyj(manga_titles: list[str]) -> dict[str, list[str
     return updated_titles_and_urls
 
 
-def find_latest_url_in_jumpplus(manga_titles: list[str]) -> dict[str, list[str]]:
-    updated_titles_and_urls: dict[str, list[str]] = {"title": [], "url": []}
+def find_latest_url_in_jumpplus(manga_titles: list[str]) -> common.UpdatedTitlesAndUrls:
+    """ジャンププラスから最新話のタイトルとURLを取得する。
+
+    Args:
+        manga_titles (list[str]): 対象作品のタイトル。
+
+    Returns:
+        common.UpdatedTitlesAndUrls: 対象作品のタイトルとURL。
+    """
+    updated_titles_and_urls: common.UpdatedTitlesAndUrls = {"title": [], "url": []}
     driver = WebDriver(headless=False)
     db = DataBase(
         "./db/DATA.db",
@@ -52,7 +69,6 @@ def find_latest_url_in_jumpplus(manga_titles: list[str]) -> dict[str, list[str]]
     for manga_title in manga_titles:
         record_before_update = db.select(("*",), {"title": manga_title})[0]
 
-        # 最新話のURLとタイトルを取得する処理
         latest_episode_url = driver.parse_latest_episode_url_in_jumpplus(record_before_update["first_episode_url"])  # type: ignore
         driver.get(latest_episode_url)
         latest_episode_title = driver.current_title
@@ -69,8 +85,16 @@ def find_latest_url_in_jumpplus(manga_titles: list[str]) -> dict[str, list[str]]
     return updated_titles_and_urls
 
 
-def find_latest_url_in_shosetsu(novel_titles: list[str]) -> dict[str, list[str]]:
-    updated_titles_and_urls: dict[str, list[str]] = {"title": [], "url": []}
+def find_latest_url_in_shosetsu(novel_titles: list[str]) -> common.UpdatedTitlesAndUrls:
+    """小説家になろうから最新話のタイトルとURLを取得する。
+
+    Args:
+        novel_titles (list[str]): 対象作品のタイトル。
+
+    Returns:
+        common.UpdatedTitlesAndUrls: 対象作品のタイトルとURL。
+    """
+    updated_titles_and_urls: common.UpdatedTitlesAndUrls = {"title": [], "url": []}
     driver = WebDriver()
     db = DataBase(
         "./db/DATA.db",
@@ -80,11 +104,10 @@ def find_latest_url_in_shosetsu(novel_titles: list[str]) -> dict[str, list[str]]
     )
 
     for novel_title in novel_titles:
-        current_record = db.select(("*",), {"title": novel_title})[0]
-        latest_episode_number, latest_episode_title = driver.parse_tracking_title_in_shosetsu(current_record["ncode"])  # type: ignore
+        record_before_update = db.select(("*",), {"title": novel_title})[0]
+        latest_episode_number, latest_episode_title = driver.parse_tracking_title_in_shosetsu(record_before_update["ncode"])  # type: ignore
 
-        # 判定部分
-        if latest_episode_number != current_record["latest_episode_number"]:  # type: ignore
+        if latest_episode_number != record_before_update["latest_episode_number"]:  # type: ignore
             db.update(
                 {"latest_episode_number": latest_episode_number, "latest_episode_title": latest_episode_title},
                 {"title": novel_title},
@@ -92,13 +115,22 @@ def find_latest_url_in_shosetsu(novel_titles: list[str]) -> dict[str, list[str]]
             # エピソードのタイトルに作品のタイトルが含まれないので別途追加しておく
             updated_titles_and_urls["title"].append(f"title: {novel_title}\n{latest_episode_title}")
             updated_titles_and_urls["url"].append(
-                rf"{common.PROVIDER_URLS['shosetsu']}/{current_record['ncode']}/{latest_episode_number}"
+                rf"{common.PROVIDER_URLS['shosetsu']}/{record_before_update['ncode']}/{latest_episode_number}"
             )
 
     return updated_titles_and_urls
 
 
-def message_of_works_update(provider: str, updated_work_title_and_url: dict[str, list[str]]) -> str:
+def message_of_works_update(provider: str, updated_work_title_and_url: common.UpdatedTitlesAndUrls) -> str:
+    """作品の更新を通知するためのメッセージを生成する。
+
+    Args:
+        provider (str): 対象のWebサイト。
+        updated_work_title_and_url (common.UpdatedTitlesAndUrls): 対象作品のタイトルとURL。
+
+    Returns:
+        str: 生成したメッセージ。
+    """
     message = f"★ {provider}の更新\n"
 
     if len(updated_work_title_and_url["title"]) == 0:
@@ -107,8 +139,6 @@ def message_of_works_update(provider: str, updated_work_title_and_url: dict[str,
 
     for title, url in zip(updated_work_title_and_url["title"], updated_work_title_and_url["url"]):
         message += f"{title}\n{url}\n"
-
-    message += "\n"
 
     return message
 
