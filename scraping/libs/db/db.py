@@ -1,7 +1,3 @@
-"""
-TODO docsの整備
-"""
-
 from __future__ import annotations
 
 import sqlite3
@@ -19,6 +15,9 @@ class InvalidColumnError(DBError):
 
 
 def dict_factory(cursor: sqlite3.Cursor, row: sqlite3.Row) -> dict:
+    """
+    sqlite の select でデータを取得する時、辞書として取得する。
+    """
     result = {}
     for i, column in enumerate(cursor.description):
         result[column[0]] = row[i]
@@ -26,32 +25,7 @@ def dict_factory(cursor: sqlite3.Cursor, row: sqlite3.Row) -> dict:
 
 
 class DataBase:
-    """データベースを抽象化するクラス。
-
-    table_info = \"\"\"
-    id integer unique primary key autoincrement,
-    title string unique,
-    latest_episode_url string unique,
-    latest_episode_title string unique
-    "\"\"\
-
-    db = DataBase(
-        database_path,
-        common.TONARINOYJ_TABLE_NAME,
-        common.ALL_COLUMNS["tonarinoyj"],
-        common.UPDATABLE_COLUMNS["tonarinoyj"],
-        table_info,
-    )
-
-    db.insert(
-        ("title", "latest_episode_url", "latest_episode_title"),
-        {
-            "title": "ワンパンマン",
-            "latest_episode_url": "0123456789",
-            "latest_episode_title": "[第XXX話] ワンパンマン",
-        },
-    )
-    """
+    """データベースを抽象化するクラス。"""
 
     def __init__(
         self,
@@ -65,14 +39,17 @@ class DataBase:
 
         Args:
             db_path (str): DBのパス。
-            table_name (str): 対象テーブル名。
-            create_table_query (str): テーブルの生成に使うクエリ。
+            table_name (str): テーブル名。
+            columns (tuple[str, ...]): 全てのカラム名。
+            updatable_columns (tuple[str, ...]): 更新可能なカラム名。
+            table_info (str | None, optional): 作成するテーブルのカラム情報を持つクエリ。デフォルトは None 。
         """
-        self.table_name = table_name
         self.connection = sqlite3.connect(db_path)
-        # select の結果を辞書に変更
+        # select の結果を辞書に変更する
         self.connection.row_factory = dict_factory
         self.cursor = self.connection.cursor()
+
+        self.table_name = table_name
         self.columns = columns
         self.updatable_columns = updatable_columns
 
@@ -97,6 +74,14 @@ class DataBase:
         self._commit()
 
     def table_exists(self, table_name: str) -> bool:
+        """テーブルが存在するかどうか。
+
+        Args:
+            table_name (str): 対象のテーブル名。
+
+        Returns:
+            bool: テーブルが存在するかどうかを表す真偽値。
+        """
         self.cursor.execute(f"SELECT COUNT(*) FROM sqlite_master WHERE TYPE='table' AND name='{table_name}'")
         # NOTE: 返り値は {クエリ: 値} の辞書
         return False if self.cursor.fetchone()["COUNT(*)"] == 0 else True
@@ -117,14 +102,18 @@ class DataBase:
         limit: int | None = None,
         where_logical_operator: common.LOGICAL_OPERATOR = "AND",
     ) -> list[common.CHANGEABLE_VALUES]:
-        """対象カラムのデータ。
+        """SELECT クエリを実行する。
 
         Args:
-            columns (tuple[str]): 対象カラム。
-            limit (None | int, optional): 取得するデータ数。 デフォルトは None 。
+            columns (tuple[str, ...]): 取得したいカラム名。
+            NOTE: 全てのカラムを取得したい場合 ("*", ) とする。
+            where (dict[str, str  |  int] | None, optional): WHERE の条件。キーを対象カラム、値を検索対象値とした辞書で指定する。 デフォルトは None.
+            NOTE: WHERE column = value にしか対応していない。
+            limit (int | None, optional): 取得するデータ数。 デフォルトは None.
+            where_logical_operator (common.LOGICAL_OPERATOR, optional): WHERE につかう論理演算子。 デフォルトは "AND" 。
 
         Returns:
-            list[tuple]: 取得したデータ。
+            list[common.CHANGEABLE_VALUES]: 取得したデータ(辞書形式)のリスト。
         """
         if where:
             self.verify_where_statements(where)
@@ -140,7 +129,7 @@ class DataBase:
         return self.cursor.fetchall()
 
     def select_last(self, columns: tuple[str, ...]) -> common.CHANGEABLE_VALUES:
-        """対象カラムの最後のデータを取得。
+        """対象カラムの最後のレコードを取得。
 
         Args:
             columns (str): 対象カラム。
@@ -151,11 +140,13 @@ class DataBase:
         return self.select(columns, limit=1)[0]
 
     def insert(self, to_insert_values: common.CHANGEABLE_VALUES) -> None:
-        """データをDBに挿入する。
+        """レコードをテーブルに挿入する。
 
         Args:
-            columns (tuple[str, ...]): 対象カラム名。
-            values (dict[str, str]): 対象データ。
+            to_insert_values (common.CHANGEABLE_VALUES): 挿入するデータ。
+
+        Raises:
+            InvalidColumnError: 存在しないカラムを指定した場合。
         """
         columns = tuple(to_insert_values.keys())
 
@@ -170,7 +161,7 @@ class DataBase:
             try:
                 insert_data.append(to_insert_values[column])
             except KeyError:
-                raise sqlite3.ProgrammingError(f"The column '{column}' is doesn't exist in {to_insert_values}.")
+                raise InvalidColumnError(f"The column '{column}' is doesn't exist in {to_insert_values}.")
 
         self.cursor.execute(query, insert_data)
         self._commit()
@@ -181,6 +172,15 @@ class DataBase:
         where: dict[str, str | int],
         where_logical_operator: common.LOGICAL_OPERATOR = "AND",
     ) -> None:
+        """
+        レコードを更新する。
+
+        Args:
+            to_update (common.CHANGEABLE_VALUES): 更新する値の辞書。
+            where (dict[str, str  |  int] | None, optional): WHERE の条件。キーを対象カラム、値を検索対象値とした辞書で指定する。 デフォルトは None.
+            NOTE: WHERE column = value にしか対応していない。
+            where_logical_operator (common.LOGICAL_OPERATOR, optional): WHERE につかう論理演算子。 デフォルトは "AND" 。
+        """
         self.verify_value_to_update(to_update)
         self.verify_where_statements(where)
 
@@ -194,6 +194,14 @@ class DataBase:
         self._commit()
 
     def delete(self, where: dict[str, str | int], where_logical_operator: common.LOGICAL_OPERATOR = "AND") -> None:
+        """レコードを削除する。
+
+        Args:
+            to_update (common.CHANGEABLE_VALUES): 更新する値の辞書。
+            where (dict[str, str  |  int] | None, optional): WHERE の条件。キーを対象カラム、値を検索対象値とした辞書で指定する。 デフォルトは None.
+            NOTE: WHERE column = value にしか対応していない。
+            where_logical_operator (common.LOGICAL_OPERATOR, optional): WHERE につかう論理演算子。 デフォルトは "AND" 。
+        """
         self.verify_where_statements(where)
 
         query = f"""
@@ -218,7 +226,7 @@ class DataBase:
         # str(columns)の挙動
         # 長さ1の時      : (column1, )
         # 長さ2以上のとき : (column1, column2, ...)
-        # 無効な形式にならないように長さ1の時はそのまま返す。
+        # クエリとして無効な形式にならないように長さ1の時はそのまま返す。
         query = str(columns) if len(columns) != 1 else f"({columns[0]})"
         # NOTE: ' と () は削除しておく。
         # SELECT は カラム名が ' で囲われているとエラーが出るため。
@@ -226,6 +234,14 @@ class DataBase:
 
     @classmethod
     def to_set_statements(cls, to_update: common.CHANGEABLE_VALUES) -> str:
+        """辞書をクエリで使える SET 句文字列にフォーマットする。
+
+        Args:
+            to_update (common.CHANGEABLE_VALUES): 更新する値の辞書。
+
+        Returns:
+            str: key = value, key2 = value2, ... 形式の文字列。
+        """
         queries = []
         for key, value in to_update.items():
             # value が文字列型なら ''シングルクォーテーション で囲み、そうでないならそのまま
@@ -237,27 +253,45 @@ class DataBase:
     def to_where_statements(
         cls, to_where: dict[str, str | int], where_logical_operator: Literal["AND", "OR"] = "AND"
     ) -> str:
+        """辞書をクエリで使える WHERE 句文字列にフォーマットする。
+        NOTE: `=` にしか対応していない。
+
+        Args:
+            to_where (dict[str, str  |  int]): WHERE の条件。キーを対象カラム、値を検索対象値とした辞書で指定する。 デフォルトは None.
+            where_logical_operator (Literal[&quot;AND&quot;, &quot;OR&quot;], optional)\n
+                :WHERE につかう論理演算子。 デフォルトは "AND" 。
+
+        Returns:
+            str: key=value AND/OR key2=value2 形式の文字列。
+        """
         queries = []
         for key, value in to_where.items():
             query = f"{key}='{value}'" if type(value) == str else f"{key}={value}"
             queries.append(query)
         return f" {where_logical_operator} ".join(queries)
 
-    def verify_columns(self, columns: tuple[str, ...]) -> None:
-        for column in columns:
-            if column not in self.columns:
-                raise InvalidColumnError(f"This column is invalid {column}")
-
     def verify_where_statements(self, where_statements: dict[str, str | int]) -> None:
+        """WHERE の条件を指定する辞書が無効なカラムを含んでいないか検証する。
+
+        Args:
+            where_statements (dict[str, str  |  int]): WHERE の条件。キーを対象カラム、値を検索対象値とした辞書で指定する。 デフォルトは None.
+
+        Raises:
+            InvalidColumnError: 無効なカラムが含まれていた時。
+        """
         for key in where_statements.keys():
             if key not in self.columns:
                 raise InvalidColumnError(f"This column is invalid: {key}")
 
     def verify_value_to_update(self, to_update: common.CHANGEABLE_VALUES) -> None:
+        """更新に使う辞書が無効なカラムを含んでいないか検証する。
+
+        Args:
+            to_update (common.CHANGEABLE_VALUES): 更新する値の辞書。
+
+        Raises:
+            InvalidColumnError: 無効なカラムが含まれていた時。
+        """
         for key in to_update.keys():
             if key not in self.updatable_columns:
                 raise InvalidColumnError(f"This column is invalid: {key}")
-
-    def verify_value_to_insert(self, to_insert: common.CHANGEABLE_VALUES) -> None:
-        # update のエイリアスとして記入
-        self.verify_value_to_update(to_insert)

@@ -4,6 +4,13 @@ from .db import DataBase
 
 
 def create_shosetsu_table(database_path: str, insert_values: list[common.ShosetsuChangeableValues]) -> None:
+    """DBに小説家になろう用のテーブルを生成する。
+
+    Args:
+        database_path (str): DBのパス。
+        insert_values (list[common.ShosetsuChangeableValues]): 作成したテーブルに書き込むデータ。
+    """
+
     table_info = """
     id integer unique primary key autoincrement,
     ncode string unique,
@@ -23,6 +30,13 @@ def create_shosetsu_table(database_path: str, insert_values: list[common.Shosets
 
 
 def create_tonarinoyj_table(database_path: str, insert_values: list[common.TonarinoyjChangeableValues]) -> None:
+    """DBにとなりのヤングジャンプ用のテーブルを生成する。
+
+    Args:
+        database_path (str): DBのパス。
+        insert_values (list[common.TonarinoyjChangeableValues]): 作成したテーブルに書き込むデータ。
+    """
+
     table_info = """
     id integer unique primary key autoincrement,
     title string unique,
@@ -42,6 +56,13 @@ def create_tonarinoyj_table(database_path: str, insert_values: list[common.Tonar
 
 
 def create_jumpplus_table(database_path: str, insert_values: list[common.JumpplusChangeableValues]) -> None:
+    """DBにジャンププラス用のテーブルを生成する。
+
+    Args:
+        database_path (str): DBのパス。
+        insert_values (list[common.JumpplusChangeableValues]): 作成したテーブルに書き込むデータ。
+    """
+
     table_info = """
     id integer unique primary key autoincrement,
     title string unique,

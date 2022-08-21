@@ -7,12 +7,16 @@ from credentials import credentials
 
 
 class LineNotification:
+    """Line通知。"""
+
     API_URL: Final = "https://notify-api.line.me/api/notify"
 
     @classmethod
     def send_notification(cls, message: str) -> None:
-        """
-        LINEに通知する
+        """Lineに通知する。
+
+        Args:
+            message (str): 通知するメッセージ。
         """
         headers = {"Authorization": f"Bearer {credentials.LINE_NOTIFY_TOKEN}"}
         # 末尾の改行を消しておく
