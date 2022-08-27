@@ -21,7 +21,11 @@ class TonarinoyjParser(BaseParser):
 
     def select_title_and_latest_episode_url(self, manga_tag: Tag) -> tuple[str, str]:
         title = self._select_tag("h4", tag=manga_tag).get_text()
-        link_tag = self._select_tag(".link-latest a", tag=manga_tag)
+        try:
+            link_tag = self._select_tag(".link-latest a", tag=manga_tag)
+        # NOTE: 最新話のリンクが無い場合1話のみである可能性が高いので1話のリンクを取得
+        except TagNotFoundError:
+            link_tag = self._select_tag(".link-first-episode a")
 
         # 見つからなかった場合エラーを投げる
         try:
