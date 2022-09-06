@@ -38,6 +38,10 @@ def delay_sec(wait_time_sec: int) -> float:
             return time.perf_counter() - start_at
 
 
+def wait_user_input() -> None:
+    input("処理を開始するには Enter キーを、終了するには Ctrl + C を押してください...:")
+
+
 def exec_order(order: Order) -> str:
     """Execute order.
 
@@ -53,7 +57,9 @@ def main() -> None:
     """Main."""
     # NOTE: 変更するのはここ
     order = Order(key="esc", wait_time_sec=840)
-    print(exec_order(order))
+    while True:
+        wait_user_input()
+        print(exec_order(order))
 
 
 if __name__ == "__main__":
