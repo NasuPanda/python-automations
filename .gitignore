@@ -12,6 +12,7 @@ par-parser/src/models/vi.py
 *.pptx
 *.pptm
 *.par
+*.db
 
 # 不要なので除外
 **/__pycache__/**
