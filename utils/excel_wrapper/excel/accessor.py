@@ -49,7 +49,7 @@ class ExcelAccessor:
 
     def _validate_new_sheet_title(self, new_sheet_title: str) -> None:
         if new_sheet_title in self.wb.sheetnames:
-            raise ValueError(f"{new_sheet_title} is already in use.")
+            raise ValueError(f"new_sheet_title: {new_sheet_title} は既に使われています")
 
     @staticmethod
     def _column_to_index_if_string(column: types.ColumnKey) -> int:
@@ -70,8 +70,9 @@ class ExcelAccessor:
         return len(self.wb.worksheets)
 
     @property
-    def current_sheet_title(self) -> bytes | str | int:
-        return self.active_worksheet.title
+    def current_sheet_title(self) -> str:
+        # HACK: bytes | str | int 型となっているが str なので無視する
+        return self.active_worksheet.title  # type: ignore
 
     @property
     def sheet_titles(self) -> list[str]:
@@ -155,13 +156,34 @@ class ExcelAccessor:
             for row_index in range(begin_row, end_row + 1)  # 1-based index なので +1 する
         ]
 
-    def read_current_sheet(self) -> list[types.CellValue]:
-        # TODO
-        return []
+    def read_current_sheet(
+        self, sheet_reading_direction: types.SheetReadingDirection = "row"
+    ) -> list[list[types.CellValue]]:
+        if sheet_reading_direction == "row":
+            return [
+                self.read_row_values(row_index=row_index, begin_column=self.min_column, end_column=self.max_column)
+                for row_index in range(self.min_row, self.max_row + 1)
+            ]
+        elif sheet_reading_direction == "column":
+            return [
+                self.read_column_values(column_index, self.min_row, self.max_row)
+                for column_index in range(self.min_column, self.max_column + 1)
+            ]
+        else:
+            raise ValueError(f"{sheet_reading_direction}は無効な引数です 次のいずれかにして下さい: {types.SheetReadingDirection}")
 
-    def read_all_sheet(self) -> dict[str, list[types.CellValue]]:
-        # TODO
-        return {"sheet_title": []}
+    def read_all_sheets(
+        self, sheet_reading_direction: types.SheetReadingDirection = "row"
+    ) -> dict[str, list[list[types.CellValue]]]:
+        current_active_worksheet_title = self.current_sheet_title
+        all_sheets_titles_and_values: dict[str, list[list[types.CellValue]]] = {}
+
+        for sheet_title in self.sheet_titles:
+            self.change_active_worksheet(sheet_title)
+            all_sheets_titles_and_values[sheet_title] = self.read_current_sheet(sheet_reading_direction)
+
+        self.change_active_worksheet(current_active_worksheet_title)
+        return all_sheets_titles_and_values
 
     def write_cell_by_index(self, row: int, column: int, value: types.CellValue) -> None:
         self.active_worksheet.cell(row=row, column=column, value=value)

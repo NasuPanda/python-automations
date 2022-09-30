@@ -19,8 +19,7 @@ def result_path(filename: str) -> str:
 
 
 excel = ExcelAccessor(excel_path=TEST_FILE_PATH, first_active_sheet="1")
-print(excel.read_row_values(3, 1, 5))
-print(excel.read_row_values(3, "A", "E"))
-print(excel.read_column_values(3, 1, 5))
-print(excel.read_column_values("C", 1, 5))
+print(excel.read_current_sheet("row"))
+print(excel.read_current_sheet("column"))
+print(excel.read_all_sheets("row"))
 excel.save_as(result_path(filename=get_timestamp()))
