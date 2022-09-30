@@ -7,7 +7,6 @@ authors = ["NasuPanda <xiyuanjunzhi@gmail.com>"]
 [tool.poetry.dependencies]
 python = "^3.10"
 openpyxl = "^3.0.10"
-pywin32 = "^304"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
