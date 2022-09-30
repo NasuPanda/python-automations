@@ -4,10 +4,9 @@ import openpyxl as xl
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell, MergedCell
-from openpyxl.utils.cell import column_index_from_string
-import win32com.client
+from openpyxl.utils.cell import column_index_from_string, get_column_letter
 
-from .types import SheetKey, CellValue
+from .types import ColumnKey, SheetKey, CellValue
 
 
 class ExcelAccessor:
@@ -52,6 +51,20 @@ class ExcelAccessor:
         if new_sheet_title in self.wb.sheetnames:
             raise ValueError(f"{new_sheet_title} is already in use.")
 
+    @staticmethod
+    def _column_to_index_if_string(column: ColumnKey) -> int:
+        if isinstance(column, str):
+            return column_index_from_string(column)
+        else:
+            return column
+
+    @staticmethod
+    def _column_to_string_if_index(column: ColumnKey) -> str:
+        if isinstance(column, int):
+            return get_column_letter(column)
+        else:
+            return column
+
     @property
     def number_of_sheets(self) -> int:
         return len(self.wb.worksheets)
@@ -59,6 +72,26 @@ class ExcelAccessor:
     @property
     def current_sheet_title(self) -> bytes | str | int:
         return self.active_worksheet.title
+
+    @property
+    def sheet_titles(self) -> list[str]:
+        return self.wb.sheetnames
+
+    @property
+    def min_row(self) -> int:
+        return self.active_worksheet.min_row
+
+    @property
+    def max_row(self) -> int:
+        return self.active_worksheet.max_row
+
+    @property
+    def min_column(self) -> int:
+        return self.active_worksheet.min_column
+
+    @property
+    def max_column(self) -> int:
+        return self.active_worksheet.max_column
 
     def change_active_worksheet(self, sheet_key: SheetKey) -> None:
         self.active_worksheet = self._get_worksheet(sheet_key)
@@ -99,18 +132,34 @@ class ExcelAccessor:
     def overwrite(self) -> None:
         self.wb.save(self.excel_path)
 
-    def read_cell_by_index(self, row: int, column: int) -> Cell | MergedCell:
-        # HACK : read_only \ write_only モードには対応しないため型無視する
-        return self.active_worksheet.cell(row=row, column=column)  # type: ignore
-
     def read_cell_value_by_index(self, row: int, column: int) -> CellValue:
-        return self.read_cell_by_index(row, column).value
-
-    def read_cell_by_coordinate(self, coordinate: str) -> Cell | MergedCell:
-        return self.active_worksheet[coordinate]
+        return self.active_worksheet.cell(row=row, column=column).value
 
     def read_cell_value_by_coordinate(self, coordinate: str) -> CellValue:
-        return self.read_cell_by_coordinate(coordinate).value
+        return self.active_worksheet[coordinate].value
+
+    def read_row_values(self, row_index: int, begin_column: ColumnKey, end_column: ColumnKey) -> list[CellValue]:
+        begin_column_index = self._column_to_index_if_string(begin_column)
+        end_column_index = self._column_to_index_if_string(end_column)
+        return [
+            self.read_cell_value_by_index(row=row_index, column=column_index)
+            for column_index in range(begin_column_index, end_column_index + 1)  # 1-based index なので +1 する
+        ]
+
+    def read_column_values(self, column: ColumnKey, begin_row: int, end_row: int) -> list[CellValue]:
+        column_index = self._column_to_index_if_string(column)
+        return [
+            self.read_cell_value_by_index(row=row_index, column=column_index)
+            for row_index in range(begin_row, end_row + 1)  # 1-based index なので +1 する
+        ]
+
+    def read_current_sheet(self) -> list[CellValue]:
+        # TODO
+        return []
+
+    def read_all_sheet(self) -> dict[str, list[CellValue]]:
+        # TODO
+        return {"sheet_title": []}
 
     def write_cell_by_index(self, row: int, column: int, value: CellValue) -> None:
         self.active_worksheet.cell(row=row, column=column, value=value)
@@ -118,24 +167,22 @@ class ExcelAccessor:
     def write_cell_by_coordinate(self, coordinate: str, value: CellValue) -> None:
         self.active_worksheet[coordinate](value=value)
 
-    def write_row(self, row_index: int, begin_column: int | str, values: list[CellValue]) -> None:
-        if isinstance(begin_column, str):
-            begin_column_index = column_index_from_string(begin_column)
-        else:
-            begin_column_index = begin_column
+    def write_row(self, row_index: int, begin_column: ColumnKey, values: list[CellValue]) -> None:
+        begin_column_index = self._column_to_index_if_string(begin_column)
 
         [
             self.active_worksheet.cell(row=row_index, column=begin_column_index + i, value=value)
             for i, value in enumerate(values)
         ]
 
-    def write_column(self, begin_row_index: int, column: int | str, values: list[CellValue]) -> None:
-        if isinstance(column, str):
-            column_index = column_index_from_string(column)
-        else:
-            column_index = column
+    def write_column(self, begin_row_index: int, column: ColumnKey, values: list[CellValue]) -> None:
+        column_index = self._column_to_index_if_string(column)
 
         [
             self.active_worksheet.cell(row=begin_row_index + i, column=column_index, value=value)
             for i, value in enumerate(values)
         ]
+
+    def add_graph(self) -> None:
+        # TODO
+        return

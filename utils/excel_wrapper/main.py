@@ -19,7 +19,8 @@ def result_path(filename: str) -> str:
 
 
 excel = ExcelAccessor(excel_path=TEST_FILE_PATH, first_active_sheet="1")
-excel.write_row(1, 3, ["3行目からwrite_row", 1, 2, 3, 4, 5, 6, 7, 8, 9])
-excel.change_active_worksheet(3)
-excel.write_column(3, 1, ["3列目からwrite_column", 1, 2, 3, 4, 5, 6, 7, 8, 9])
+print(excel.read_row_values(3, 1, 5))
+print(excel.read_row_values(3, "A", "E"))
+print(excel.read_column_values(3, 1, 5))
+print(excel.read_column_values("C", 1, 5))
 excel.save_as(result_path(filename=get_timestamp()))
