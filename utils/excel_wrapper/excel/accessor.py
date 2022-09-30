@@ -6,7 +6,7 @@ from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.utils.cell import column_index_from_string, get_column_letter
 
-from .types import ColumnKey, SheetKey, CellValue
+from excel import types
 
 
 class ExcelAccessor:
@@ -20,7 +20,7 @@ class ExcelAccessor:
     read_only, write_only には対応していない。
     """
 
-    def __init__(self, excel_path: str, first_active_sheet: SheetKey = 0) -> None:
+    def __init__(self, excel_path: str, first_active_sheet: types.SheetKey = 0) -> None:
         if os.path.isfile(excel_path):
             self.wb: Workbook = xl.load_workbook(excel_path)
         else:
@@ -29,7 +29,7 @@ class ExcelAccessor:
         self.active_worksheet: Worksheet = self._get_worksheet(first_active_sheet)
         self.excel_path: str = excel_path
 
-    def _get_worksheet(self, sheet_key: SheetKey) -> Worksheet:
+    def _get_worksheet(self, sheet_key: types.SheetKey) -> Worksheet:
         # インデックス指定の場合
         if isinstance(sheet_key, int):
             try:
@@ -52,14 +52,14 @@ class ExcelAccessor:
             raise ValueError(f"{new_sheet_title} is already in use.")
 
     @staticmethod
-    def _column_to_index_if_string(column: ColumnKey) -> int:
+    def _column_to_index_if_string(column: types.ColumnKey) -> int:
         if isinstance(column, str):
             return column_index_from_string(column)
         else:
             return column
 
     @staticmethod
-    def _column_to_string_if_index(column: ColumnKey) -> str:
+    def _column_to_string_if_index(column: types.ColumnKey) -> str:
         if isinstance(column, int):
             return get_column_letter(column)
         else:
@@ -93,7 +93,7 @@ class ExcelAccessor:
     def max_column(self) -> int:
         return self.active_worksheet.max_column
 
-    def change_active_worksheet(self, sheet_key: SheetKey) -> None:
+    def change_active_worksheet(self, sheet_key: types.SheetKey) -> None:
         self.active_worksheet = self._get_worksheet(sheet_key)
 
     def rename_active_worksheet(self, new_sheet_title: str) -> None:
@@ -108,7 +108,7 @@ class ExcelAccessor:
 
     def copy_worksheet(
         self,
-        src_sheet_key: SheetKey,
+        src_sheet_key: types.SheetKey,
         destination_sheet_title: str,
         needs_change_active_worksheet: bool = False,
     ) -> Worksheet:
@@ -122,7 +122,7 @@ class ExcelAccessor:
 
         return destination_ws
 
-    def remove_sheet(self, sheet_key: SheetKey) -> None:
+    def remove_sheet(self, sheet_key: types.SheetKey) -> None:
         ws = self._get_worksheet(sheet_key)
         self.wb.remove(ws)
 
@@ -132,13 +132,15 @@ class ExcelAccessor:
     def overwrite(self) -> None:
         self.wb.save(self.excel_path)
 
-    def read_cell_value_by_index(self, row: int, column: int) -> CellValue:
+    def read_cell_value_by_index(self, row: int, column: int) -> types.CellValue:
         return self.active_worksheet.cell(row=row, column=column).value
 
-    def read_cell_value_by_coordinate(self, coordinate: str) -> CellValue:
+    def read_cell_value_by_coordinate(self, coordinate: str) -> types.CellValue:
         return self.active_worksheet[coordinate].value
 
-    def read_row_values(self, row_index: int, begin_column: ColumnKey, end_column: ColumnKey) -> list[CellValue]:
+    def read_row_values(
+        self, row_index: int, begin_column: types.ColumnKey, end_column: types.ColumnKey
+    ) -> list[types.CellValue]:
         begin_column_index = self._column_to_index_if_string(begin_column)
         end_column_index = self._column_to_index_if_string(end_column)
         return [
@@ -146,28 +148,28 @@ class ExcelAccessor:
             for column_index in range(begin_column_index, end_column_index + 1)  # 1-based index なので +1 する
         ]
 
-    def read_column_values(self, column: ColumnKey, begin_row: int, end_row: int) -> list[CellValue]:
+    def read_column_values(self, column: types.ColumnKey, begin_row: int, end_row: int) -> list[types.CellValue]:
         column_index = self._column_to_index_if_string(column)
         return [
             self.read_cell_value_by_index(row=row_index, column=column_index)
             for row_index in range(begin_row, end_row + 1)  # 1-based index なので +1 する
         ]
 
-    def read_current_sheet(self) -> list[CellValue]:
+    def read_current_sheet(self) -> list[types.CellValue]:
         # TODO
         return []
 
-    def read_all_sheet(self) -> dict[str, list[CellValue]]:
+    def read_all_sheet(self) -> dict[str, list[types.CellValue]]:
         # TODO
         return {"sheet_title": []}
 
-    def write_cell_by_index(self, row: int, column: int, value: CellValue) -> None:
+    def write_cell_by_index(self, row: int, column: int, value: types.CellValue) -> None:
         self.active_worksheet.cell(row=row, column=column, value=value)
 
-    def write_cell_by_coordinate(self, coordinate: str, value: CellValue) -> None:
+    def write_cell_by_coordinate(self, coordinate: str, value: types.CellValue) -> None:
         self.active_worksheet[coordinate](value=value)
 
-    def write_row(self, row_index: int, begin_column: ColumnKey, values: list[CellValue]) -> None:
+    def write_row(self, row_index: int, begin_column: types.ColumnKey, values: list[types.CellValue]) -> None:
         begin_column_index = self._column_to_index_if_string(begin_column)
 
         [
@@ -175,7 +177,7 @@ class ExcelAccessor:
             for i, value in enumerate(values)
         ]
 
-    def write_column(self, begin_row_index: int, column: ColumnKey, values: list[CellValue]) -> None:
+    def write_column(self, begin_row_index: int, column: types.ColumnKey, values: list[types.CellValue]) -> None:
         column_index = self._column_to_index_if_string(column)
 
         [
