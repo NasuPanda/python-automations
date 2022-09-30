@@ -1,4 +1,4 @@
-from excel.excel import ExcelAccessor
+from excel.accessor import ExcelAccessor
 
 
 TEST_FILE_PATH = "./tests/test.xlsx"
