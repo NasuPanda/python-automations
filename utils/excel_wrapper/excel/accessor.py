@@ -47,9 +47,18 @@ class ExcelAccessor:
         # HACK: read_only \ write_only モードには対応しないため型無視する
         return ws  # type: ignore
 
-    def _validate_new_sheet_title(self, new_sheet_title: str) -> None:
+    def _validate_new_sheet_title(self, new_sheet_title: str) -> bool:
         if new_sheet_title in self.wb.sheetnames:
-            raise ValueError(f"new_sheet_title: {new_sheet_title} は既に使われています")
+            return False
+        return True
+
+    @staticmethod
+    def validate_column_string(column: str) -> bool:
+        try:
+            column_index_from_string(column)
+        except (ValueError, AttributeError):
+            return False
+        return True
 
     @staticmethod
     def _column_to_index_if_string(column: types.ColumnKey) -> int:
@@ -98,14 +107,16 @@ class ExcelAccessor:
         self.active_worksheet = self._get_worksheet(sheet_key)
 
     def rename_active_worksheet(self, new_sheet_title: str) -> None:
-        self._validate_new_sheet_title(new_sheet_title)
+        if not self._validate_new_sheet_title(new_sheet_title):
+            raise ValueError(f"new_sheet_title: {new_sheet_title} は既に使われています")
         self.active_worksheet.title = new_sheet_title
 
-    def add_sheet(self, sheet_title: str) -> Worksheet:
+    def add_sheet(self, new_sheet_title: str) -> Worksheet:
         """シートを追加する(挿入位置は末尾)"""
-        self._validate_new_sheet_title(sheet_title)
+        if not self._validate_new_sheet_title(new_sheet_title):
+            raise ValueError(f"new_sheet_title: {new_sheet_title} は既に使われています")
         # HACK : read_only \ write_only モードには対応しないため型無視する
-        return self.wb.create_sheet(title=sheet_title)  # type: ignore
+        return self.wb.create_sheet(title=new_sheet_title)  # type: ignore
 
     def copy_worksheet(
         self,
@@ -206,7 +217,3 @@ class ExcelAccessor:
             self.active_worksheet.cell(row=begin_row_index + i, column=column_index, value=value)
             for i, value in enumerate(values)
         ]
-
-    def add_graph(self) -> None:
-        # TODO
-        return
