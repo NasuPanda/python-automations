@@ -1,12 +1,33 @@
 import os
+import pathlib
+import re
 
 import openpyxl as xl
 from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.utils.cell import column_index_from_string, get_column_letter
+import win32com.client
 
 from excel import types
+
+
+# ex: Sub FooBar()
+REGEX_MACRO_LINE = re.compile(r"Sub \S+\(\)")
+# `Sub ` or `()` にマッチ
+REGEX_MACRO_NAME = re.compile(r"Sub |\(\)")
+
+
+def relative_to_abs(path: str) -> str:
+    """相対パスを絶対パスに変換する。(相対パスだと pywin32 でエラーが出るため)
+
+    Args:
+        path (str): 変換前のファイルパス。
+
+    Returns:
+        str: 絶対パスに変換したファイルパス。
+    """
+    return str(pathlib.Path(path).resolve())
 
 
 class ExcelAccessor:
@@ -21,13 +42,17 @@ class ExcelAccessor:
     """
 
     def __init__(self, excel_path: str, first_active_sheet: types.SheetKey = 0) -> None:
-        if os.path.isfile(excel_path):
-            self.wb: Workbook = xl.load_workbook(excel_path)
+        self.excel_path: str = relative_to_abs(excel_path)
+        # _load_workbook は excel_path を利用するのでセット後に実行する
+        self._load_workbook(first_active_sheet)
+
+    def _load_workbook(self, active_sheet: types.SheetKey = 0) -> None:
+        """self.wb, self.active_worksheet を更新する。(self.excel_path, self._is_xlsm()を利用)"""
+        if os.path.isfile(self.excel_path):
+            self.wb: Workbook = xl.load_workbook(self.excel_path, keep_vba=self.is_xlsm)
         else:
             self.wb = xl.Workbook()
-
-        self.active_worksheet: Worksheet = self._get_worksheet(first_active_sheet)
-        self.excel_path: str = excel_path
+        self.active_worksheet: Worksheet = self._get_worksheet(active_sheet)
 
     def _get_worksheet(self, sheet_key: types.SheetKey) -> Worksheet:
         # インデックス指定の場合
@@ -103,6 +128,32 @@ class ExcelAccessor:
     def max_column(self) -> int:
         return self.active_worksheet.max_column
 
+    @property
+    def is_xlsm(self) -> bool:
+        """xlsmファイルかどうか判定する"""
+        return pathlib.Path(self.excel_path).suffix == ".xlsm"
+
+    def save_as(self, excel_path: str) -> None:
+        self.wb.save(excel_path)
+
+    def overwrite(self) -> None:
+        self.wb.save(self.excel_path)
+
+    def to_xlsm_if_xlsx(self) -> None:
+        if not self.is_xlsm:
+            # 変更を保存しておく
+            self.overwrite()
+
+            xlsm_filepath = str(pathlib.Path(self.excel_path).with_suffix(".xlsm").resolve())
+
+            xl = win32com.client.Dispatch("Excel.Application")
+            wb = xl.Workbooks.Open(self.excel_path)
+            wb.SaveAs(xlsm_filepath, FileFormat=win32com.client.constants.xlOpenXMLWorkbookMacroEnabled)
+            xl.Quit()
+
+            self.excel_path = xlsm_filepath
+            self._load_workbook(self.current_sheet_title)
+
     def change_active_worksheet(self, sheet_key: types.SheetKey) -> None:
         self.active_worksheet = self._get_worksheet(sheet_key)
 
@@ -137,12 +188,6 @@ class ExcelAccessor:
     def remove_sheet(self, sheet_key: types.SheetKey) -> None:
         ws = self._get_worksheet(sheet_key)
         self.wb.remove(ws)
-
-    def save_as(self, excel_path: str) -> None:
-        self.wb.save(excel_path)
-
-    def overwrite(self) -> None:
-        self.wb.save(self.excel_path)
 
     def read_cell_value_by_index(self, row: int, column: int) -> types.CellValue:
         return self.active_worksheet.cell(row=row, column=column).value
