@@ -1,9 +1,6 @@
-# PythonでExcelのグラフを欠損させずシートをコピーする
+# PythonからExcelVBAを追加・実行する
 
 ## 最終的な実装
-
-1. Python (pywin32) により Excel ファイルにシートをコピーするマクロを登録
-2. Python (pywin32) からシートをコピーするマクロを実行
 
 最終的なコードは以下です。
 
@@ -143,8 +140,9 @@ sheet_index = 1
 xlsx_path = relative_to_abs("./tests/test.xlsx")
 xlsm_path = relative_to_abs("./tests/test.xlsm")
 
-# ThisWorkbook に定義する前提なので `ThisWorkbook.CopySheet` とする
+# ThisWorkbook に定義する前提なので `ThisWorkbook.MacroName` とする
 macro_name = "ThisWorkbook.CopySheet"
+シートをコピーするマクロの例
 macro_code = f"""\
 Sub CopySheet()
     Worksheets({str(sheet_index)}).Copy After:=Worksheets(Sheets.Count)
@@ -158,18 +156,7 @@ exec_macro(xlsm_path, macro_name)
 
 ## 背景
 
-Python で Excel を操作しようと思った時、真っ先に選択肢に上がるのは [openpyxl](https://openpyxl.readthedocs.io/en/latest/index.html) だと思います。
-
-この openpyxl ですが、シートをコピーした時にグラフが消えてしまいます。
-
-[python - Chart can't be copied with Openpyxl - Stack Overflow](https://stackoverflow.com/questions/67494403/chart-cant-be-copied-with-openpyxl)
-
-業務上、以下のような Excel を扱う機会が多くあるので、それは大変困ります。
-
-- 大量の計算式とその結果を参照するグラフを持つフォーマット Excel があり、それをコピーして使い回す
-- シートごとにグラフが存在する
-
-そこで、どうにか **Python だけ** で **グラフを保持したままシートをコピー出来ないか** 試してみました。
+TODO 書く
 
 ## やったこと
 
@@ -183,12 +170,7 @@ Python で Excel を操作しようと思った時、真っ先に選択肢に上
 pip install pywin32
 ```
 
-### マクロ実行によるシートのコピー
-
-Excel ファイルに定義済のマクロを実行することにより、シートをコピーします。
-マクロによるコピーならグラフを保持することが出来ます。
-
-#### Python からマクロを実行
+### Python からマクロを実行
 
 参考 : [Python – openpyxlでエクセルグラフや図形が消える問題の解決法](https://miya-mitsu.com/python-openpyxl-excel-graph-image-textbox/)
 
@@ -212,20 +194,6 @@ def exec_macro(filepath: str, macro_name: str, is_visible: bool = True) -> None:
     wb.Save()
     wb.Close()
     xl.Application.Quit()
-```
-
-#### シートをコピーするマクロ
-
-参考 : [VBAでシートをコピーする際のシートの指定方法 ｜ Excel作業をVBAで効率化](https://vbabeginner.net/how-to-specify-a-sheet-when-copying-a-sheet/)
-
-VBA のことはよく分かりませんが、シートの指定方法が3つあるようです。
-今回はインデックス指定を採用しました。
-
-```vb
-Sub CopySheet()
-    Worksheets(1).Copy After:=Worksheets(Sheets.Count)
-    ActiveSheet.Name = Format(Now, "YYYY-MM-DD HH-MM-SS")
-End Sub
 ```
 
 ### Python によりマクロを登録
@@ -394,7 +362,7 @@ import pythoncom
 
 try:
     # 何らかの処理
-except pythoncom.com_error as error:
+except pythoncom.com_error as e:
         print(e.excepinfo[2])
 ```
 
@@ -443,13 +411,6 @@ def to_xlsm_if_xlsx(filepath: str) -> None:
 ```
 
 ## 最後に
-
-1. Pythonによりマクロを登録
-2. 登録したマクロを実行
-
-という流れでグラフを欠損させずシートをコピーする事ができるようになりました。
-
-随分と回りくどいですが、おおよそ欲しい仕様のものが出来たので満足です。
 
 Windows や VBA 周りの仕様にはあまり詳しくないので、記載した情報の中に誤りがあるかもしれません。
 もしも間違いがあれば、ご指摘いただけると幸いです。
