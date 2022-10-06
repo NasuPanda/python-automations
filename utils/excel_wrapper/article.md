@@ -1,12 +1,159 @@
 # PythonでExcelのグラフを欠損させずシートをコピーする
 
-## 結論
+## 最終的な実装
 
 1. Python (pywin32) により Excel ファイルにシートをコピーするマクロを登録
 2. Python (pywin32) からシートをコピーするマクロを実行
 
+最終的なコードは以下です。
+
 ```py
-# TODO ここにコード
+import pathlib
+import re
+
+import pythoncom
+import win32com.client
+
+# ex: Sub FooBar()
+REGEX_MACRO_LINE = re.compile(r"Sub \S+\(\)")
+# `Sub ` or `()` にマッチ
+REGEX_MACRO_NAME = re.compile(r"Sub |\(\)")
+
+
+def relative_to_abs(path: str) -> str:
+    """相対パスを絶対パスに変換する。(相対パスだと pywin32 でエラーが出るため)
+
+    Args:
+        path (str): 変換前のファイルパス。
+
+    Returns:
+        str: 絶対パスに変換したファイルパス。
+    """
+    return str(pathlib.Path(path).resolve())
+
+
+def get_macro_names_from_code(macro_code: str) -> list[str] | None:
+    """マクロのコードからマクロ名の一覧を取得する。
+
+    Args:
+        macro_code (str): マクロのコード。
+
+    Returns:
+        list[str] | None: マクロ名の一覧。
+    """
+    macro_names: list[str] = []
+    # ex: ["Sub Foo()", "Sub Bar()"]
+    macro_name_lines: list[str] = REGEX_MACRO_LINE.findall(macro_code)
+
+    if not macro_name_lines:
+        return
+
+    # ex: ["Foo", "Bar"]
+    [macro_names.append(REGEX_MACRO_NAME.sub("", line)) for line in macro_name_lines]
+    return macro_names
+
+
+def add_macro(filepath: str, macro_code: str, is_visible: bool = True) -> None:
+    """Excelファイルにマクロを追加する。
+    NOTE: 定義先は ThisWorkbook とするため、`VBProject.VBComponents(1)`にアクセスする。
+
+    Args:
+        filepath (str): Excelファイルのパス。(絶対パス)
+        macro_code (str): 追加したいマクロのコード。
+        is_visible (bool, optional): 操作中のExcelを表示するかどうか。デフォルトは `True` 。
+    """
+    xl = win32com.client.Dispatch("Excel.Application")
+    xl.Visible = is_visible
+    wb = xl.Workbooks.Open(filepath)
+
+    macro_names = get_macro_names_from_code(macro_code)
+    try:
+        macro_name = macro_names[0]
+    # 存在しなかった場合 None を返すので TypeError をキャッチ
+    except TypeError:
+        print(f"マクロから名前を取得出来ませんでした {macro_code}")
+        return
+
+    code_module = wb.VBProject.VBComponents(1).CodeModule
+    existing_macro_code = code_module.Lines(1, code_module.CountOfLines)
+    existing_macro_names = get_macro_names_from_code(existing_macro_code)
+
+    # 同名のマクロが存在する場合 return
+    if existing_macro_names:
+        if macro_name in existing_macro_names:
+            print(f"{macro_name} という名前のマクロは既に存在します")
+            return
+
+    try:
+        wb.VBProject.VBComponents(1).CodeModule.AddFromString(macro_code)
+        wb.Save()
+    except pythoncom.com_error as e:
+        print(e.excepinfo[2])
+        print(
+            """\
+以下の手順により解決する可能性があります。
+    1. 「ファイル」タブを選択
+    2. 「オプション」を選択
+    3. 「セキュリティ センター」を選択
+    4. 「セキュリティ センターの設定」を選択
+    5. 「マクロの設定」 を選択
+    6. 「VBA プロジェクト オブジェクト モデルへのアクセスを信頼する」のチェックボックスをオンにする
+"""
+        )
+    finally:
+        wb.Close(True)
+        xl.Quit()
+
+
+def exec_macro(filepath: str, macro_name: str, is_visible: bool = True) -> None:
+    """Excelファイルのマクロを実行する。
+
+    Args:
+        filepath (str): Excelファイルのパス。(絶対パス)
+        macro_name (str): マクロの名前。
+        is_visible (bool, optional): 操作中のExcelを表示するかどうか。デフォルトは `True` 。
+    """
+    xl = win32com.client.Dispatch("Excel.Application")
+    xl.Visible = is_visible
+    wb = xl.Workbooks.Open(filepath)
+
+    xl.Application.Run(macro_name)
+    wb.Save()
+    wb.Close()
+    xl.Application.Quit()
+
+
+def to_xlsm_if_xlsx(filepath: str) -> None:
+    """拡張子が `.xlsx` だった場合、 `xlsm` に変換する。
+
+    Args:
+        filepath (str): Excelファイルのパス。
+    """
+    path = pathlib.Path(filepath)
+    if path.suffix == ".xlsx":
+        xlsm_filepath = str(path.with_suffix(".xlsm").resolve())
+
+        xl = win32com.client.Dispatch("Excel.Application")
+        wb = xl.Workbooks.Open(filepath)
+        wb.SaveAs(xlsm_filepath, FileFormat=win32com.client.constants.xlOpenXMLWorkbookMacroEnabled)
+        xl.Quit()
+
+
+sheet_index = 1
+xlsx_path = relative_to_abs("./tests/test.xlsx")
+xlsm_path = relative_to_abs("./tests/test.xlsm")
+
+# ThisWorkbook に定義する前提なので `ThisWorkbook.CopySheet` とする
+macro_name = "ThisWorkbook.CopySheet"
+macro_code = f"""\
+Sub CopySheet()
+    Worksheets({str(sheet_index)}).Copy After:=Worksheets(Sheets.Count)
+    ActiveSheet.Name = Format(Now, "YYYY-MM-DD HH-MM-SS")
+End Sub"""
+
+to_xlsm_if_xlsx(xlsx_path)
+add_macro(xlsm_path, macro_code)
+exec_macro(xlsm_path, macro_name)
 ```
 
 ## 背景
@@ -19,62 +166,52 @@ Python で Excel を操作しようと思った時、真っ先に選択肢に上
 
 業務上、以下のような Excel を扱う機会が多くあるので、それは大変困ります。
 
-- 大量の計算式とその結果を参照するグラフが存在するフォーマット Excel があり、それをコピーして使い回す
+- 大量の計算式とその結果を参照するグラフを持つフォーマット Excel があり、それをコピーして使い回す
 - シートごとにグラフが存在する
 
-そこで、どうにか Python だけで **グラフを保持したままシートをコピー出来ないか** 試してみました。
+そこで、どうにか **Python だけ** で **グラフを保持したままシートをコピー出来ないか** 試してみました。
 
 ## やったこと
 
-### マクロ実行によるシートのコピー
+### 準備
 
-pywin32 というライブラリを使い、 Excel ファイルに用意しておいたマクロを実行することによりシートをコピーします。
-これにより、グラフを保持することが出来ます。
+`pip` かお好きなパッケージ管理ツールで `pywin32` を導入します。
 
-#### pywin32 導入
+私は pipenv を使用しています。
 
 ```shell
 pip install pywin32
-
-# pipenv の場合
-pipenv install pywin32
 ```
+
+### マクロ実行によるシートのコピー
+
+Excel ファイルに定義済のマクロを実行することにより、シートをコピーします。
+マクロによるコピーならグラフを保持することが出来ます。
 
 #### Python からマクロを実行
 
 参考 : [Python – openpyxlでエクセルグラフや図形が消える問題の解決法](https://miya-mitsu.com/python-openpyxl-excel-graph-image-textbox/)
 
-導入するライブラリは pywin32 ですが、使うのは `win32com.client` です。
-相対パスだとエラーが出るので絶対パスに変換するようにしています。
-
 ```py
-import os
-import pathlib
-
 import win32com.client
 
-def relative_to_abs(path: str) -> str:
-    """相対パスを絶対パスに変換する"""
-    return str(pathlib.Path(path).resolve())
+def exec_macro(filepath: str, macro_name: str, is_visible: bool = True) -> None:
+    """Excelファイルのマクロを実行する。
 
-src_filename  = relative_to_abs("test.xlsm")
-dst_filename = relative_to_abs("result.xlsm")
-sheet_name = "sheet1"
-macro_name = "CopySheetMacro"
+    Args:
+        filepath (str): Excelファイルのパス。(絶対パス)
+        macro_name (str): マクロの名前。
+        is_visible (bool, optional): 操作中のExcelを表示するかどうか。デフォルトは `True` 。
+    """
+    xl = win32com.client.Dispatch("Excel.Application")
+    xl.Visible = is_visible
 
-app = win32com.client.Dispatch("Excel.Application")
-wb = app.Workbooks.Open(src_filename, ReadOnly=1)
-# 非表示にする
-app.Visible =  0
+    wb = xl.Workbooks.Open(filepath)
 
-sheet = wb.Worksheets(sheet_name).Activate()
-app.Application.Run(macro_name)
-# VBAの実行でエラーが出ても実行を止めない
-app.DisplayAlerts = False
-
-wb.SaveAs(dst_filename)
-wb.Close
-app.Application.Quit()
+    xl.Application.Run(macro_name)
+    wb.Save()
+    wb.Close()
+    xl.Application.Quit()
 ```
 
 #### シートをコピーするマクロ
@@ -82,15 +219,12 @@ app.Application.Quit()
 参考 : [VBAでシートをコピーする際のシートの指定方法 ｜ Excel作業をVBAで効率化](https://vbabeginner.net/how-to-specify-a-sheet-when-copying-a-sheet/)
 
 VBA のことはよく分かりませんが、シートの指定方法が3つあるようです。
+今回はインデックス指定を採用しました。
 
-インデックス指定であれば Python 側との整合性も取りやすい気がするので、インデックス指定を採用しました。
-
-TODO 結果の確認
-
-```vba
-Private Sub CopySheet()
-    WorkSheets(1).Copy After:=WorkSheets(1)
-    ActiveSheet.Name = Format(Now, "YYYY-MM-DD HH.MM.SS")
+```vb
+Sub CopySheet()
+    Worksheets(1).Copy After:=Worksheets(Sheets.Count)
+    ActiveSheet.Name = Format(Now, "YYYY-MM-DD HH-MM-SS")
 End Sub
 ```
 
@@ -101,13 +235,221 @@ End Sub
 同僚に使ってもらおうと思っても、「このマクロを登録してから使ってね！」と言うだけで使用率激減間違いなしです。
 そこで、マクロの登録すらも Python から行うことにしました。
 
-TODO コード書く
+#### 既存マクロ名の取得
+
+既に同名のマクロが存在する場合は追加しないようにしたいです。そこで、マクロ名の一覧を取得出来るようにします。
+
+マクロのコードは `CodeModule` から取得することが出来ます。
+
+`Sub MacroName()` から `MacroName` のみを抽出するようにしています。
+
+参考
+
+[how to list all Excel Macro Names using Python - Stack Overflow](https://stackoverflow.com/questions/18589877/how-to-list-all-excel-macro-names-using-python)
+
+[CodeModuleクラス – VBE(Visual Basic Editor)](https://vbe.office-vba.com/codemodule/)
+
+```py
+import re
+import win32com.client
+
+# ex: Sub FooBar()
+REGEX_MACRO_LINE = re.compile(r"Sub \S+\(\)")
+# `Sub ` or `()` にマッチ
+REGEX_MACRO_NAME = re.compile(r"Sub |\(\)")
+
+def get_macro_names_from_code(macro_code: str) -> list[str] | None:
+    """マクロのコードからマクロ名の一覧を取得する。
+
+    Args:
+        macro_code (str): マクロのコード。
+
+    Returns:
+        list[str] | None: マクロ名の一覧。
+    """
+    macro_names: list[str] = []
+    # ex: ["Sub Foo()", "Sub Bar()"]
+    macro_name_lines: list[str] = REGEX_MACRO_LINE.findall(macro_code)
+
+    if not macro_name_lines:
+        return
+
+    # ex: ["Foo", "Bar"]
+    [macro_names.append(REGEX_MACRO_NAME.sub("", line)) for line in macro_name_lines]
+    return macro_names
+
+# CodeModule にアクセス
+# NOTE: VBComponents(1) は `ThisWorkbook` を表す
+code_module = wb.VBProject.VBComponents(1).CodeModule
+existing_macro_code = code_module.Lines(1, code_module.CountOfLines)
+existing_macro_names = get_macro_names_from_code(existing_macro_code)
+
+print(existing_macro_code)
+# Sub CopySheet()
+#     Worksheets(1).Copy After:=Worksheets(Sheets.Count)
+#     ActiveSheet.Name = Format(Now, "YYYY-MM-DD HH-MM-SS")
+# End Sub
+
+print(existing_macro_names)
+# CopySheet
+```
+
+#### マクロの登録
+
+マクロの定義先は `ThisWorkbook` で固定にしています。
+同名のマクロが存在する場合、処理を中断するようにしています。
+
+参考 : [Python Add Macro to an existing XLSM - Stack Overflow](https://stackoverflow.com/questions/67194521/python-add-macro-to-an-existing-xlsm)
+
+```py
+import win32com.client
+
+def add_macro(filepath: str, macro_code: str, is_visible: bool = True) -> None:
+    """Excelファイルにマクロを追加する。
+    # NOTE: 定義先は ThisWorkbook とするため、`VBProject.VBComponents(1)`にアクセスする。
+
+    Args:
+        filepath (str): Excelファイルのパス。
+        macro_code (str): 追加したいマクロのコード。
+        is_visible (bool, optional): 操作中のExcelを表示するかどうか。デフォルトは `True` 。
+    """
+    xl = win32com.client.Dispatch("Excel.Application")
+    xl.Visible = is_visible
+    wb = xl.Workbooks.Open(filepath)
+
+    macro_names = get_macro_names_from_code(macro_code)
+    try:
+        macro_name = macro_names[0]
+    # 存在しなかった場合 None を返すので TypeError をキャッチ
+    except TypeError:
+        print(f"マクロから名前を取得出来ませんでした {macro_code}")
+        return
+
+    code_module = wb.VBProject.VBComponents(1).CodeModule
+    existing_macro_code = code_module.Lines(1, code_module.CountOfLines)
+    existing_macro_names = get_macro_names_from_code(existing_macro_code)
+    # 同名のマクロが存在する場合 return
+    if existing_macro_names:
+        if macro_name in existing_macro_names:
+            print(f"{macro_name} という名前のマクロは既に存在します")
+            return
+
+    try:
+        wb.VBProject.VBComponents(1).CodeModule.AddFromString(macro_code)
+        wb.Save()
+    except pythoncom.com_error as e:
+        print(e.excepinfo[2])
+        print(
+            """\
+以下の手順により解決する可能性があります。
+    1. 「ファイル」タブを選択
+    2. 「オプション」を選択
+    3. 「セキュリティ センター」を選択
+    4. 「セキュリティ センターの設定」を選択
+    5. 「マクロの設定」 を選択
+    6. 「VBA プロジェクト オブジェクト モデルへのアクセスを信頼する」のチェックボックスをオンにする
+"""
+        )
+    finally:
+        wb.Close(True)
+        xl.Quit()
+```
+
+#### エラー1004 が出る場合
+
+参考 : [実行時エラー'1004' プログラミングによる Visual Basic プロジェクトのアクセスは信頼性に欠けます のexcel2016での解決方法 - Qiita](https://qiita.com/moitaro/items/03cf067afd5da02b876c)
+
+私の環境では「VBAプロジェクトオブジェクトモデルへのアクセスを信頼する」という設定が ON になっていないとエラーが出ました。
+
+展開するときは注意が必要そうです。
+
+**設定変更手順**
+
+1. 「ファイル」タブを選択
+2. 「オプション」を選択
+3. 「セキュリティ センター」を選択
+4. 「セキュリティ センターの設定」を選択
+5. 「マクロの設定」 を選択
+6. 「VBA プロジェクト オブジェクト モデルへのアクセスを信頼する」のチェックボックスをオンにする
+
+### その他
+
+#### `isVisible`
+
+Excelファイルを閉じる時、環境によっては保存時に「ドキュメント検査機能が～」というダイアログが出ることがあります。
+
+![picture 1](images/b6ad046d098f7e6be7157fc49c9d365f06e22fc42bdc2c8d2f55e3b5a6504a93.png)
+
+`win32com.client.Dispatch("Excel.Application")` の返り値に対して `isVisible` を `False` に設定していると、ダイアログを閉じることが出来ずにいつまでも処理が終わらない・・・という現象が起きることがあるので、注意が必要です。
+
+#### pywin32 のエラーハンドリング
+
+エラーハンドリングしたい場合、 `pythoncom.com_error` をキャッチします。
+
+参考 : [python - Is there a way to decode numerical COM error-codes in pywin32 - Stack Overflow](https://stackoverflow.com/questions/521759/is-there-a-way-to-decode-numerical-com-error-codes-in-pywin32)
+
+```py
+import pythoncom
 
 
-## 参考
+try:
+    # 何らかの処理
+except pythoncom.com_error as error:
+        print(e.excepinfo[2])
+```
 
-[Python Add Macro to an existing XLSM - Stack Overflow](https://stackoverflow.com/questions/67194521/python-add-macro-to-an-existing-xlsm : PythonからVBAを追加する
+#### 相対パスを絶対パスに変換
 
-[実行時エラー'1004' プログラミングによる Visual Basic プロジェクトのアクセスは信頼性に欠けます のexcel2016での解決方法 - Qiita](https://qiita.com/moitaro/items/03cf067afd5da02b876c) : PythonからVBAマクロを追加出来ない場合
+pywin32 は相対パスを受け付けないので、絶対パスに変換しておく必要があります。
 
-[【Python openpyxlを使用したExcelファイルの読み書き方法】xlsmファイル（マクロありファイル）の場合 - Django Girls and Boys 備忘録](https://kuku81kuku81.hatenablog.com/entry/2022/04/27_python_excel_readwrite_xlsmfile)
+```py
+import pathlib
+
+def relative_to_abs(path: str) -> str:
+    """相対パスを絶対パスに変換する。(相対パスだと pywin32 でエラーが出るため)
+
+    Args:
+        path (str): 変換前のファイルパス。
+
+    Returns:
+        str: 絶対パスに変換したファイルパス。
+    """
+    return str(pathlib.Path(path).resolve())
+```
+
+#### `.xlsx` を `.xlsm` に変換
+
+元となるファイルが `.xlsx` の場合はマクロ対応形式に変換したいので、その処理も追加します。
+
+参考: [python - Pywin32 Saving as XLSM file instead of XLSX - Stack Overflow](https://stackoverflow.com/questions/21306275/pywin32-saving-as-xlsm-file-instead-of-xlsx)
+
+```py
+import pathlib
+
+def to_xlsm_if_xlsx(filepath: str) -> None:
+    """拡張子が `.xlsx` だった場合、 `xlsm` に変換する。
+
+    Args:
+        filepath (str): Excelファイルのパス。(絶対パス)
+    """
+    path = pathlib.Path(filepath)
+    if path.suffix == ".xlsx":
+        xlsm_filepath = str(path.with_suffix(".xlsm").resolve())
+
+        xl = win32com.client.Dispatch("Excel.Application")
+        wb = xl.Workbooks.Open(filepath)
+        wb.SaveAs(xlsm_filepath, FileFormat=win32com.client.constants.xlOpenXMLWorkbookMacroEnabled)
+        xl.Quit()
+```
+
+## 最後に
+
+1. Pythonによりマクロを登録
+2. 登録したマクロを実行
+
+という流れでグラフを欠損させずシートをコピーする事ができるようになりました。
+
+随分と回りくどいですが、おおよそ欲しい仕様のものが出来たので満足です。
+
+Windows や VBA 周りの仕様にはあまり詳しくないので、記載した情報の中に誤りがあるかもしれません。
+もしも間違いがあれば、ご指摘いただけると幸いです。
