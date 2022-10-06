@@ -7,15 +7,10 @@ from openpyxl.workbook.workbook import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
 from openpyxl.cell.cell import Cell, MergedCell
 from openpyxl.utils.cell import column_index_from_string, get_column_letter
+import pythoncom
 import win32com.client
 
 from excel import types
-
-
-# ex: Sub FooBar()
-REGEX_MACRO_LINE = re.compile(r"Sub \S+\(\)")
-# `Sub ` or `()` にマッチ
-REGEX_MACRO_NAME = re.compile(r"Sub |\(\)")
 
 
 def relative_to_abs(path: str) -> str:
@@ -40,6 +35,11 @@ class ExcelAccessor:
     NOTE:
     read_only, write_only には対応していない。
     """
+
+    # ex: Sub FooBar()
+    REGEX_MACRO_LINE = re.compile(r"Sub \S+\(\)")
+    # `Sub ` or `()` にマッチ
+    REGEX_MACRO_NAME = re.compile(r"Sub |\(\)")
 
     def __init__(self, excel_path: str, first_active_sheet: types.SheetKey = 0) -> None:
         self.excel_path: str = relative_to_abs(excel_path)
@@ -76,6 +76,27 @@ class ExcelAccessor:
         if new_sheet_title in self.wb.sheetnames:
             return False
         return True
+
+    @classmethod
+    def get_macro_names_from_code(cls, macro_code: str) -> list[str] | None:
+        """マクロのコードからマクロ名の一覧を取得する。
+
+        Args:
+            macro_code (str): マクロのコード。
+
+        Returns:
+            list[str] | None: マクロ名の一覧。
+        """
+        macro_names: list[str] = []
+        # ex: ["Sub Foo()", "Sub Bar()"]
+        macro_name_lines: list[str] = cls.REGEX_MACRO_LINE.findall(macro_code)
+
+        if not macro_name_lines:
+            return
+
+        # ex: ["Foo", "Bar"]
+        [macro_names.append(cls.REGEX_MACRO_NAME.sub("", line)) for line in macro_name_lines]
+        return macro_names
 
     @staticmethod
     def validate_column_string(column: str) -> bool:
@@ -147,7 +168,9 @@ class ExcelAccessor:
             xlsm_filepath = str(pathlib.Path(self.excel_path).with_suffix(".xlsm").resolve())
 
             xl = win32com.client.Dispatch("Excel.Application")
+            print(type(xl))
             wb = xl.Workbooks.Open(self.excel_path)
+            print(type(wb))
             wb.SaveAs(xlsm_filepath, FileFormat=win32com.client.constants.xlOpenXMLWorkbookMacroEnabled)
             xl.Quit()
 
@@ -262,3 +285,69 @@ class ExcelAccessor:
             self.active_worksheet.cell(row=begin_row_index + i, column=column_index, value=value)
             for i, value in enumerate(values)
         ]
+
+    def add_macro(self, macro_code: str, is_visible: bool = True) -> None:
+        """Excelファイルにマクロを追加する。
+        NOTE: 定義先は ThisWorkbook とするため、`VBProject.VBComponents(1)`にアクセスする。
+
+        Args:
+            macro_code (str): 追加したいマクロのコード。
+            is_visible (bool, optional): 操作中のExcelを表示するかどうか。デフォルトは `True` 。
+        """
+        xl = win32com.client.Dispatch("Excel.Application")
+        xl.Visible = is_visible
+        wb = xl.Workbooks.Open(self.excel_path)
+
+        macro_names = self.get_macro_names_from_code(macro_code)
+        if macro_names:
+            macro_name = macro_names[0]
+        # 存在しなかった場合 None を返す return
+        else:
+            print(f"マクロから名前を取得出来ませんでした {macro_code}")
+            return
+
+        code_module = wb.VBProject.VBComponents(1).CodeModule
+        existing_macro_code = code_module.Lines(1, code_module.CountOfLines)
+        existing_macro_names = self.get_macro_names_from_code(existing_macro_code)
+
+        # 同名のマクロが存在する場合 return
+        if existing_macro_names:
+            if macro_name in existing_macro_names:
+                print(f"{macro_name} という名前のマクロは既に存在します")
+                return
+
+        try:
+            wb.VBProject.VBComponents(1).CodeModule.AddFromString(macro_code)
+            wb.Save()
+        except pythoncom.com_error as e:
+            print(e.excepinfo[2])
+            print(
+                """\
+    以下の手順により解決する可能性があります。
+        1. 「ファイル」タブを選択
+        2. 「オプション」を選択
+        3. 「セキュリティ センター」を選択
+        4. 「セキュリティ センターの設定」を選択
+        5. 「マクロの設定」 を選択
+        6. 「VBA プロジェクト オブジェクト モデルへのアクセスを信頼する」のチェックボックスをオンにする
+    """
+            )
+        finally:
+            wb.Close(True)
+            xl.Quit()
+
+    def exec_macro(self, macro_name: str, is_visible: bool = True) -> None:
+        """Excelファイルのマクロを実行する。
+
+        Args:
+            macro_name (str): マクロの名前。
+            is_visible (bool, optional): 操作中のExcelを表示するかどうか。デフォルトは `True` 。
+        """
+        xl = win32com.client.Dispatch("Excel.Application")
+        xl.Visible = is_visible
+        wb = xl.Workbooks.Open(self.excel_path)
+
+        xl.Application.Run(macro_name)
+        wb.Save()
+        wb.Close()
+        xl.Application.Quit()
