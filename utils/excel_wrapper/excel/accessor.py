@@ -293,7 +293,7 @@ class ExcelAccessor:
         self.active_worksheet.cell(row=row, column=column, value=value)
 
     def write_cell_by_coordinate(self, coordinate: str, value: types.CellValue) -> None:
-        self.active_worksheet[coordinate](value=value)
+        self.active_worksheet[coordinate].value = value
 
     def write_row(self, row_index: int, begin_column: types.ColumnKey, values: list[types.CellValue]) -> None:
         begin_column_index = self._column_to_index_if_string(begin_column)
@@ -311,10 +311,25 @@ class ExcelAccessor:
             for i, value in enumerate(values)
         ]
 
-    def add_reference(self, row: int, colum: types.ColumnKey, another_sheet: types.SheetKey | None = None) -> None:
-        # another sheet : =Sheet!Cell
-        # TODO 実装
-        return
+    def add_reference(
+        self,
+        row: int,
+        column: types.ColumnKey,
+        reference_row: int,
+        reference_column: types.ColumnKey,
+        another_sheet: types.SheetKey | None = None,
+    ) -> None:
+        # ex: "A1"
+        reference_cell = self._column_to_string_if_index(reference_column) + str(reference_row)
+        if another_sheet:
+            # ex : =AnotherSheet!A1
+            another_sheet_title = self._get_worksheet(another_sheet).title
+            reference_cell_value = f"={another_sheet_title}!{reference_cell}"
+        else:
+            # ex: =A1
+            reference_cell_value = f"={reference_cell}"
+
+        self.write_cell_by_index(row=row, column=self._column_to_index_if_string(column), value=reference_cell_value)
 
     def add_macro(self, macro_code: str, is_visible: bool = True) -> None:
         """Excelファイルにマクロを追加する。
