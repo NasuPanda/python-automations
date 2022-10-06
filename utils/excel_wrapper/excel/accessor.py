@@ -1,6 +1,7 @@
 import os
 import pathlib
 import re
+from shutil import register_unpack_format
 
 import openpyxl as xl
 from openpyxl.workbook.workbook import Workbook
@@ -30,7 +31,7 @@ class ExcelAccessor:
 
     NOTE:
     row, column の index は 1 からスタートする。
-    シートのインデックスは 0 からスタートする。
+    シートのインデックスも 1 からスタートする。
 
     NOTE:
     read_only, write_only には対応していない。
@@ -41,15 +42,21 @@ class ExcelAccessor:
     # `Sub ` or `()` にマッチ
     REGEX_MACRO_NAME = re.compile(r"Sub |\(\)")
 
-    def __init__(self, excel_path: str, first_active_sheet: types.SheetKey = 0) -> None:
-        self.excel_path: str = relative_to_abs(excel_path)
-        # _load_workbook は excel_path を利用するのでセット後に実行する
-        self._load_workbook(first_active_sheet)
+    def __init__(
+        self, src_filepath: str, dst_filepath: str | None = None, first_active_sheet: types.SheetKey = 1
+    ) -> None:
+        self.filepath: str = relative_to_abs(src_filepath)
+        self._load_workbook(first_active_sheet)  # _load_workbook は filepath を利用するのでセット後に実行する
 
-    def _load_workbook(self, active_sheet: types.SheetKey = 0) -> None:
-        """self.wb, self.active_worksheet を更新する。(self.excel_path, self._is_xlsm()を利用)"""
-        if os.path.isfile(self.excel_path):
-            self.wb: Workbook = xl.load_workbook(self.excel_path, keep_vba=self.is_xlsm)
+        # src と dst が異なる場合は save_as で dst の実体を作成しておく(pywin32 経由で操作するため)
+        if dst_filepath:
+            self.save_as(dst_filepath)
+
+    def _load_workbook(self, active_sheet: types.SheetKey = 1) -> None:
+        """self.wb, self.active_worksheet を更新する。(self.filepath, self._is_xlsm()を利用)"""
+        # 存在する場合は load , 存在しなければ新規作成する
+        if os.path.isfile(self.filepath):
+            self.wb: Workbook = xl.load_workbook(self.filepath, keep_vba=self.is_xlsm)
         else:
             self.wb = xl.Workbook()
         self.active_worksheet: Worksheet = self._get_worksheet(active_sheet)
@@ -57,17 +64,19 @@ class ExcelAccessor:
     def _get_worksheet(self, sheet_key: types.SheetKey) -> Worksheet:
         # インデックス指定の場合
         if isinstance(sheet_key, int):
+            if sheet_key <= 0:
+                raise KeyError(f"シートのインデックスは 1以上 の値で設定してください")
             try:
-                ws = self.wb.worksheets[sheet_key]
+                ws = self.wb.worksheets[sheet_key - 1]
             except IndexError:
-                raise KeyError(f"対象のシートが見つかりませんでした。 index: {sheet_key}")
+                raise KeyError(f"対象のシートが見つかりませんでした index: {sheet_key}")
 
         # 文字列指定の場合
         else:
             try:
                 ws = self.wb[sheet_key]
             except KeyError:
-                raise KeyError(f"対象のシートが見つかりませんでした。 title: {sheet_key}")
+                raise KeyError(f"対象のシートが見つかりませんでした title: {sheet_key}")
 
         # HACK: read_only \ write_only モードには対応しないため型無視する
         return ws  # type: ignore
@@ -152,29 +161,29 @@ class ExcelAccessor:
     @property
     def is_xlsm(self) -> bool:
         """xlsmファイルかどうか判定する"""
-        return pathlib.Path(self.excel_path).suffix == ".xlsm"
+        return pathlib.Path(self.filepath).suffix == ".xlsm"
 
-    def save_as(self, excel_path: str) -> None:
-        self.wb.save(excel_path)
+    def save_as(self, filepath: str) -> None:
+        self.wb.save(filepath)
+        self.filepath = filepath
+        self._load_workbook(self.current_sheet_title)
 
     def overwrite(self) -> None:
-        self.wb.save(self.excel_path)
+        self.wb.save(self.filepath)
 
     def to_xlsm_if_xlsx(self) -> None:
         if not self.is_xlsm:
             # 変更を保存しておく
             self.overwrite()
 
-            xlsm_filepath = str(pathlib.Path(self.excel_path).with_suffix(".xlsm").resolve())
+            xlsm_filepath = str(pathlib.Path(self.filepath).with_suffix(".xlsm").resolve())
 
             xl = win32com.client.Dispatch("Excel.Application")
-            print(type(xl))
-            wb = xl.Workbooks.Open(self.excel_path)
-            print(type(wb))
+            wb = xl.Workbooks.Open(self.filepath)
             wb.SaveAs(xlsm_filepath, FileFormat=win32com.client.constants.xlOpenXMLWorkbookMacroEnabled)
             xl.Quit()
 
-            self.excel_path = xlsm_filepath
+            self.filepath = xlsm_filepath
             self._load_workbook(self.current_sheet_title)
 
     def change_active_worksheet(self, sheet_key: types.SheetKey) -> None:
@@ -195,18 +204,34 @@ class ExcelAccessor:
     def copy_worksheet(
         self,
         src_sheet_key: types.SheetKey,
-        destination_sheet_title: str,
+        dst_sheet_title: str | None = None,
         needs_change_active_worksheet: bool = False,
     ) -> Worksheet:
         """シートを追加する(挿入位置は末尾)"""
-        src_ws = self._get_worksheet(src_sheet_key)
-        destination_ws = self.wb.copy_worksheet(src_ws)
-        destination_ws.title = destination_sheet_title
+        # 変更を保存、アクティブなシートを保持しておく
+        self.overwrite()
+        active_sheet_title_before_copy = self.current_sheet_title
+
+        xl_app = win32com.client.Dispatch("Excel.Application")
+        wb = xl_app.Workbooks.Open(self.filepath)
+        wb.Worksheets(src_sheet_key).Copy(After=wb.Worksheets(self.number_of_sheets))
+
+        if dst_sheet_title:
+            if not self._validate_new_sheet_title(dst_sheet_title):
+                raise ValueError(f"new_sheet_title: {dst_sheet_title} は既に使われています")
+            xl_app.ActiveSheet.Name = dst_sheet_title
+
+        wb.Save()
+        wb.Close(True)
+        xl_app.Quit()
 
         if needs_change_active_worksheet:
-            self.active_worksheet = destination_ws
+            # NOTE: load 前なので number_of_sheets の値は実際より 1 小さい
+            self._load_workbook(active_sheet=self.number_of_sheets + 1)
+        else:
+            self._load_workbook(active_sheet=active_sheet_title_before_copy)
 
-        return destination_ws
+        return self._get_worksheet(sheet_key=self.number_of_sheets)
 
     def remove_sheet(self, sheet_key: types.SheetKey) -> None:
         ws = self._get_worksheet(sheet_key)
@@ -286,6 +311,11 @@ class ExcelAccessor:
             for i, value in enumerate(values)
         ]
 
+    def add_reference(self, row: int, colum: types.ColumnKey, another_sheet: types.SheetKey | None = None) -> None:
+        # another sheet : =Sheet!Cell
+        # TODO 実装
+        return
+
     def add_macro(self, macro_code: str, is_visible: bool = True) -> None:
         """Excelファイルにマクロを追加する。
         NOTE: 定義先は ThisWorkbook とするため、`VBProject.VBComponents(1)`にアクセスする。
@@ -296,7 +326,7 @@ class ExcelAccessor:
         """
         xl = win32com.client.Dispatch("Excel.Application")
         xl.Visible = is_visible
-        wb = xl.Workbooks.Open(self.excel_path)
+        wb = xl.Workbooks.Open(self.filepath)
 
         macro_names = self.get_macro_names_from_code(macro_code)
         if macro_names:
@@ -345,7 +375,7 @@ class ExcelAccessor:
         """
         xl = win32com.client.Dispatch("Excel.Application")
         xl.Visible = is_visible
-        wb = xl.Workbooks.Open(self.excel_path)
+        wb = xl.Workbooks.Open(self.filepath)
 
         xl.Application.Run(macro_name)
         wb.Save()
