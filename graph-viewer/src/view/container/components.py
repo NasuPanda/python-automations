@@ -24,7 +24,7 @@ def generate_tree_data(parent: str, folder_path: str) -> sg.TreeData:
                 tree_data.Insert(parent, fullname, f, values=[], icon=FOLDER_ICON)
                 add_files_in_folder(fullname, fullname)
             else:
-                # TODO csvじゃなかったら追加しない
+                # NOTE: csv 以外は表示しない
                 if fullname[-4:] == ".csv":
                     tree_data.Insert(parent, fullname, f, values=[os.stat(fullname).st_size], icon=FILE_ICON)
 
@@ -51,6 +51,7 @@ class UserInterface:
         }
 
     def read_window(self) -> None:
+        """イベントループを発生させる。"""
         while True:
             event, self.values = self.window.read()
 
@@ -61,6 +62,7 @@ class UserInterface:
                 self.events[event]()
 
     def _get_canvas(self) -> tkinter.Canvas:
+        """private Canvas を受け取る。"""
         return self.window[ComponentKeys.graph_canvas].TKCanvas  # type: ignore
 
     def _get_csv_headers(self) -> list[str]:
@@ -72,29 +74,18 @@ class UserInterface:
         return self.window[ComponentKeys.csv_headers_listbox].get()  # type: ignore
 
     def _get_folder_input(self) -> str:
+        """private フォルダ入力を受け取る。"""
         return self.window[ComponentKeys.folder_input].get()
 
     def _get_values(self, key: str) -> Any:
+        """private 特定のキーのvaluesを取得する。"""
         try:
             return self.values[key]
         except AttributeError:
             print("read_window が実行されていません!")
 
-    def on_click_tree(self) -> None:
-        """csv_reader, csv_header_listbox を更新する処理。"""
-        tree_selected_values = self._get_values(ComponentKeys.explorer_tree)
-        try:
-            filepath = tree_selected_values[-1]
-        except IndexError:
-            return
-
-        # ファイルの場合は csv_reader, csv_headers_listbox を更新する
-        if not os.path.isdir(filepath):
-            reader = self.data_store.add_csv_reader(filepath)
-            self.window[ComponentKeys.csv_headers_listbox].update(values=reader.columns)
-
-    def on_select_csv_header(self) -> None:
-        """グラフを更新する処理。"""
+    def _update_graph_canvas(self) -> None:
+        """グラフを更新する。"""
         self.data_store.clear_graph()
 
         for csv_header in self._get_csv_headers():
@@ -103,6 +94,31 @@ class UserInterface:
                 [self.data_store.plot_graph(data) for data in data_list]
 
         self.data_store.update_graph()
+
+    def on_click_tree(self) -> None:
+        """csv_reader, csv_header_listbox, グラフ を更新する処理。"""
+        tree_selected_values = self._get_values(ComponentKeys.explorer_tree)
+        if not tree_selected_values:
+            return
+
+        # イベント発生時に選択されいてるファイルが減ることもあるので、 csv_readers をクリアしておく
+        self.data_store.clear_csv_readers()
+        # 選択されたのがファイルであれば csv_reader を更新する
+        for filepath in tree_selected_values:
+            if not os.path.isdir(filepath):
+                reader = self.data_store.add_csv_reader(filepath)
+
+        # reader が undefined の場合はキャッチし終了
+        try:
+            self.window[ComponentKeys.csv_headers_listbox].update(values=reader.columns)
+        except NameError:
+            return
+
+        self._update_graph_canvas()
+
+    def on_select_csv_header(self) -> None:
+        """グラフを更新する処理。"""
+        self._update_graph_canvas()
 
     def on_input_folder(self) -> None:
         """ツリーを更新する処理。"""
