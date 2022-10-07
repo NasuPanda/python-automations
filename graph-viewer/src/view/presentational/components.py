@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-from src.constants import ComponentKeys
+from src.constants import ComponentKeys, FONT
 
 
 def folder_browse_component() -> tuple[sg.Input, sg.Button]:
@@ -18,10 +18,12 @@ def folder_browse_component() -> tuple[sg.Input, sg.Button]:
 
 def csv_header_listbox_component() -> sg.Listbox:
     csv_headers_listbox_styles = {
-        "values": ["CSVファイルを入力してください"],
+        "values": ["CSVファイルを選択してください"],
         "key": ComponentKeys.csv_headers_listbox,
         "enable_events": True,
-        "size": (10, 7),
+        # 横, 縦の順
+        "size": (70, 15),
+        "auto_size_text": True,
         "select_mode": sg.LISTBOX_SELECT_MODE_MULTIPLE,
     }
 
@@ -33,8 +35,9 @@ def explorer_tree_component(tree_data: sg.TreeData) -> sg.Tree:
         "data": tree_data,
         "headings": [],
         "auto_size_columns": True,
+        # num_row: max number of row
         "num_rows": 24,
-        "col0_width": 20,
+        "col0_width": 56,
         "key": ComponentKeys.explorer_tree,
         "show_expanded": False,
         "enable_events": True,
@@ -45,10 +48,19 @@ def explorer_tree_component(tree_data: sg.TreeData) -> sg.Tree:
 def graph_canvas_component() -> sg.Canvas:
     graph_canvas = {
         "key": ComponentKeys.graph_canvas,
-        "size": (300, 300),
+        "size": (500, 500),
     }
 
     return sg.Canvas(**graph_canvas)
+
+
+def layout(tree_data: sg.TreeData) -> list:
+    col_1 = [[*folder_browse_component()], [csv_header_listbox_component()], [explorer_tree_component(tree_data)]]
+    col_2 = [[graph_canvas_component()]]
+
+    return [
+        [sg.Column(col_1), sg.Column(col_2)],
+    ]
 
 
 def window(layout: list) -> sg.Window:
@@ -57,7 +69,7 @@ def window(layout: list) -> sg.Window:
         "layout": layout,
         "finalize": True,
         "element_justification": "center",
-        "font": "Monospace 8",
+        "font": f"{FONT} 12",
         "resizable": False,
     }
 

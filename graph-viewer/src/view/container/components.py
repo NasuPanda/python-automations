@@ -35,12 +35,7 @@ def generate_tree_data(parent: str, folder_path: str) -> sg.TreeData:
 
 class UserInterface:
     def __init__(self) -> None:
-        layout = [
-            [*components.folder_browse_component()],
-            [components.csv_header_listbox_component()],
-            [components.explorer_tree_component(generate_tree_data("", os.getcwd()))],
-            [components.graph_canvas_component()],
-        ]
+        layout = components.layout(generate_tree_data("", os.getcwd()))
         self.window = components.window(layout)
         self.data_store = DataStore(self._get_canvas())
 
