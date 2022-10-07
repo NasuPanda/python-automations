@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-from src.constants import KEYS, ComponentKeys
+from src.constants import ComponentKeys
 
 
 def folder_browse_component() -> tuple[sg.Input, sg.Button]:
@@ -22,6 +22,7 @@ def csv_header_listbox_component() -> sg.Listbox:
         "key": ComponentKeys.csv_headers_listbox,
         "enable_events": True,
         "size": (10, 7),
+        "select_mode": sg.LISTBOX_SELECT_MODE_MULTIPLE,
     }
 
     return sg.Listbox(**csv_headers_listbox_styles)
