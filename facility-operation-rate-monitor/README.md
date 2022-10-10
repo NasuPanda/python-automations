@@ -182,6 +182,8 @@ with open(self.log_filepath, "a", encoding="utf_8_sig", newline="") as f:
 
 ## 自動起動 ( Windows前提 )
 
+- コマンドで登録 : [schtasksコマンドでWindowsのタスクスケジューラに特権が必要なタスクを登録する - Qiita](https://qiita.com/minamijoyo/items/8cdb1b3659c703f60969)
+  - 日本語文字化け問題 : [UTF-8のバッチファイルが文字化けする時の対処3選 – なゆたり](https://nayutari.com/batch-utf8)
 - [スクリプトを使ってWindowsのロック・アンロック時に実行するタスクを登録する - Qiita](https://qiita.com/aikige/items/140c51ec87a1b67996b6)
 - [homeBinWin/setup at master · aikige/homeBinWin](https://github.com/aikige/homeBinWin/tree/master/setup)
 - https://stackoverflow.com/questions/26160900/is-there-a-way-to-add-a-task-to-the-windows-task-scheduler-via-python-3
