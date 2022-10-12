@@ -17,6 +17,12 @@ def draw_figure_to_canvas(canvas_component, figure) -> FigureCanvasTkAgg:
 
 
 class Graph:
+    """
+    References
+        - https://www.haya-programming.com/entry/2018/10/11/030103
+        - https://stackoverflow.com/questions/4700614/how-to-put-the-legend-outside-the-plot
+    """
+
     def __init__(self, canvas_component: tkinter.Canvas, figure_size: tuple[int, int] = (12, 10)) -> None:
         self.fig, self.axes = plt.subplots(figsize=figure_size)
         self.fig.set_facecolor(FIGURE_BG_COLOR)
@@ -28,15 +34,17 @@ class Graph:
         self.axes.cla()
         self.figure_canvas.draw()
 
-    def plot(self, data: list, label: str) -> None:
+    def plot(self, y_values: list, label: str, x_values: list | None = None) -> None:
         """グラフにデータをプロットする。
 
         Args:
             data (any): axes.plot が受け付けるデータ。
         """
-        # FIXME x, y ともに受け取る仕様にする？
-        # time[s] を強制的に x軸で固定する、とか。
-        self.axes.plot(data, label=label)
+        if x_values:
+            self.axes.plot(x_values, y_values, label=label)
+        else:
+            self.axes.plot(y_values, label=label)
+
         self.fig.subplots_adjust(**SUBPLOT_POSITION)
 
         # self.axes.legend(loc="upper left")
