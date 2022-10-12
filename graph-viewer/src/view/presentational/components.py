@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-from src.constants import ComponentKeys, FONT
+from src.constants import FONT, ComponentKeys
 
 
 def folder_browse_component() -> tuple[sg.Input, sg.Button]:

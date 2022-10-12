@@ -1,6 +1,6 @@
 import pathlib
-from src.data.graph.metadata import Metadata
 
+from src.data.graph.metadata import Metadata
 from src.data.reader import CSVReader
 
 
