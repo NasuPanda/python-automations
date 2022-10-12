@@ -5,6 +5,7 @@ from typing import Any
 import PySimpleGUI as sg
 
 from src.constants import FILE_ICON, FOLDER_ICON, ComponentKeys
+from src.data.graph import Graph
 from src.data.store import DataStore
 from src.view.presentational import components
 
@@ -37,7 +38,8 @@ class UserInterface:
     def __init__(self) -> None:
         layout = components.layout(generate_tree_data("", os.getcwd()))
         self.window = components.window(layout)
-        self.data_store = DataStore(self._get_canvas())
+        self.data_store = DataStore()
+        self.graph = Graph(self._get_canvas(), (7, 5))
 
         self.events = {
             ComponentKeys.csv_headers_listbox: self.on_select_csv_header,
@@ -45,7 +47,7 @@ class UserInterface:
             ComponentKeys.folder_input: self.on_input_folder,
         }
 
-    def read_window(self) -> None:
+    def start_event_loop(self) -> None:
         """イベントループを発生させる。"""
         while True:
             event, self.values = self.window.read()
@@ -61,7 +63,7 @@ class UserInterface:
         return self.window[ComponentKeys.graph_canvas].TKCanvas  # type: ignore
 
     def _get_csv_headers(self) -> list[str]:
-        """選択されたcsvヘッダを返す。(リスト形式なので注意)
+        """private 選択されたcsvヘッダを返す。(リスト形式なので注意)
 
         Returns:
             list[str]: 選択された csvヘッダ のリスト。
@@ -81,14 +83,16 @@ class UserInterface:
 
     def _update_graph_canvas(self) -> None:
         """グラフを更新する。"""
-        self.data_store.clear_graph()
+        self.graph.clear()
 
         for csv_header in self._get_csv_headers():
             if csv_header:
                 data_list = self.data_store.get_column_values_from_csv_readers(csv_header)
-                [self.data_store.plot_graph(data) for data in data_list]
+                # TODO csv_header を加工
+                # csv_header だけだとファイル名被りで困るので、どうにかする。
+                [self.graph.plot(data, csv_header) for data in data_list]
 
-        self.data_store.update_graph()
+        self.graph.commit_change()
 
     def on_click_tree(self) -> None:
         """csv_reader, csv_header_listbox, グラフ を更新する処理。"""

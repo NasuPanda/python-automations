@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 from src.data.reader import CSVReader
+from src.data.graph import Graph
 
 
 def draw_figure_to_canvas(canvas_component, figure) -> FigureCanvasTkAgg:
@@ -15,30 +16,8 @@ def draw_figure_to_canvas(canvas_component, figure) -> FigureCanvasTkAgg:
 
 
 class DataStore:
-    def __init__(self, canvas_component: tkinter.Canvas, figure_size: tuple[int, int] = (7, 5)) -> None:
-        embed_figure = plt.figure(figsize=figure_size)
-        self.axes = embed_figure.add_subplot(111)
-        self.figure_canvas = draw_figure_to_canvas(canvas_component, embed_figure)
+    def __init__(self) -> None:
         self.csv_readers: dict[str, CSVReader] = {}
-
-    def clear_graph(self) -> None:
-        """グラフをクリアする。"""
-        self.axes.cla()
-        self.figure_canvas.draw()
-
-    def plot_graph(self, data) -> None:
-        """グラフにデータをプロットする。
-
-        Args:
-            data (any): axes.plot が受け付けるデータ。
-        """
-        # FIXME x, y ともに受け取る仕様にする？
-        # time[s] を強制的に x軸で固定する、とか。
-        self.axes.plot(data)
-
-    def update_graph(self) -> None:
-        """グラフにプロットした結果を反映させる。"""
-        self.figure_canvas.draw()
 
     def add_csv_reader(self, filepath: str) -> CSVReader:
         """csv_reader を追加する。"""
