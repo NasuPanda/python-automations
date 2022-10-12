@@ -18,6 +18,34 @@ class DataStore:
     def number_of_csv_readers(self) -> int:
         return len(self.csv_readers)
 
+    @property
+    def csv_headers(self) -> list[str]:
+        # NOTE csv ヘッダは一意である前提なので、csv_readersから1つだけ使う
+        reader = self._get_csv_reader_by_index(0)
+        if reader:
+            return reader.columns
+        return []
+
+    @property
+    def values_of_csv_time_axis(self) -> list[int | float]:
+        if not self.csv_headers:
+            return []
+
+        for header in self.csv_headers:
+            if "time" in header:
+                time_axis_name = header
+                break
+        else:
+            return []
+
+        return self._get_csv_reader_by_index(0).get_column_values(time_axis_name)  # type: ignore : self.csv_headers で None にならないことが確定するため
+
+    def _get_csv_reader_by_index(self, index: int) -> CSVReader | None:
+        try:
+            return list(self.csv_readers.values())[index]
+        except IndexError:
+            return None
+
     def _sync_plots(self) -> None:
         if not self.headers or not self.csv_readers.items():
             return
@@ -78,11 +106,11 @@ class DataStore:
         if not new_filepaths:
             self.csv_readers = {}
 
-        number_of_files = len(new_filepaths)
-        if number_of_files == self.number_of_csv_readers:
+        number_of_new_filepaths = len(new_filepaths)
+        if number_of_new_filepaths == self.number_of_csv_readers:
             return
 
-        if number_of_files > self.number_of_csv_readers:
+        if number_of_new_filepaths > self.number_of_csv_readers:
             # 追加するパターン
             for path in new_filepaths:
                 if not self._has_csv_reader(path):
@@ -96,15 +124,15 @@ class DataStore:
                     return
 
     def update_plots_by_headers(self, new_headers: list[str]) -> None:
+        # 存在しなければクリアする
         if not new_headers:
             self.headers = []
 
-        number_of_headers = len(new_headers)
-
-        if number_of_headers == self.number_of_headers:
+        number_of_new_headers = len(new_headers)
+        if number_of_new_headers == self.number_of_headers:
             return
 
-        if number_of_headers > self.number_of_headers:
+        if number_of_new_headers > self.number_of_headers:
             # 追加するパターン
             for header in new_headers:
                 if not self._has_header(header):

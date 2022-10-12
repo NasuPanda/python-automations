@@ -84,18 +84,20 @@ class UserInterface:
     def _update_graph_canvas(self) -> None:
         """グラフを更新する。"""
         self.graph.clear()
+        values_of_time_axis = self.data_store.values_of_csv_time_axis
 
-        [self.graph.plot(plot.data, plot.label) for plot in self.data_store.plots]
+        if values_of_time_axis:
+            [
+                self.graph.plot(y_values=plot.data, label=plot.label, x_values=values_of_time_axis)
+                for plot in self.data_store.plots
+            ]
+        else:
+            [self.graph.plot(y_values=plot.data, label=plot.label) for plot in self.data_store.plots]
 
         self.graph.commit_change()
 
     def _update_csv_headers_listbox(self) -> None:
-        try:
-            reader = list(self.data_store.csv_readers.values())[0]
-        except IndexError:
-            self.window[ComponentKeys.csv_headers_listbox].update(values=[])
-            return
-        self.window[ComponentKeys.csv_headers_listbox].update(values=reader.columns)
+        self.window[ComponentKeys.csv_headers_listbox].update(values=self.data_store.csv_headers)
 
     def _reset_data_referring_to_tree(self) -> None:
         self.data_store.update_plots_by_headers([])
