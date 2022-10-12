@@ -39,7 +39,8 @@ class UserInterface:
         layout = components.layout(generate_tree_data("", os.getcwd()))
         self.window = components.window(layout)
         self.data_store = DataStore()
-        self.graph = Graph(self._get_canvas(), (12, 10))
+        self.graph = Graph(self._get_canvas(), (10, 8))
+        self.x_axis_is_time_axis = False
 
         self.events = {
             ComponentKeys.csv_headers_listbox: self.on_select_csv_header,
@@ -87,6 +88,8 @@ class UserInterface:
         values_of_time_axis = self.data_store.values_of_csv_time_axis
 
         if values_of_time_axis:
+            # TODO この値に関わるコンポーネントを作る
+            self.x_axis_is_time_axis = True
             [
                 self.graph.plot(y_values=plot.data, label=plot.label, x_values=values_of_time_axis)
                 for plot in self.data_store.plots

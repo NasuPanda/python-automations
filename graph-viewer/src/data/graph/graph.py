@@ -22,7 +22,7 @@ class Graph:
         - https://stackoverflow.com/questions/4700614/how-to-put-the-legend-outside-the-plot
     """
 
-    def __init__(self, canvas_component: tkinter.Canvas, figure_size: tuple[int, int] = (12, 10)) -> None:
+    def __init__(self, canvas_component: tkinter.Canvas, figure_size: tuple[int, int] = (10, 8)) -> None:
         self.fig, self.axes = plt.subplots(figsize=figure_size)
         self.fig.set_facecolor(FIGURE_BG_COLOR)
         self.fig.subplots_adjust(**SUBPLOT_POSITION)
