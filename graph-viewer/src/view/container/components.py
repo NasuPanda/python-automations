@@ -39,7 +39,7 @@ class UserInterface:
         layout = components.layout(generate_tree_data("", os.getcwd()))
         self.window = components.window(layout)
         self.data_store = DataStore()
-        self.graph = Graph(self._get_canvas(), (7, 5))
+        self.graph = Graph(self._get_canvas(), (12, 10))
 
         self.events = {
             ComponentKeys.csv_headers_listbox: self.on_select_csv_header,

@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-from src.common.constants import FONT, ComponentKeys
+from src.common.constants import ComponentKeys
 
 
 def folder_browse_component() -> tuple[sg.Input, sg.Button]:
@@ -48,7 +48,7 @@ def explorer_tree_component(tree_data: sg.TreeData) -> sg.Tree:
 def graph_canvas_component() -> sg.Canvas:
     graph_canvas = {
         "key": ComponentKeys.graph_canvas,
-        "size": (500, 500),
+        # "size": (1, 1),
     }
 
     return sg.Canvas(**graph_canvas)
@@ -68,9 +68,11 @@ def window(layout: list) -> sg.Window:
         "title": "CSV Graph Viewer",
         "layout": layout,
         "finalize": True,
+        "resizable": True,
         "element_justification": "center",
-        "font": f"{FONT} 12",
-        "resizable": False,
+        "font": "Monospace 12",
+        "location": (0, 0),
+        "size": (1800, 800),
     }
 
     return sg.Window(**window_styles)

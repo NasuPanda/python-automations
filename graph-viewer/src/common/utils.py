@@ -3,7 +3,7 @@ import os
 import re
 import itertools
 
-from src.common.constants import LENGTH_REMOVE_DUPLICATE
+from src.common.constants import WORD_LENGTH_REMOVE_DUPLICATE
 
 
 def get_filename_from_path(filepath: str) -> str:
@@ -60,7 +60,7 @@ def remove_duplicates(*strings: str) -> list[str]:
     for pair in itertools.combinations(strings, 2):
         longest_duplicate_word = find_longest_duplicate_word(*pair)
         # 長さが一定以下の場合は重複削除しない
-        if len(longest_duplicate_word) > LENGTH_REMOVE_DUPLICATE:
+        if len(longest_duplicate_word) > WORD_LENGTH_REMOVE_DUPLICATE:
             longest_duplicate_words.append(longest_duplicate_word)
 
     # 配列の重複を排除
