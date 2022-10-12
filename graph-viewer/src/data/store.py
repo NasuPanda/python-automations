@@ -3,7 +3,6 @@ from src.data.graph.metadata import Metadata
 from src.data.reader import CSVReader
 
 
-# TODO名前変更
 class DataStore:
     def __init__(self) -> None:
         self.plots: list[Metadata] = []
@@ -31,6 +30,7 @@ class DataStore:
         if not self.csv_headers:
             return []
 
+        # ヘッダーの中に `time` という文字列が含まれれば次に進む
         for header in self.csv_headers:
             if "time" in header:
                 time_axis_name = header

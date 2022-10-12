@@ -1,7 +1,7 @@
-import pathlib
-import os
-import re
 import itertools
+import os
+import pathlib
+import re
 
 from src.common.constants import WORD_LENGTH_REMOVE_DUPLICATE
 
