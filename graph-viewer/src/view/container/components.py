@@ -5,7 +5,7 @@ from typing import Any
 import PySimpleGUI as sg
 
 from src.constants import FILE_ICON, FOLDER_ICON, ComponentKeys
-from src.data.graph import Graph
+from src.data.graph.graph import Graph
 from src.data.store import DataStore
 from src.view.presentational import components
 
@@ -85,41 +85,49 @@ class UserInterface:
         """グラフを更新する。"""
         self.graph.clear()
 
-        for csv_header in self._get_csv_headers():
-            if csv_header:
-                data_list = self.data_store.get_column_values_from_csv_readers(csv_header)
-                # TODO csv_header を加工
-                # csv_header だけだとファイル名被りで困るので、どうにかする。
-                [self.graph.plot(data, csv_header) for data in data_list]
+        [self.graph.plot(plot.data, plot.label) for plot in self.data_store.plots]
 
         self.graph.commit_change()
 
+    def _update_csv_headers_listbox(self) -> None:
+        try:
+            reader = list(self.data_store.csv_readers.values())[0]
+        except IndexError:
+            self.window[ComponentKeys.csv_headers_listbox].update(values=[])
+            return
+        self.window[ComponentKeys.csv_headers_listbox].update(values=reader.columns)
+
+    def _reset_data_referring_to_tree(self) -> None:
+        self.data_store.update_plots_by_headers([])
+        self.data_store.update_plots_by_filepaths([])
+        self._update_csv_headers_listbox()
+        self._update_graph_canvas()
+
     def on_click_tree(self) -> None:
         """csv_reader, csv_header_listbox, グラフ を更新する処理。"""
-        tree_selected_values = self._get_values(ComponentKeys.explorer_tree)
-        if not tree_selected_values:
+        filepaths = [i for i in self._get_values(ComponentKeys.explorer_tree) if not os.path.isdir(i)]
+
+        # 何も選ばれていない or ディレクトリだけ選ばれている場合
+        if not filepaths:
+            self.data_store.update_plots_by_filepaths([])
             return
 
-        # イベント発生時に選択されいてるファイルが減ることもあるので、 csv_readers をクリアしておく
-        self.data_store.clear_csv_readers()
-        # 選択されたのがファイルであれば csv_reader を更新する
-        for filepath in tree_selected_values:
-            if not os.path.isdir(filepath):
-                reader = self.data_store.add_csv_reader(filepath)
-
-        # reader が undefined の場合はキャッチし終了
-        try:
-            self.window[ComponentKeys.csv_headers_listbox].update(values=reader.columns)
-        except NameError:
-            return
-
+        self.data_store.update_plots_by_filepaths(filepaths)
+        self._update_csv_headers_listbox()
         self._update_graph_canvas()
 
     def on_select_csv_header(self) -> None:
         """グラフを更新する処理。"""
+        csv_headers = self._get_csv_headers()
+        if not csv_headers:
+            self.data_store.update_plots_by_headers([])
+            return
+
+        self.data_store.update_plots_by_headers(csv_headers)
         self._update_graph_canvas()
 
     def on_input_folder(self) -> None:
         """ツリーを更新する処理。"""
         tree_data = generate_tree_data("", self._get_folder_input())
         self.window[ComponentKeys.explorer_tree].update(values=tree_data)
+        self._reset_data_referring_to_tree()

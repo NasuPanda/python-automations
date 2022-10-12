@@ -1,44 +1,112 @@
-import tkinter
-
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import pathlib
+from src.data.graph.metadata import Metadata
 
 from src.data.reader import CSVReader
-from src.data.graph import Graph
 
 
-def draw_figure_to_canvas(canvas_component, figure) -> FigureCanvasTkAgg:
-    """PySimpleGUI の cavas と matplotlib の figure を受け取り、描画する"""
-    figure_canvas_agg = FigureCanvasTkAgg(figure, canvas_component)
-    figure_canvas_agg.draw()
-    figure_canvas_agg.get_tk_widget().pack(side="top", fill="both", expand=1)
-    return figure_canvas_agg
-
-
+# TODO名前変更
 class DataStore:
     def __init__(self) -> None:
+        self.plots: list[Metadata] = []
         self.csv_readers: dict[str, CSVReader] = {}
+        self.headers: list[str] = []
 
-    def add_csv_reader(self, filepath: str) -> CSVReader:
-        """csv_reader を追加する。"""
-        reader = CSVReader(filepath)
-        self.csv_readers[filepath] = reader
-        return reader
+    @property
+    def number_of_headers(self) -> int:
+        return len(self.headers)
 
-    def get_headers_from_csv_reader(self, filepath: str) -> list[str]:
-        """csv_reader から headers を取得する"""
-        return self.csv_readers[filepath].columns
+    @property
+    def number_of_csv_readers(self) -> int:
+        return len(self.csv_readers)
 
-    def get_column_values_from_csv_reader(self, filepath: str, column_name: str) -> list[int | float] | None:
-        """column の値を取得する"""
-        return self.csv_readers[filepath].get_column_values(column_name)
+    def _sync_plots(self) -> None:
+        # plots をクリアする
+        self.plots = []
 
-    def get_column_values_from_csv_readers(self, column_name: str) -> list[list[int | float]]:
-        """登録されている全ての csv_reader から column の値を取得する"""
-        result = []
-        [result.append(reader.get_column_values(column_name)) for reader in self.csv_readers.values()]
-        return result
+        # インスタンス変数の値と同期させる
+        for header in self.headers:
+            for filepath, csv_reader in self.csv_readers.items():
+                data = csv_reader.get_column_values(header)
+                if data is None:
+                    raise ValueError(f"存在しないCSVヘッダが指定されました header: {header} file: {filepath}")
 
-    def clear_csv_readers(self) -> None:
-        """登録されている全ての csv_reader をクリアする。"""
-        self.csv_readers = {}
+                self.plots.append(
+                    Metadata(
+                        filename=pathlib.Path(filepath).name,
+                        data=data,
+                        header=header,
+                    )
+                )
+
+    def _add_header(self, header: str) -> None:
+        self.headers.append(header)
+
+        self._sync_plots()
+
+    def _remove_header(self, header: str) -> None:
+        self.headers.remove(header)
+
+        self._sync_plots()
+
+    def _add_csv_reader(self, filepath: str) -> None:
+        self.csv_readers[filepath] = CSVReader(filepath)
+
+        self._sync_plots()
+
+    def _remove_csv_reader(self, header: str) -> None:
+        del self.csv_readers[header]
+
+        self._sync_plots()
+
+    def _has_header(self, header: str) -> bool:
+        return header in self.headers
+
+    def _has_csv_reader(self, filepath: str) -> bool:
+        return filepath in self.csv_readers.keys()
+
+    def update_plots_by_filepaths(self, new_filepaths: list[str]) -> None:
+        # NOTE: dir のパスは渡す前に除外しておくこと
+
+        # 存在しなければクリアする
+        if not new_filepaths:
+            self.csv_readers = {}
+
+        number_of_files = len(new_filepaths)
+        if number_of_files == self.number_of_csv_readers:
+            return
+
+        if number_of_files > self.number_of_csv_readers:
+            # 追加するパターン
+            for path in new_filepaths:
+                if not self._has_csv_reader(path):
+                    self._add_csv_reader(path)
+                    return
+        else:
+            # 削除するパターン
+            for path in self.csv_readers.keys():
+                if path not in new_filepaths:
+                    self._remove_csv_reader(path)
+                    return
+
+    def update_plots_by_headers(self, new_headers: list[str]) -> None:
+        if not new_headers:
+            self.headers = []
+
+        number_of_headers = len(new_headers)
+
+        if number_of_headers == self.number_of_headers:
+            return
+
+        if number_of_headers > self.number_of_headers:
+            # 追加するパターン
+            for header in new_headers:
+                if not self._has_header(header):
+                    self._add_header(header)
+                    return
+
+        else:
+            # 削除するパターン
+            for header in self.headers:
+                if header not in new_headers:
+                    self._remove_header(header)
+                    return
