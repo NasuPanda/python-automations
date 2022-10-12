@@ -1,5 +1,4 @@
-import pathlib
-
+from src.common import utils
 from src.data.graph.metadata import Metadata
 from src.data.reader import CSVReader
 
@@ -20,21 +19,29 @@ class DataStore:
         return len(self.csv_readers)
 
     def _sync_plots(self) -> None:
+        if not self.headers or not self.csv_readers.items():
+            return
+
         # plots をクリアする
         self.plots = []
 
-        # インスタンス変数の値と同期させる
-        for header in self.headers:
-            for filepath, csv_reader in self.csv_readers.items():
+        # 重複を削除する
+        headers_without_duplicate_words = utils.remove_duplicates(*self.headers)
+        filenames = [utils.get_filename_from_path(path) for path in self.csv_readers.keys()]
+        filenames_without_duplicate_words = utils.remove_duplicates(*filenames)
+
+        for header, header_without_duplicate in zip(self.headers, headers_without_duplicate_words):
+            for csv_reader, filename_without_duplicate in zip(
+                self.csv_readers.values(), filenames_without_duplicate_words
+            ):
                 data = csv_reader.get_column_values(header)
                 if data is None:
-                    raise ValueError(f"存在しないCSVヘッダが指定されました header: {header} file: {filepath}")
-
+                    raise ValueError(f"存在しないCSVヘッダが指定されました header: {header}")
+                # インスタンス変数の値と同期させる
                 self.plots.append(
                     Metadata(
-                        filename=pathlib.Path(filepath).name,
                         data=data,
-                        header=header,
+                        label=f"{filename_without_duplicate}_{header_without_duplicate}",
                     )
                 )
 
