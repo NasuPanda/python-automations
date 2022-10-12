@@ -4,7 +4,7 @@ from typing import Any
 
 import PySimpleGUI as sg
 
-from src.constants import FILE_ICON, FOLDER_ICON, ComponentKeys
+from src.common.constants import FILE_ICON, FOLDER_ICON, ComponentKeys
 from src.data.graph.graph import Graph
 from src.data.store import DataStore
 from src.view.presentational import components
