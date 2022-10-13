@@ -48,11 +48,12 @@ class DataStore:
             return None
 
     def _sync_plots(self) -> None:
-        if not self.selected_headers or not self.csv_readers.items():
-            return
-
         # plots をクリアする
         self.plots = []
+
+        # どちらかが存在しない場合
+        if not self.selected_headers or not self.csv_readers.items():
+            return
 
         # 重複を削除する
         headers_without_duplicate_words = utils.remove_duplicates(*self.selected_headers)
@@ -77,22 +78,14 @@ class DataStore:
     def _add_header(self, header: str) -> None:
         self.selected_headers.append(header)
 
-        self._sync_plots()
-
     def _remove_header(self, header: str) -> None:
         self.selected_headers.remove(header)
-
-        self._sync_plots()
 
     def _add_csv_reader(self, filepath: str) -> None:
         self.csv_readers[filepath] = CSVReader(filepath)
 
-        self._sync_plots()
-
     def _remove_csv_reader(self, header: str) -> None:
         del self.csv_readers[header]
-
-        self._sync_plots()
 
     def _has_header(self, header: str) -> bool:
         return header in self.selected_headers
@@ -106,7 +99,10 @@ class DataStore:
         # 存在しなければクリアする
         if not new_filepaths:
             self.csv_readers = {}
+            self._sync_plots()
+            return
 
+        # 変化なし
         number_of_new_filepaths = len(new_filepaths)
         if number_of_new_filepaths == self.number_of_csv_readers:
             return
@@ -116,19 +112,24 @@ class DataStore:
             for path in new_filepaths:
                 if not self._has_csv_reader(path):
                     self._add_csv_reader(path)
+                    self._sync_plots()
                     return
         else:
             # 削除するパターン
             for path in self.csv_readers.keys():
                 if path not in new_filepaths:
                     self._remove_csv_reader(path)
+                    self._sync_plots()
                     return
 
     def update_plots_by_headers(self, new_headers: list[str]) -> None:
         # 存在しなければクリアする
         if not new_headers:
             self.selected_headers = []
+            self._sync_plots()
+            return
 
+        # 変化なし
         number_of_new_headers = len(new_headers)
         if number_of_new_headers == self.number_of_headers:
             return
@@ -138,6 +139,7 @@ class DataStore:
             for header in new_headers:
                 if not self._has_header(header):
                     self._add_header(header)
+                    self._sync_plots()
                     return
 
         else:
@@ -145,4 +147,5 @@ class DataStore:
             for header in self.selected_headers:
                 if header not in new_headers:
                     self._remove_header(header)
+                    self._sync_plots()
                     return
