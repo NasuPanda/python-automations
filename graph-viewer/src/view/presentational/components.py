@@ -57,7 +57,7 @@ def graph_canvas_component() -> sg.Canvas:
 def adjust_graph_range_frame_component() -> sg.Frame:
     graph_x_axis_range_desc_styles = {"text": "X軸"}
     graph_y_axis_range_desc_styles = {"text": "Y軸"}
-    graph_range_value_text = {"text": "~"}
+    graph_range_value_text = {"text": "～"}
 
     def graph_range_value_input_styles(key) -> dict:
         return {"default_text": "", "key": key, "size": (10, 1)}

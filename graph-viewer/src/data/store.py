@@ -7,18 +7,18 @@ class DataStore:
     def __init__(self) -> None:
         self.plots: list[Metadata] = []
         self.csv_readers: dict[str, CSVReader] = {}
-        self.headers: list[str] = []
+        self.selected_headers: list[str] = []
 
     @property
     def number_of_headers(self) -> int:
-        return len(self.headers)
+        return len(self.selected_headers)
 
     @property
     def number_of_csv_readers(self) -> int:
         return len(self.csv_readers)
 
     @property
-    def csv_headers(self) -> list[str]:
+    def headers_of_csv_reader(self) -> list[str]:
         # NOTE csv ヘッダは一意である前提なので、csv_readersから1つだけ使う
         reader = self._get_csv_reader_by_index(0)
         if reader:
@@ -27,11 +27,12 @@ class DataStore:
 
     @property
     def values_of_csv_time_axis(self) -> list[int | float]:
-        if not self.csv_headers:
+        # csv が読み込まれていない or ヘッダが選択されていない
+        if not self.headers_of_csv_reader or not self.selected_headers:
             return []
 
         # ヘッダーの中に `time` という文字列が含まれれば次に進む
-        for header in self.csv_headers:
+        for header in self.headers_of_csv_reader:
             if "time" in header:
                 time_axis_name = header
                 break
@@ -47,18 +48,18 @@ class DataStore:
             return None
 
     def _sync_plots(self) -> None:
-        if not self.headers or not self.csv_readers.items():
+        if not self.selected_headers or not self.csv_readers.items():
             return
 
         # plots をクリアする
         self.plots = []
 
         # 重複を削除する
-        headers_without_duplicate_words = utils.remove_duplicates(*self.headers)
+        headers_without_duplicate_words = utils.remove_duplicates(*self.selected_headers)
         filenames = [utils.get_filename_from_path(path) for path in self.csv_readers.keys()]
         filenames_without_duplicate_words = utils.remove_duplicates(*filenames)
 
-        for header, header_without_duplicate in zip(self.headers, headers_without_duplicate_words):
+        for header, header_without_duplicate in zip(self.selected_headers, headers_without_duplicate_words):
             for csv_reader, filename_without_duplicate in zip(
                 self.csv_readers.values(), filenames_without_duplicate_words
             ):
@@ -74,12 +75,12 @@ class DataStore:
                 )
 
     def _add_header(self, header: str) -> None:
-        self.headers.append(header)
+        self.selected_headers.append(header)
 
         self._sync_plots()
 
     def _remove_header(self, header: str) -> None:
-        self.headers.remove(header)
+        self.selected_headers.remove(header)
 
         self._sync_plots()
 
@@ -94,7 +95,7 @@ class DataStore:
         self._sync_plots()
 
     def _has_header(self, header: str) -> bool:
-        return header in self.headers
+        return header in self.selected_headers
 
     def _has_csv_reader(self, filepath: str) -> bool:
         return filepath in self.csv_readers.keys()
@@ -126,7 +127,7 @@ class DataStore:
     def update_plots_by_headers(self, new_headers: list[str]) -> None:
         # 存在しなければクリアする
         if not new_headers:
-            self.headers = []
+            self.selected_headers = []
 
         number_of_new_headers = len(new_headers)
         if number_of_new_headers == self.number_of_headers:
@@ -141,7 +142,7 @@ class DataStore:
 
         else:
             # 削除するパターン
-            for header in self.headers:
+            for header in self.selected_headers:
                 if header not in new_headers:
                     self._remove_header(header)
                     return

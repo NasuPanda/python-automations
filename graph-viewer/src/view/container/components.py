@@ -114,36 +114,48 @@ class UserInterface:
         self.graph.clear()
         values_of_time_axis = self.data_store.values_of_csv_time_axis
 
+        # x軸(時間軸)が存在する場合
         if values_of_time_axis:
-            # TODO 次のエラーの対策 ➞ ValueError: x and y must have same first dimension, but have shapes (10136,) and (13639,)
-            # 配列の長さを短い方に合わせるとか。
             self._update_time_axis_indicator(True)
-            [
-                self.graph.plot(y_values=plot.data, label=plot.label, x_values=values_of_time_axis)
-                for plot in self.data_store.plots
-            ]
+
+            for plot in self.data_store.plots:
+                x_values, y_values = values_of_time_axis, plot.data
+                try:
+                    self.graph.plot(y_values=y_values, label=plot.label, x_values=x_values)
+                except ValueError:
+                    # ValueError: x and y must have same first dimension, but have shapes の対応
+                    if len(x_values) > len(y_values):
+                        # x(時間軸)の方が長い: y軸を0埋めする
+                        y_values = y_values + [0] * (len(x_values) - len(y_values))
+                        self.graph.plot(y_values=y_values, label=plot.label, x_values=x_values)
+                        self._print_alert("x軸の方が長いため、y軸を0埋めしました")
+                    else:
+                        # yの方が長い: y軸を短くする
+                        y_values = y_values[: len(x_values)]
+                        self.graph.plot(y_values=y_values, label=plot.label, x_values=x_values)
+                        self._print_alert("y軸の方が長いため、y軸をx軸に合わせました")
+        # x軸(時間軸)が存在しない場合
         else:
             self._update_time_axis_indicator(False)
             [self.graph.plot(y_values=plot.data, label=plot.label) for plot in self.data_store.plots]
 
+        self._update_graph_range()
         self.graph.commit_change()
 
     def _update_csv_headers_listbox(self) -> None:
-        self.window[ComponentKeys.csv_headers_listbox].update(values=self.data_store.csv_headers)
+        self.window[ComponentKeys.csv_headers_listbox].update(values=self.data_store.headers_of_csv_reader)
 
     def _update_x_range(self) -> None:
         x_range = self._get_graph_x_range()
 
         if x_range:
             self.graph.set_x_range(x_range)
-            self.graph.commit_change()
 
     def _update_y_range(self) -> None:
         y_range = self._get_graph_y_range()
 
         if y_range:
             self.graph.set_y_range(y_range)
-            self.graph.commit_change()
 
     def _reset_data_referring_to_tree(self) -> None:
         self.data_store.update_plots_by_headers([])
@@ -154,6 +166,11 @@ class UserInterface:
     def _update_time_axis_indicator(self, is_time_axis: bool) -> None:
         indicator_text = "Yes" if is_time_axis else "No"
         self.window[ComponentKeys.time_axis_indicator_text].update(indicator_text)
+
+    def _update_graph_range(self) -> None:
+        self._update_x_range()
+        self._update_y_range()
+        self.graph.commit_change()
 
     def on_click_tree(self) -> None:
         """csv_reader, csv_header_listbox, グラフ を更新する処理。"""
@@ -186,6 +203,5 @@ class UserInterface:
         self._print_notice("フォルダの読み込みが完了しました")
 
     def on_click_update_graph_range(self) -> None:
-        self._update_x_range()
-        self._update_y_range()
+        self._update_graph_range()
         self._print_notice("グラフのレンジを更新しました")
