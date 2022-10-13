@@ -79,6 +79,6 @@ def validate_input_min_max_range(min: str, max: str) -> bool:
     except ValueError:
         return False
 
-    if min_number > max_number:
+    if min_number >= max_number:
         return False
     return True
