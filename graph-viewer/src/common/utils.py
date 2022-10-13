@@ -82,3 +82,11 @@ def validate_input_min_max_range(min: str, max: str) -> bool:
     if min_number >= max_number:
         return False
     return True
+
+
+def validate_input_number(input: str) -> bool:
+    try:
+        float(input)
+    except ValueError:
+        return False
+    return True

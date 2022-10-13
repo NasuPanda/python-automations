@@ -4,7 +4,15 @@ from typing import Any
 
 import PySimpleGUI as sg
 
-from src.common.constants import FILE_ICON, FOLDER_ICON, NOTICE_COLOR, ALERT_COLOR, ComponentKeys
+from src.common.constants import (
+    FILE_ICON,
+    FOLDER_ICON,
+    NOTICE_COLOR,
+    ALERT_COLOR,
+    BASELINE_COLOR_1,
+    BASELINE_COLOR_2,
+    ComponentKeys,
+)
 from src.common import utils
 from src.data.graph.graph import Graph
 from src.data.store import DataStore
@@ -47,6 +55,7 @@ class UserInterface:
             ComponentKeys.explorer_tree: self.on_click_tree,
             ComponentKeys.folder_input: self.on_input_folder,
             ComponentKeys.graph_range_update: self.on_click_update_graph_range,
+            ComponentKeys.baselines_update: self.on_click_update_baselines,
         }
 
     def start_event_loop(self) -> None:
@@ -109,6 +118,24 @@ class UserInterface:
             return (float(y_min), float(y_max))
         self._print_alert("Y軸のレンジに無効な値が含まれています")
 
+    def _get_base_hline1_value(self) -> float | None:
+        base_hline1_value = self._get_values(ComponentKeys.baseline1_input)
+
+        if not base_hline1_value == "":
+            if utils.validate_input_number(base_hline1_value):
+                return float(base_hline1_value)
+            else:
+                self._print_alert("規格線1に無効な値が含まれています")
+
+    def _get_base_hline2_value(self) -> float | None:
+        base_hline2_value = self._get_values(ComponentKeys.baseline2_input)
+
+        if not base_hline2_value == "":
+            if utils.validate_input_number(base_hline2_value):
+                return float(base_hline2_value)
+            else:
+                self._print_alert("規格線2に無効な値が含まれています")
+
     def _update_graph_canvas(self) -> None:
         """グラフを更新する。"""
         self.graph.clear()
@@ -139,7 +166,9 @@ class UserInterface:
             self._update_time_axis_indicator(False)
             [self.graph.plot(y_values=plot.data, label=plot.label) for plot in self.data_store.plots]
 
+        # 毎回実行が必要なメソッド
         self._update_graph_range()
+        self._update_base_hlines()
         self.graph.commit_change()
 
     def _update_csv_headers_listbox(self) -> None:
@@ -161,6 +190,7 @@ class UserInterface:
         self.data_store.update_plots_by_headers([])
         self.data_store.update_plots_by_filepaths([])
         self._update_csv_headers_listbox()
+        print(self.data_store.plots)
         self._update_graph_canvas()
 
     def _update_time_axis_indicator(self, is_time_axis: bool) -> None:
@@ -170,6 +200,13 @@ class UserInterface:
     def _update_graph_range(self) -> None:
         self._update_x_range()
         self._update_y_range()
+        self.graph.commit_change()
+
+    def _update_base_hlines(self) -> None:
+        if hline1_value := self._get_base_hline1_value():
+            self.graph.plot_hline(hline1_value, BASELINE_COLOR_1)
+        if hline2_value := self._get_base_hline2_value():
+            self.graph.plot_hline(hline2_value, BASELINE_COLOR_2)
         self.graph.commit_change()
 
     def on_click_tree(self) -> None:
@@ -205,3 +242,9 @@ class UserInterface:
     def on_click_update_graph_range(self) -> None:
         self._update_graph_range()
         self._print_notice("グラフのレンジを更新しました")
+
+    def on_click_update_baselines(self) -> None:
+        # hline の描画だけ呼び出すと無限に描画されてしまう
+        # clear を挟むために _update_graph_canvas を呼ぶようにする
+        self._update_graph_canvas()
+        self._print_notice("規格線を更新しました")

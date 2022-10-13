@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 FIGURE_BG_COLOR = "azure"
+BASELINE_STYLE = "dashed"
 SUBPLOT_POSITION = {"left": 0.05, "right": 0.6, "bottom": 0.1, "top": 0.95}
 
 
@@ -53,6 +54,15 @@ class Graph:
 
     def set_y_range(self, y_range: tuple[float, float]) -> None:
         self.axes.set_ylim([*y_range])
+
+    def plot_hline(
+        self,
+        h_value: int | float,
+        color: str = "blue",
+        linestyle: str = BASELINE_STYLE,
+    ) -> None:
+        x_min, x_max = self.axes.get_xlim()
+        self.axes.hlines([h_value], x_min, x_max, color, linestyles=linestyle)
 
     def commit_change(self) -> None:
         """グラフにプロットした結果を反映させる。"""
