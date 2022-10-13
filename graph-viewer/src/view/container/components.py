@@ -45,7 +45,8 @@ def generate_tree_data(parent: str, folder_path: str) -> sg.TreeData:
 
 class UserInterface:
     def __init__(self) -> None:
-        layout = components.layout(generate_tree_data("", os.getcwd()))
+        initial_folder = components.popup_get_folder()
+        layout = components.layout(generate_tree_data("", initial_folder if initial_folder else os.getcwd()))
         self.window = components.window(layout)
         self.data_store = DataStore()
         self.graph = Graph(self._get_canvas(), (10, 8))

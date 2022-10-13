@@ -187,5 +187,5 @@ def window(layout: list) -> sg.Window:
     return sg.Window(**window_styles)
 
 
-def popup_error(*display_text: str) -> None:
-    sg.popup_error(*display_text, title="Error")
+def popup_get_folder() -> str:
+    return sg.popup_get_folder("最初に開くフォルダ", title="Input initial folder")
