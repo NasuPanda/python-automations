@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 
-from src.common.constants import ComponentKeys, BASELINE_COLOR_1, BASELINE_COLOR_2
+from src.common.constants import (BASELINE_COLOR_1, BASELINE_COLOR_2,
+                                  ComponentKeys)
 
 
 def _input_styles(key) -> dict:

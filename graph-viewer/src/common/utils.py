@@ -1,5 +1,4 @@
 import itertools
-import os
 import pathlib
 import re
 
@@ -8,10 +7,6 @@ from src.common.constants import WORD_LENGTH_REMOVE_DUPLICATE
 
 def get_filename_from_path(filepath: str) -> str:
     return pathlib.Path(filepath).name
-
-
-def is_dir(filepath: str) -> bool:
-    return os.path.isdir(filepath)
 
 
 def find_longest_duplicate_word(string1: str, string2: str) -> str:

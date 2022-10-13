@@ -4,16 +4,10 @@ from typing import Any
 
 import PySimpleGUI as sg
 
-from src.common.constants import (
-    FILE_ICON,
-    FOLDER_ICON,
-    NOTICE_COLOR,
-    ALERT_COLOR,
-    BASELINE_COLOR_1,
-    BASELINE_COLOR_2,
-    ComponentKeys,
-)
 from src.common import utils
+from src.common.constants import (ALERT_COLOR, BASELINE_COLOR_1,
+                                  BASELINE_COLOR_2, FILE_ICON, FOLDER_ICON,
+                                  NOTICE_COLOR, ComponentKeys)
 from src.data.graph.graph import Graph
 from src.data.store import DataStore
 from src.view.presentational import components
