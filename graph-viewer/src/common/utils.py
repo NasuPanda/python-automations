@@ -1,3 +1,6 @@
+"""TODO docs の記述
+"""
+
 import itertools
 import pathlib
 import re

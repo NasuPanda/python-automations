@@ -1,3 +1,5 @@
+"""TODO docs の記述
+"""
 import tkinter
 
 import matplotlib.pyplot as plt

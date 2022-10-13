@@ -1,3 +1,5 @@
+"""TODO docs の記述
+"""
 import os
 import tkinter
 from typing import Any
@@ -5,9 +7,15 @@ from typing import Any
 import PySimpleGUI as sg
 
 from src.common import utils
-from src.common.constants import (ALERT_COLOR, BASELINE_COLOR_1,
-                                  BASELINE_COLOR_2, FILE_ICON, FOLDER_ICON,
-                                  NOTICE_COLOR, ComponentKeys)
+from src.common.constants import (
+    ALERT_COLOR,
+    BASELINE_COLOR_1,
+    BASELINE_COLOR_2,
+    FILE_ICON,
+    FOLDER_ICON,
+    NOTICE_COLOR,
+    ComponentKeys,
+)
 from src.data.graph.graph import Graph
 from src.data.store import DataStore
 from src.view.presentational import components
@@ -114,6 +122,7 @@ class UserInterface:
         self._print_alert("Y軸のレンジに無効な値が含まれています")
 
     def _get_base_hline1_value(self) -> float | None:
+        # FIXME hline1, hline2 で分けない
         base_hline1_value = self._get_values(ComponentKeys.baseline1_input)
 
         if not base_hline1_value == "":
@@ -123,6 +132,7 @@ class UserInterface:
                 self._print_alert("規格線1に無効な値が含まれています")
 
     def _get_base_hline2_value(self) -> float | None:
+        # FIXME hline1, hline2 で分けない
         base_hline2_value = self._get_values(ComponentKeys.baseline2_input)
 
         if not base_hline2_value == "":
