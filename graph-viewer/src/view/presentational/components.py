@@ -16,7 +16,23 @@ def folder_browse_components() -> tuple[sg.Input, sg.Button]:
     return sg.Input(**folder_input_styles), sg.FolderBrowse(**folder_browse_styles)
 
 
-def csv_header_listbox_component() -> sg.Listbox:
+def explorer_tree_component(tree_data: sg.TreeData) -> sg.Tree:
+    explorer_tree_styles = {
+        "data": tree_data,
+        "key": ComponentKeys.explorer_tree,
+        "headings": [],
+        "auto_size_columns": True,
+        # num_row: max number of row
+        "num_rows": 24,
+        "col0_width": 56,
+        "show_expanded": False,
+        "enable_events": True,
+        "tooltip": "Ctrl + クリックで複数選択",
+    }
+    return sg.Tree(**explorer_tree_styles)
+
+
+def csv_header_listbox_component() -> sg.Frame:
     csv_headers_listbox_styles = {
         "values": ["CSVファイルを選択してください"],
         "key": ComponentKeys.csv_headers_listbox,
@@ -26,23 +42,31 @@ def csv_header_listbox_component() -> sg.Listbox:
         "auto_size_text": True,
         "select_mode": sg.LISTBOX_SELECT_MODE_MULTIPLE,
     }
-
-    return sg.Listbox(**csv_headers_listbox_styles)
-
-
-def explorer_tree_component(tree_data: sg.TreeData) -> sg.Tree:
-    explorer_tree_styles = {
-        "data": tree_data,
-        "headings": [],
-        "auto_size_columns": True,
-        # num_row: max number of row
-        "num_rows": 24,
-        "col0_width": 56,
-        "key": ComponentKeys.explorer_tree,
-        "show_expanded": False,
-        "enable_events": True,
+    select_csv_headers_frame_styles = {
+        "title": "グラフに表示する列",
+        "layout": [
+            [sg.Listbox(**csv_headers_listbox_styles)],
+        ],
     }
-    return sg.Tree(**explorer_tree_styles)
+
+    return sg.Frame(**select_csv_headers_frame_styles)
+
+
+def log_multiline_component() -> sg.Multiline:
+    log_styles = {
+        "size": (70, 6),
+        "key": ComponentKeys.log,
+        "disabled": True,
+        "no_scrollbar": True,
+    }
+    log_frame_styles = {
+        "title": "ログ",
+        "layout": [
+            [sg.Multiline(**log_styles)],
+        ],
+    }
+
+    return sg.Frame(**log_frame_styles)
 
 
 def graph_canvas_component() -> sg.Canvas:
@@ -94,23 +118,6 @@ def time_axis_indicator_components() -> tuple[sg.T, sg.T]:
     }
 
     return sg.T(**time_axis_indicator_desc_text_style), sg.T(**time_axis_indicator_text_style)
-
-
-def log_multiline_component() -> sg.Multiline:
-    log_styles = {
-        "size": (70, 6),
-        "key": ComponentKeys.log,
-        "disabled": True,
-        "no_scrollbar": True,
-    }
-    log_frame_styles = {
-        "title": "ログ",
-        "layout": [
-            [sg.Multiline(**log_styles)],
-        ],
-    }
-
-    return sg.Frame(**log_frame_styles)
 
 
 def margin_component(height: int = 1) -> sg.T:
