@@ -96,8 +96,41 @@ def time_axis_indicator_components() -> tuple[sg.T, sg.T]:
     return sg.T(**time_axis_indicator_desc_text_style), sg.T(**time_axis_indicator_text_style)
 
 
+def log_multiline_component() -> sg.Multiline:
+    log_styles = {
+        "size": (70, 6),
+        "key": ComponentKeys.log,
+        "disabled": True,
+        "no_scrollbar": True,
+    }
+    log_frame_styles = {
+        "title": "ログ",
+        "layout": [
+            [sg.Multiline(**log_styles)],
+        ],
+    }
+
+    return sg.Frame(**log_frame_styles)
+
+
+def margin_component(height: int = 1) -> sg.T:
+    margin_styles = {
+        "text": "",
+        "size": (1, height),
+    }
+
+    return sg.T(**margin_styles)
+
+
 def layout(tree_data: sg.TreeData) -> list:
-    col_1 = [[*folder_browse_components()], [explorer_tree_component(tree_data)], [csv_header_listbox_component()]]
+    col_1 = [
+        [*folder_browse_components()],
+        [explorer_tree_component(tree_data)],
+        [margin_component(1)],
+        [csv_header_listbox_component()],
+        [margin_component(1)],
+        [log_multiline_component()],
+    ]
     col_2 = [
         [graph_canvas_component()],
         [adjust_graph_range_frame_component(), *time_axis_indicator_components()],

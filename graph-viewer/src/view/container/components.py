@@ -4,7 +4,7 @@ from typing import Any
 
 import PySimpleGUI as sg
 
-from src.common.constants import FILE_ICON, FOLDER_ICON, ComponentKeys
+from src.common.constants import FILE_ICON, FOLDER_ICON, NOTICE_COLOR, ALERT_COLOR, ComponentKeys
 from src.common import utils
 from src.data.graph.graph import Graph
 from src.data.store import DataStore
@@ -60,8 +60,11 @@ class UserInterface:
             else:
                 self.events[event]()
 
-    def _display_error(self, *display_text: str) -> None:
-        components.popup_error(*display_text)
+    def _print_notice(self, *messages: str) -> None:
+        [self.window[ComponentKeys.log].print(message, t=NOTICE_COLOR) for message in messages]
+
+    def _print_alert(self, *messages: str) -> None:
+        [self.window[ComponentKeys.log].print(message, t=ALERT_COLOR) for message in messages]
 
     def _get_canvas(self) -> tkinter.Canvas:
         """private Canvas を受け取る。"""
@@ -94,7 +97,7 @@ class UserInterface:
             return None
         if utils.validate_input_min_max_range(x_min, x_max):
             return (float(x_min), float(x_max))
-        self._display_error("X軸のレンジに無効な値が含まれています")
+        self._print_alert("X軸のレンジに無効な値が含まれています")
 
     def _get_graph_y_range(self) -> tuple[float, float] | None:
         y_min = self._get_values(ComponentKeys.graph_y_axis_min_range_input)
@@ -104,7 +107,7 @@ class UserInterface:
             return None
         if utils.validate_input_min_max_range(y_min, y_max):
             return (float(y_min), float(y_max))
-        self._display_error("Y軸のレンジに無効な値が含まれています")
+        self._print_alert("Y軸のレンジに無効な値が含まれています")
 
     def _update_graph_canvas(self) -> None:
         """グラフを更新する。"""
@@ -180,7 +183,9 @@ class UserInterface:
         tree_data = generate_tree_data("", self._get_folder_input())
         self.window[ComponentKeys.explorer_tree].update(values=tree_data)
         self._reset_data_referring_to_tree()
+        self._print_notice("フォルダの読み込みが完了しました")
 
     def on_click_update_graph_range(self) -> None:
         self._update_x_range()
         self._update_y_range()
+        self._print_notice("グラフのレンジを更新しました")
