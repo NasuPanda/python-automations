@@ -3,7 +3,7 @@ import PySimpleGUI as sg
 from src.common.constants import ComponentKeys
 
 
-def folder_browse_component() -> tuple[sg.Input, sg.Button]:
+def folder_browse_components() -> tuple[sg.Input, sg.Button]:
     folder_input_styles = {
         "default_text": "",
         "enable_events": True,
@@ -54,9 +54,54 @@ def graph_canvas_component() -> sg.Canvas:
     return sg.Canvas(**graph_canvas)
 
 
+def adjust_graph_range_frame_component() -> sg.Frame:
+    graph_x_axis_range_desc_styles = {"text": "X軸"}
+    graph_y_axis_range_desc_styles = {"text": "Y軸"}
+    graph_range_value_text = {"text": "~"}
+
+    def graph_range_value_input_styles(key) -> dict:
+        return {"default_text": "", "key": key, "size": (10, 1)}
+
+    graph_range_value_update_styles = {"button_text": "更新", "key": ComponentKeys.graph_range_update}
+
+    adjust_graph_range_frame_styles = {
+        "title": "グラフレンジ調整",
+        "layout": [
+            [
+                sg.T(**graph_x_axis_range_desc_styles),
+                sg.Input(**graph_range_value_input_styles(ComponentKeys.graph_x_axis_min_range_input)),
+                sg.T(**graph_range_value_text),
+                sg.Input(**graph_range_value_input_styles(ComponentKeys.graph_x_axis_max_range_input)),
+            ],
+            [
+                sg.T(**graph_y_axis_range_desc_styles),
+                sg.Input(**graph_range_value_input_styles(ComponentKeys.graph_y_axis_min_range_input)),
+                sg.T(**graph_range_value_text),
+                sg.Input(**graph_range_value_input_styles(ComponentKeys.graph_y_axis_max_range_input)),
+            ],
+            [sg.Button(**graph_range_value_update_styles)],
+        ],
+    }
+
+    return sg.Frame(**adjust_graph_range_frame_styles)
+
+
+def time_axis_indicator_components() -> tuple[sg.T, sg.T]:
+    time_axis_indicator_desc_text_style = {"text": "X軸 = 時間軸: "}
+    time_axis_indicator_text_style = {
+        "text": "No",
+        "key": ComponentKeys.time_axis_indicator_text,
+    }
+
+    return sg.T(**time_axis_indicator_desc_text_style), sg.T(**time_axis_indicator_text_style)
+
+
 def layout(tree_data: sg.TreeData) -> list:
-    col_1 = [[*folder_browse_component()], [csv_header_listbox_component()], [explorer_tree_component(tree_data)]]
-    col_2 = [[graph_canvas_component()]]
+    col_1 = [[*folder_browse_components()], [explorer_tree_component(tree_data)], [csv_header_listbox_component()]]
+    col_2 = [
+        [graph_canvas_component()],
+        [adjust_graph_range_frame_component(), *time_axis_indicator_components()],
+    ]
 
     return [
         [sg.Column(col_1), sg.Column(col_2)],
@@ -72,7 +117,11 @@ def window(layout: list) -> sg.Window:
         "element_justification": "center",
         "font": "Monospace 12",
         "location": (0, 0),
-        "size": (1800, 800),
+        "size": (1800, 1000),
     }
 
     return sg.Window(**window_styles)
+
+
+def popup_error(*display_text: str) -> None:
+    sg.popup_error(*display_text, title="Error")

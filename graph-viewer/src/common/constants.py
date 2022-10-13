@@ -8,6 +8,12 @@ class ComponentKeys:
     csv_headers_listbox = "-SELECT_HEADER-"
     explorer_tree = "-TREE-"
     graph_canvas = "-CANVAS-"
+    graph_x_axis_min_range_input = "-X_AXIS_MIN-"
+    graph_x_axis_max_range_input = "-X_AXIS_MAX-"
+    graph_y_axis_min_range_input = "-Y_AXIS_MIN-"
+    graph_y_axis_max_range_input = "-Y_AXIS_MAX-"
+    graph_range_update = "-UPDATE_GRAPH_RANGE-"
+    time_axis_indicator_text = "-X_AXIS_IS_TIMEAXIS_CHECKBOX-"
 
 
 FOLDER_ICON: Final = b"iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsSAAALEgHS3X78AAABnUlEQVQ4y8WSv2rUQRSFv7vZgJFFsQg2EkWb4AvEJ8hqKVilSmFn3iNvIAp21oIW9haihBRKiqwElMVsIJjNrprsOr/5dyzml3UhEQIWHhjmcpn7zblw4B9lJ8Xag9mlmQb3AJzX3tOX8Tngzg349q7t5xcfzpKGhOFHnjx+9qLTzW8wsmFTL2Gzk7Y2O/k9kCbtwUZbV+Zvo8Md3PALrjoiqsKSR9ljpAJpwOsNtlfXfRvoNU8Arr/NsVo0ry5z4dZN5hoGqEzYDChBOoKwS/vSq0XW3y5NAI/uN1cvLqzQur4MCpBGEEd1PQDfQ74HYR+LfeQOAOYAmgAmbly+dgfid5CHPIKqC74L8RDyGPIYy7+QQjFWa7ICsQ8SpB/IfcJSDVMAJUwJkYDMNOEPIBxA/gnuMyYPijXAI3lMse7FGnIKsIuqrxgRSeXOoYZUCI8pIKW/OHA7kD2YYcpAKgM5ABXk4qSsdJaDOMCsgTIYAlL5TQFTyUIZDmev0N/bnwqnylEBQS45UKnHx/lUlFvA3fo+jwR8ALb47/oNma38cuqiJ9AAAAAASUVORK5CYII="

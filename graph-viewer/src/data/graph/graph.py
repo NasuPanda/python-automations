@@ -46,8 +46,13 @@ class Graph:
 
         self.fig.subplots_adjust(**SUBPLOT_POSITION)
 
-        # self.axes.legend(loc="upper left")
         self.axes.legend(bbox_to_anchor=(1.00, 1), borderaxespad=0)
+
+    def set_x_range(self, x_range: tuple[float, float]) -> None:
+        self.axes.set_xlim([*x_range])
+
+    def set_y_range(self, y_range: tuple[float, float]) -> None:
+        self.axes.set_ylim([*y_range])
 
     def commit_change(self) -> None:
         """グラフにプロットした結果を反映させる。"""

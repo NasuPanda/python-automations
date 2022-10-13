@@ -70,3 +70,15 @@ def remove_duplicates(*strings: str) -> list[str]:
 
     regex = create_regex_or_pattern(*longest_duplicate_words)
     return [re.sub(regex, "", s) for s in strings]
+
+
+def validate_input_min_max_range(min: str, max: str) -> bool:
+    try:
+        min_number = float(min)
+        max_number = float(max)
+    except ValueError:
+        return False
+
+    if min_number > max_number:
+        return False
+    return True
