@@ -1,22 +1,22 @@
-"""TODO docs の記述
-"""
 import PySimpleGUI as sg
 
-from src.common.constants import (BASELINE_COLOR_1, BASELINE_COLOR_2,
-                                  TIME_AXIS_INDICATOR_TEXTS, ComponentKeys)
+from src.common.constants import BASELINE_COLOR_1, BASELINE_COLOR_2, TIME_AXIS_INDICATOR_TEXTS, ComponentKeys
 
 
-def _common_input_styles(key) -> dict:
+FONT = "Monospace"
+
+
+def _common_input_styles(key: str) -> dict:
     return {"default_text": "", "key": key, "size": (10, 1)}
 
 
-def _common_margin_component(width: int = 1, height: int = 1) -> sg.T:
+def _common_margin_component(width: int = 1, height: int = 1) -> sg.Text:
     margin_styles = {
         "text": "",
         "size": (width, height),
     }
 
-    return sg.T(**margin_styles)
+    return sg.Text(**margin_styles)
 
 
 def folder_browse_components() -> tuple[sg.Input, sg.Button]:
@@ -48,7 +48,7 @@ def explorer_tree_component(tree_data: sg.TreeData) -> sg.Tree:
     return sg.Tree(**explorer_tree_styles)
 
 
-def csv_header_listbox_component() -> sg.Frame:
+def select_csv_header_frame() -> sg.Frame:
     csv_headers_listbox_styles = {
         "values": ["CSVファイルを選択してください"],
         "key": ComponentKeys.csv_headers_listbox,
@@ -68,7 +68,7 @@ def csv_header_listbox_component() -> sg.Frame:
     return sg.Frame(**select_csv_headers_frame_styles)
 
 
-def log_multiline_component() -> sg.Multiline:
+def log_frame() -> sg.Frame:
     log_styles = {
         "size": (70, 6),
         "key": ComponentKeys.log,
@@ -94,26 +94,26 @@ def graph_canvas_component() -> sg.Canvas:
     return sg.Canvas(**graph_canvas)
 
 
-def adjust_graph_range_frame_component() -> sg.Frame:
-    graph_x_axis_range_text = {"text": "X軸"}
-    graph_y_axis_range_text = {"text": "Y軸"}
-    graph_range_min_text = {"text": "Min"}
-    graph_range_max_text = {"text": "Max"}
-    graph_range_value_text = {"text": "～"}
+def adjust_graph_range_frame() -> sg.Frame:
+    x_axis_text_styles = {"text": "X軸"}
+    y_axis_text_styles = {"text": "Y軸"}
+    min_range_text_styles = {"text": "Min"}
+    max_range_text_styles = {"text": "Max"}
+    range_text_styles = {"text": "～"}
     # pad: left, right, top, bottom
     pad_l, pad_r, pad_t, pad_b = 100, 0, 20, 10
-    graph_range_value_update_styles = {
+    update_range_button_styles = {
         "button_text": "更新",
         "key": ComponentKeys.graph_range_update,
         "pad": ((pad_l, pad_r), (pad_t, pad_b)),
-        "font": "Monospace 15",
+        "font": f"{FONT} 15",
     }
-    btn_text_color, btn_bg_color = sg.theme_button_color()
-    graph_range_reset_button_styles = {
+    __, btn_bg_color = sg.theme_button_color()
+    reset_range_button_styles = {
         "button_text": "リセット",
         "key": ComponentKeys.graph_range_reset,
         "pad": ((pad_l, pad_r), (pad_t, pad_b)),
-        "font": "Monospace 15",
+        "font": f"{FONT} 15",
         "button_color": ("red", btn_bg_color),
     }
 
@@ -121,52 +121,52 @@ def adjust_graph_range_frame_component() -> sg.Frame:
         "title": "グラフレンジ調整",
         "layout": [
             [
-                sg.T(**graph_x_axis_range_text),
-                sg.T(**graph_range_min_text),
+                sg.T(**x_axis_text_styles),
+                sg.T(**min_range_text_styles),
                 sg.Input(**_common_input_styles(ComponentKeys.graph_x_axis_min_range_input)),
-                sg.T(**graph_range_value_text),
-                sg.T(**graph_range_max_text),
+                sg.T(**range_text_styles),
+                sg.T(**max_range_text_styles),
                 sg.Input(**_common_input_styles(ComponentKeys.graph_x_axis_max_range_input)),
             ],
             [
-                sg.T(**graph_y_axis_range_text),
-                sg.T(**graph_range_min_text),
+                sg.T(**y_axis_text_styles),
+                sg.T(**min_range_text_styles),
                 sg.Input(**_common_input_styles(ComponentKeys.graph_y_axis_min_range_input)),
-                sg.T(**graph_range_value_text),
-                sg.T(**graph_range_max_text),
+                sg.T(**range_text_styles),
+                sg.T(**max_range_text_styles),
                 sg.Input(**_common_input_styles(ComponentKeys.graph_y_axis_max_range_input)),
             ],
-            [sg.Button(**graph_range_value_update_styles), sg.Button(**graph_range_reset_button_styles)],
+            [sg.Button(**update_range_button_styles), sg.Button(**reset_range_button_styles)],
         ],
     }
 
     return sg.Frame(**adjust_graph_range_frame_styles)
 
 
-def time_axis_indicator_components() -> tuple[sg.T, sg.T]:
-    time_axis_indicator_desc_text_style = {"text": "X軸 :"}
-    time_axis_indicator_text_style = {
+def x_axis_indicator_components() -> tuple[sg.Text, sg.Text]:
+    x_axis_indicator_text_styles = {"text": "X軸 :"}
+    x_axis_indicator_styles = {
         "text": TIME_AXIS_INDICATOR_TEXTS["n"],
         "key": ComponentKeys.time_axis_indicator_text,
     }
 
-    return sg.T(**time_axis_indicator_desc_text_style), sg.T(**time_axis_indicator_text_style)
+    return sg.Text(**x_axis_indicator_text_styles), sg.Text(**x_axis_indicator_styles)
 
 
-def base_hline_components() -> sg.Frame:
+def base_hline_frame() -> sg.Frame:
 
     baseline1_text_styles = {"text": "規格線(Y軸)-1", "text_color": BASELINE_COLOR_1}
     baseline2_text_styles = {"text": "規格線(Y軸)-2", "text_color": BASELINE_COLOR_2}
     # pad: left, right, top, bottom
     pad_l, pad_r, pad_t, pad_b = 100, 0, 20, 10
-    baselines_update_styles = {
+    update_baselines_button_styles = {
         "button_text": "更新",
         "key": ComponentKeys.baselines_update,
         "pad": ((pad_l, pad_r), (pad_t, pad_b)),
-        "font": "Monospace 15",
+        "font": f"{FONT} 15",
     }
 
-    baselines_frame_styles = {
+    base_hline_frame_styles = {
         "title": "規格線",
         "layout": [
             [
@@ -177,11 +177,11 @@ def base_hline_components() -> sg.Frame:
                 sg.T(**baseline2_text_styles),
                 sg.Input(**_common_input_styles(ComponentKeys.baseline2_input)),
             ],
-            [sg.Button(**baselines_update_styles)],
+            [sg.Button(**update_baselines_button_styles)],
         ],
     }
 
-    return sg.Frame(**baselines_frame_styles)
+    return sg.Frame(**base_hline_frame_styles)
 
 
 def layout(tree_data: sg.TreeData) -> list:
@@ -189,13 +189,13 @@ def layout(tree_data: sg.TreeData) -> list:
         [*folder_browse_components()],
         [explorer_tree_component(tree_data)],
         [_common_margin_component(1, 1)],
-        [csv_header_listbox_component()],
+        [select_csv_header_frame()],
         [_common_margin_component(1, 1)],
-        [log_multiline_component()],
+        [log_frame()],
     ]
     col_2 = [
         [graph_canvas_component()],
-        [adjust_graph_range_frame_component(), *time_axis_indicator_components(), base_hline_components()],
+        [adjust_graph_range_frame(), *x_axis_indicator_components(), base_hline_frame()],
     ]
 
     return [
@@ -210,7 +210,7 @@ def window(layout: list) -> sg.Window:
         "finalize": True,
         "resizable": True,
         "element_justification": "center",
-        "font": "Monospace 12",
+        "font": f"{FONT} 12",
         "location": (0, 0),
         "size": (1800, 1000),
     }
