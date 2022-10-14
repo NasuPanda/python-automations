@@ -10,6 +10,10 @@ class ComponentKeys:
     csv_headers_listbox = "-SELECT_HEADER-"
     explorer_tree = "-TREE-"
     graph_canvas = "-CANVAS-"
+    graph_range = {
+        "x": {"min": "-X_AXIS_MIN-", "max": "-X_AXIS_MAX-"},
+        "y": {"min": "-Y_AXIS_MIN-", "max": "-Y_AXIS_MAX-"},
+    }
     graph_x_axis_min_range_input = "-X_AXIS_MIN-"
     graph_x_axis_max_range_input = "-X_AXIS_MAX-"
     graph_y_axis_min_range_input = "-Y_AXIS_MIN-"

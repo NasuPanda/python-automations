@@ -2,10 +2,15 @@
 """
 
 import itertools
+import os
 import pathlib
 import re
 
 from src.common.constants import WORD_LENGTH_REMOVE_DUPLICATE
+
+
+def is_dir(path: str) -> bool:
+    return os.path.isdir(path)
 
 
 def get_filename_from_path(filepath: str) -> str:
@@ -70,7 +75,7 @@ def remove_duplicates(*strings: str) -> list[str]:
     return [re.sub(regex, "", s) for s in strings]
 
 
-def validate_input_min_max_range(min: str, max: str) -> bool:
+def validate_graph_min_max_range(min: str, max: str) -> bool:
     try:
         min_number = float(min)
         max_number = float(max)

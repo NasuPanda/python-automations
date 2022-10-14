@@ -7,10 +7,17 @@ from typing import Any
 import PySimpleGUI as sg
 
 from src.common import utils
-from src.common.constants import (ALERT_COLOR, BASELINE_COLOR_1,
-                                  BASELINE_COLOR_2, FILE_ICON, FOLDER_ICON,
-                                  NOTICE_COLOR, TIME_AXIS_INDICATOR_TEXTS,
-                                  ComponentKeys)
+from src.common import types
+from src.common.constants import (
+    ALERT_COLOR,
+    BASELINE_COLOR_1,
+    BASELINE_COLOR_2,
+    FILE_ICON,
+    FOLDER_ICON,
+    NOTICE_COLOR,
+    TIME_AXIS_INDICATOR_TEXTS,
+    ComponentKeys,
+)
 from src.data.graph.graph import Graph
 from src.data.store import DataStore
 from src.view.presentational import components
@@ -43,7 +50,7 @@ def generate_tree_data(parent: str, folder_path: str) -> sg.TreeData:
 class UserInterface:
     def __init__(self) -> None:
         initial_folder = components.popup_get_folder()
-        if not os.path.isdir(initial_folder):
+        if not utils.is_dir(initial_folder):
             raise FileNotFoundError("指定されたパスが見つかりません:", initial_folder)
         layout = components.layout(generate_tree_data("", initial_folder if initial_folder else os.getcwd()))
         self.window = components.window(layout)
@@ -80,18 +87,6 @@ class UserInterface:
         """private Canvas を受け取る。"""
         return self.window[ComponentKeys.graph_canvas].TKCanvas  # type: ignore
 
-    def _get_csv_headers(self) -> list[str]:
-        """private 選択されたcsvヘッダを返す。(リスト形式なので注意)
-
-        Returns:
-            list[str]: 選択された csvヘッダ のリスト。
-        """
-        return self.window[ComponentKeys.csv_headers_listbox].get()  # type: ignore
-
-    def _get_folder_input(self) -> str:
-        """private フォルダ入力を受け取る。"""
-        return self.window[ComponentKeys.folder_input].get()
-
     def _get_values(self, key: str) -> Any:
         """private 特定のキーのvaluesを取得する。"""
         try:
@@ -99,27 +94,31 @@ class UserInterface:
         except AttributeError:
             print("read_window が実行されていません!")
 
-    def _get_graph_x_range(self) -> tuple[float, float] | None:
-        x_min = self._get_values(ComponentKeys.graph_x_axis_min_range_input)
-        x_max = self._get_values(ComponentKeys.graph_x_axis_max_range_input)
+    def get_csv_headers(self) -> list[str]:
+        """private 選択されたcsvヘッダを返す。(リスト形式なので注意)
 
-        if x_min == "" or x_max == "":
+        Returns:
+            list[str]: 選択された csvヘッダ のリスト。
+        """
+        return self.window[ComponentKeys.csv_headers_listbox].get()  # type: ignore
+
+    def get_folder_input(self) -> str:
+        """フォルダ入力を受け取る。"""
+        return self.window[ComponentKeys.folder_input].get()
+
+    def get_graph_range_values(self, axis: types.GraphAxis) -> tuple[float, float] | None:
+        min = self._get_values(ComponentKeys.graph_range[axis]["min"])
+        max = self._get_values(ComponentKeys.graph_range[axis]["max"])
+        # 空白ならNone
+        if min == "" or max == "":
             return None
-        if utils.validate_input_min_max_range(x_min, x_max):
-            return (float(x_min), float(x_max))
-        raise ValueError(f"X軸のレンジに無効な値が含まれています {x_min} ~ {x_max}")
+        # バリデーションに成功したらfloatにキャストして返す
+        if utils.validate_graph_min_max_range(min, max):
+            return (float(min), float(max))
+        # バリデーションに失敗したらエラー
+        raise ValueError(f"{axis}軸のレンジに無効な値が含まれています: {min} ~ {max}")
 
-    def _get_graph_y_range(self) -> tuple[float, float] | None:
-        y_min = self._get_values(ComponentKeys.graph_y_axis_min_range_input)
-        y_max = self._get_values(ComponentKeys.graph_y_axis_max_range_input)
-
-        if y_min == "" or y_max == "":
-            return None
-        if utils.validate_input_min_max_range(y_min, y_max):
-            return (float(y_min), float(y_max))
-        raise ValueError(f"Y軸のレンジに無効な値が含まれています {y_min} ~ {y_max}")
-
-    def _get_base_hline1_value(self) -> float | None:
+    def get_base_hline1_value(self) -> float | None:
         # FIXME hline1, hline2 で分けない
         base_hline1_value = self._get_values(ComponentKeys.baseline1_input)
 
@@ -129,7 +128,7 @@ class UserInterface:
             else:
                 self._print_alert("規格線1に無効な値が含まれています")
 
-    def _get_base_hline2_value(self) -> float | None:
+    def get_base_hline2_value(self) -> float | None:
         # FIXME hline1, hline2 で分けない
         base_hline2_value = self._get_values(ComponentKeys.baseline2_input)
 
@@ -139,7 +138,11 @@ class UserInterface:
             else:
                 self._print_alert("規格線2に無効な値が含まれています")
 
-    def _update_graph_canvas(self) -> None:
+    def _update_time_axis_indicator(self, is_time_axis: bool) -> None:
+        indicator_text = TIME_AXIS_INDICATOR_TEXTS["y"] if is_time_axis else TIME_AXIS_INDICATOR_TEXTS["n"]
+        self.window[ComponentKeys.time_axis_indicator_text].update(indicator_text)  # type: ignore
+
+    def update_graph_canvas(self) -> None:
         """グラフを更新する。"""
         self.graph.clear()
         values_of_time_axis = self.data_store.values_of_csv_time_axis
@@ -170,16 +173,16 @@ class UserInterface:
             [self.graph.plot(y_values=plot.data, label=plot.label) for plot in self.data_store.plots]
 
         # 毎回実行が必要なメソッド
-        self._update_both_graph_range()
+        self.update_both_graph_range()
         self._update_base_hlines()
         self.graph.commit_change()
 
-    def _update_csv_headers_listbox(self) -> None:
+    def update_csv_headers_listbox(self) -> None:
         self.window[ComponentKeys.csv_headers_listbox].update(values=self.data_store.headers_of_csv_reader)
 
     def _update_x_range(self) -> None:
         try:
-            x_range = self._get_graph_x_range()
+            x_range = self.get_graph_range_values("x")
         except ValueError:
             self._print_alert("X軸のレンジに無効な値が含まれています")
             return
@@ -191,7 +194,7 @@ class UserInterface:
 
     def _update_y_range(self) -> None:
         try:
-            y_range = self._get_graph_y_range()
+            y_range = self.get_graph_range_values("y")
         except ValueError:
             self._print_alert("Y軸のレンジに無効な値が含まれています")
             return
@@ -201,22 +204,18 @@ class UserInterface:
         else:
             self.graph.auto_scale_y_range()
 
-    def _reset_data_referring_to_tree(self) -> None:
+    def reset_data_referring_to_tree(self) -> None:
         self.data_store.update_plots_by_headers([])
         self.data_store.update_plots_by_filepaths([])
-        self._update_csv_headers_listbox()
-        self._update_graph_canvas()
+        self.update_csv_headers_listbox()
+        self.update_graph_canvas()
 
-    def _update_time_axis_indicator(self, is_time_axis: bool) -> None:
-        indicator_text = TIME_AXIS_INDICATOR_TEXTS["y"] if is_time_axis else TIME_AXIS_INDICATOR_TEXTS["n"]
-        self.window[ComponentKeys.time_axis_indicator_text].update(indicator_text)  # type: ignore
-
-    def _update_both_graph_range(self) -> None:
+    def update_both_graph_range(self) -> None:
         self._update_x_range()
         self._update_y_range()
         self.graph.commit_change()
 
-    def _reset_both_graph_range(self) -> None:
+    def reset_both_graph_range(self) -> None:
         self.window[ComponentKeys.graph_x_axis_min_range_input].update("")  # type: ignore
         self.window[ComponentKeys.graph_x_axis_max_range_input].update("")  # type: ignore
         self.window[ComponentKeys.graph_y_axis_min_range_input].update("")  # type: ignore
@@ -228,15 +227,15 @@ class UserInterface:
         self.graph.commit_change()
 
     def _update_base_hlines(self) -> None:
-        if hline1_value := self._get_base_hline1_value():
+        if hline1_value := self.get_base_hline1_value():
             self.graph.plot_hline(hline1_value, BASELINE_COLOR_1)
-        if hline2_value := self._get_base_hline2_value():
+        if hline2_value := self.get_base_hline2_value():
             self.graph.plot_hline(hline2_value, BASELINE_COLOR_2)
         self.graph.commit_change()
 
     def on_click_tree(self) -> None:
         """csv_reader, csv_header_listbox, グラフ を更新する処理。"""
-        filepaths = [i for i in self._get_values(ComponentKeys.explorer_tree) if not os.path.isdir(i)]
+        filepaths = [i for i in self._get_values(ComponentKeys.explorer_tree) if not utils.is_dir(i)]
 
         # 何も選ばれていない or ディレクトリだけ選ばれている場合
         if not filepaths:
@@ -248,14 +247,14 @@ class UserInterface:
             self.data_store.update_plots_by_filepaths(filepaths)
         except ValueError:
             self._print_alert("存在しないcsvヘッダが指定されました", "データを確認してください")
-            self._reset_data_referring_to_tree()
+            self.reset_data_referring_to_tree()
             return
-        self._update_csv_headers_listbox()
-        self._update_graph_canvas()
+        self.update_csv_headers_listbox()
+        self.update_graph_canvas()
 
     def on_select_csv_header(self) -> None:
         """グラフを更新する処理。"""
-        csv_headers = self._get_csv_headers()
+        csv_headers = self.get_csv_headers()
         if not csv_headers:
             self.data_store.update_plots_by_headers([])
             return
@@ -265,27 +264,27 @@ class UserInterface:
             self.data_store.update_plots_by_headers(csv_headers)
         except ValueError:
             self._print_alert("存在しないcsvヘッダが指定されました", "データを確認してください")
-            self._reset_data_referring_to_tree()
+            self.reset_data_referring_to_tree()
             return
-        self._update_graph_canvas()
+        self.update_graph_canvas()
 
     def on_input_folder(self) -> None:
         """ツリーを更新する処理。"""
-        tree_data = generate_tree_data("", self._get_folder_input())
+        tree_data = generate_tree_data("", self.get_folder_input())
         self.window[ComponentKeys.explorer_tree].update(values=tree_data)
-        self._reset_data_referring_to_tree()
+        self.reset_data_referring_to_tree()
         self._print_notice("フォルダの読み込みが完了しました")
 
     def on_click_update_graph_range(self) -> None:
-        self._update_both_graph_range()
+        self.update_both_graph_range()
         self._print_notice("グラフのレンジを更新しました")
 
     def on_click_reset_graph_range(self) -> None:
-        self._reset_both_graph_range()
+        self.reset_both_graph_range()
         self._print_notice("グラフのレンジをリセットしました")
 
     def on_click_update_baselines(self) -> None:
         # hline の描画だけ呼び出すと無限に描画されてしまう
         # clear を挟むために _update_graph_canvas を呼ぶようにする
-        self._update_graph_canvas()
+        self.update_graph_canvas()
         self._print_notice("規格線を更新しました")
