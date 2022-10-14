@@ -2,7 +2,7 @@
 """
 import PySimpleGUI as sg
 
-from src.common.constants import BASELINE_COLOR_1, BASELINE_COLOR_2, ComponentKeys
+from src.common.constants import BASELINE_COLOR_1, BASELINE_COLOR_2, TIME_AXIS_INDICATOR_TEXTS, ComponentKeys
 
 
 def _input_styles(key) -> dict:
@@ -85,8 +85,10 @@ def graph_canvas_component() -> sg.Canvas:
 
 
 def adjust_graph_range_frame_component() -> sg.Frame:
-    graph_x_axis_range_desc_styles = {"text": "X軸"}
-    graph_y_axis_range_desc_styles = {"text": "Y軸"}
+    graph_x_axis_range_text = {"text": "X軸"}
+    graph_y_axis_range_text = {"text": "Y軸"}
+    graph_range_min_text = {"text": "Min"}
+    graph_range_max_text = {"text": "Max"}
     graph_range_value_text = {"text": "～"}
     graph_range_value_update_styles = {"button_text": "更新", "key": ComponentKeys.graph_range_update}
 
@@ -94,15 +96,19 @@ def adjust_graph_range_frame_component() -> sg.Frame:
         "title": "グラフレンジ調整",
         "layout": [
             [
-                sg.T(**graph_x_axis_range_desc_styles),
+                sg.T(**graph_x_axis_range_text),
+                sg.T(**graph_range_min_text),
                 sg.Input(**_input_styles(ComponentKeys.graph_x_axis_min_range_input)),
                 sg.T(**graph_range_value_text),
+                sg.T(**graph_range_max_text),
                 sg.Input(**_input_styles(ComponentKeys.graph_x_axis_max_range_input)),
             ],
             [
-                sg.T(**graph_y_axis_range_desc_styles),
+                sg.T(**graph_y_axis_range_text),
+                sg.T(**graph_range_min_text),
                 sg.Input(**_input_styles(ComponentKeys.graph_y_axis_min_range_input)),
                 sg.T(**graph_range_value_text),
+                sg.T(**graph_range_max_text),
                 sg.Input(**_input_styles(ComponentKeys.graph_y_axis_max_range_input)),
             ],
             [sg.Button(**graph_range_value_update_styles)],
@@ -113,9 +119,9 @@ def adjust_graph_range_frame_component() -> sg.Frame:
 
 
 def time_axis_indicator_components() -> tuple[sg.T, sg.T]:
-    time_axis_indicator_desc_text_style = {"text": "X軸 = 時間軸: "}
+    time_axis_indicator_desc_text_style = {"text": "X軸 :"}
     time_axis_indicator_text_style = {
-        "text": "No",
+        "text": TIME_AXIS_INDICATOR_TEXTS["n"],
         "key": ComponentKeys.time_axis_indicator_text,
     }
 

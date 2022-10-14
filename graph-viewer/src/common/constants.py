@@ -29,4 +29,6 @@ ALERT_COLOR = "red"
 BASELINE_COLOR_1 = "red"
 BASELINE_COLOR_2 = "blue"
 
+TIME_AXIS_INDICATOR_TEXTS = {"n": "---", "y": "time[s]"}
+
 WORD_LENGTH_REMOVE_DUPLICATE: Final = 8

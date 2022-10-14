@@ -7,15 +7,10 @@ from typing import Any
 import PySimpleGUI as sg
 
 from src.common import utils
-from src.common.constants import (
-    ALERT_COLOR,
-    BASELINE_COLOR_1,
-    BASELINE_COLOR_2,
-    FILE_ICON,
-    FOLDER_ICON,
-    NOTICE_COLOR,
-    ComponentKeys,
-)
+from src.common.constants import (ALERT_COLOR, BASELINE_COLOR_1,
+                                  BASELINE_COLOR_2, FILE_ICON, FOLDER_ICON,
+                                  NOTICE_COLOR, TIME_AXIS_INDICATOR_TEXTS,
+                                  ComponentKeys)
 from src.data.graph.graph import Graph
 from src.data.store import DataStore
 from src.view.presentational import components
@@ -195,11 +190,10 @@ class UserInterface:
         self.data_store.update_plots_by_headers([])
         self.data_store.update_plots_by_filepaths([])
         self._update_csv_headers_listbox()
-        print(self.data_store.plots)
         self._update_graph_canvas()
 
     def _update_time_axis_indicator(self, is_time_axis: bool) -> None:
-        indicator_text = "Yes" if is_time_axis else "No"
+        indicator_text = TIME_AXIS_INDICATOR_TEXTS["y"] if is_time_axis else TIME_AXIS_INDICATOR_TEXTS["n"]
         self.window[ComponentKeys.time_axis_indicator_text].update(indicator_text)
 
     def _update_graph_range(self) -> None:
