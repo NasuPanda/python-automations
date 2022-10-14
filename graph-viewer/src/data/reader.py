@@ -32,7 +32,7 @@ class CSVReader:
         Returns:
             list[int | float] | None: 特定のカラムが持つ値のリスト。
         """
-        if not self.exists_column:
+        if not self.exists_column(column):
             return
 
         column_values = self.df[column].tolist()

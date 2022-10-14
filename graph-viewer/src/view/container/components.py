@@ -49,6 +49,8 @@ def generate_tree_data(parent: str, folder_path: str) -> sg.TreeData:
 class UserInterface:
     def __init__(self) -> None:
         initial_folder = components.popup_get_folder()
+        if not os.path.isdir(initial_folder):
+            raise FileNotFoundError("指定されたパスが見つかりません:", initial_folder)
         layout = components.layout(generate_tree_data("", initial_folder if initial_folder else os.getcwd()))
         self.window = components.window(layout)
         self.data_store = DataStore()
@@ -189,10 +191,8 @@ class UserInterface:
             return
 
         if x_range:
-            print("1")
             self.graph.set_x_range(x_range)
         else:
-            print("2")
             self.graph.auto_scale_x_range()
 
     def _update_y_range(self) -> None:
@@ -249,7 +249,13 @@ class UserInterface:
             self.data_store.update_plots_by_filepaths([])
             return
 
-        self.data_store.update_plots_by_filepaths(filepaths)
+        # 存在しないcsvヘッダが選ばれた場合
+        try:
+            self.data_store.update_plots_by_filepaths(filepaths)
+        except ValueError:
+            self._print_alert("存在しないcsvヘッダが指定されました", "データを確認してください")
+            self._reset_data_referring_to_tree()
+            return
         self._update_csv_headers_listbox()
         self._update_graph_canvas()
 
@@ -260,7 +266,13 @@ class UserInterface:
             self.data_store.update_plots_by_headers([])
             return
 
-        self.data_store.update_plots_by_headers(csv_headers)
+        # 存在しないcsvヘッダが選ばれた場合
+        try:
+            self.data_store.update_plots_by_headers(csv_headers)
+        except ValueError:
+            self._print_alert("存在しないcsvヘッダが指定されました", "データを確認してください")
+            self._reset_data_referring_to_tree()
+            return
         self._update_graph_canvas()
 
     def on_input_folder(self) -> None:
