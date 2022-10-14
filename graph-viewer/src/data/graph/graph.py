@@ -60,6 +60,14 @@ class Graph:
     def set_y_range(self, y_range: tuple[float, float]) -> None:
         self.axes.set_ylim([*y_range])
 
+    def auto_scale_x_range(self) -> None:
+        self.axes.relim()
+        self.axes.autoscale(axis="x")
+
+    def auto_scale_y_range(self) -> None:
+        self.axes.relim()
+        self.axes.autoscale(axis="y")
+
     def plot_hline(
         self,
         h_value: int | float,

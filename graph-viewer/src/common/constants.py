@@ -14,6 +14,7 @@ class ComponentKeys:
     graph_y_axis_min_range_input = "-Y_AXIS_MIN-"
     graph_y_axis_max_range_input = "-Y_AXIS_MAX-"
     graph_range_update = "-UPDATE_GRAPH_RANGE-"
+    graph_range_reset = "-RESET_GRAPH_RANGE-"
     baseline1_input = "-BASE_HLINE_1-"
     baseline2_input = "-BASE_HLINE_2-"
     baselines_update = "-UPDATE_BASE_HLINES-"

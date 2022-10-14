@@ -7,10 +7,16 @@ from typing import Any
 import PySimpleGUI as sg
 
 from src.common import utils
-from src.common.constants import (ALERT_COLOR, BASELINE_COLOR_1,
-                                  BASELINE_COLOR_2, FILE_ICON, FOLDER_ICON,
-                                  NOTICE_COLOR, TIME_AXIS_INDICATOR_TEXTS,
-                                  ComponentKeys)
+from src.common.constants import (
+    ALERT_COLOR,
+    BASELINE_COLOR_1,
+    BASELINE_COLOR_2,
+    FILE_ICON,
+    FOLDER_ICON,
+    NOTICE_COLOR,
+    TIME_AXIS_INDICATOR_TEXTS,
+    ComponentKeys,
+)
 from src.data.graph.graph import Graph
 from src.data.store import DataStore
 from src.view.presentational import components
@@ -53,13 +59,14 @@ class UserInterface:
             ComponentKeys.explorer_tree: self.on_click_tree,
             ComponentKeys.folder_input: self.on_input_folder,
             ComponentKeys.graph_range_update: self.on_click_update_graph_range,
+            ComponentKeys.graph_range_reset: self.on_click_reset_graph_range,
             ComponentKeys.baselines_update: self.on_click_update_baselines,
         }
 
     def start_event_loop(self) -> None:
         """イベントループを発生させる。"""
         while True:
-            event, self.values = self.window.read()
+            event, self.values = self.window.read()  # type: ignore
 
             if event is None:
                 break
@@ -68,10 +75,10 @@ class UserInterface:
                 self.events[event]()
 
     def _print_notice(self, *messages: str) -> None:
-        [self.window[ComponentKeys.log].print(message, t=NOTICE_COLOR) for message in messages]
+        [self.window[ComponentKeys.log].print(message, t=NOTICE_COLOR) for message in messages]  # type: ignore
 
     def _print_alert(self, *messages: str) -> None:
-        [self.window[ComponentKeys.log].print(message, t=ALERT_COLOR) for message in messages]
+        [self.window[ComponentKeys.log].print(message, t=ALERT_COLOR) for message in messages]  # type: ignore
 
     def _get_canvas(self) -> tkinter.Canvas:
         """private Canvas を受け取る。"""
@@ -104,7 +111,7 @@ class UserInterface:
             return None
         if utils.validate_input_min_max_range(x_min, x_max):
             return (float(x_min), float(x_max))
-        self._print_alert("X軸のレンジに無効な値が含まれています")
+        raise ValueError(f"X軸のレンジに無効な値が含まれています {x_min} ~ {x_max}")
 
     def _get_graph_y_range(self) -> tuple[float, float] | None:
         y_min = self._get_values(ComponentKeys.graph_y_axis_min_range_input)
@@ -114,7 +121,7 @@ class UserInterface:
             return None
         if utils.validate_input_min_max_range(y_min, y_max):
             return (float(y_min), float(y_max))
-        self._print_alert("Y軸のレンジに無効な値が含まれています")
+        raise ValueError(f"Y軸のレンジに無効な値が含まれています {y_min} ~ {y_max}")
 
     def _get_base_hline1_value(self) -> float | None:
         # FIXME hline1, hline2 で分けない
@@ -167,7 +174,7 @@ class UserInterface:
             [self.graph.plot(y_values=plot.data, label=plot.label) for plot in self.data_store.plots]
 
         # 毎回実行が必要なメソッド
-        self._update_graph_range()
+        self._update_both_graph_range()
         self._update_base_hlines()
         self.graph.commit_change()
 
@@ -175,16 +182,30 @@ class UserInterface:
         self.window[ComponentKeys.csv_headers_listbox].update(values=self.data_store.headers_of_csv_reader)
 
     def _update_x_range(self) -> None:
-        x_range = self._get_graph_x_range()
+        try:
+            x_range = self._get_graph_x_range()
+        except ValueError:
+            self._print_alert("X軸のレンジに無効な値が含まれています")
+            return
 
         if x_range:
+            print("1")
             self.graph.set_x_range(x_range)
+        else:
+            print("2")
+            self.graph.auto_scale_x_range()
 
     def _update_y_range(self) -> None:
-        y_range = self._get_graph_y_range()
+        try:
+            y_range = self._get_graph_y_range()
+        except ValueError:
+            self._print_alert("Y軸のレンジに無効な値が含まれています")
+            return
 
         if y_range:
             self.graph.set_y_range(y_range)
+        else:
+            self.graph.auto_scale_y_range()
 
     def _reset_data_referring_to_tree(self) -> None:
         self.data_store.update_plots_by_headers([])
@@ -194,11 +215,22 @@ class UserInterface:
 
     def _update_time_axis_indicator(self, is_time_axis: bool) -> None:
         indicator_text = TIME_AXIS_INDICATOR_TEXTS["y"] if is_time_axis else TIME_AXIS_INDICATOR_TEXTS["n"]
-        self.window[ComponentKeys.time_axis_indicator_text].update(indicator_text)
+        self.window[ComponentKeys.time_axis_indicator_text].update(indicator_text)  # type: ignore
 
-    def _update_graph_range(self) -> None:
+    def _update_both_graph_range(self) -> None:
         self._update_x_range()
         self._update_y_range()
+        self.graph.commit_change()
+
+    def _reset_both_graph_range(self) -> None:
+        self.window[ComponentKeys.graph_x_axis_min_range_input].update("")  # type: ignore
+        self.window[ComponentKeys.graph_x_axis_max_range_input].update("")  # type: ignore
+        self.window[ComponentKeys.graph_y_axis_min_range_input].update("")  # type: ignore
+        self.window[ComponentKeys.graph_y_axis_max_range_input].update("")  # type: ignore
+        # NOTE: input の値をクリア ➞ update_graph_range()でグラフを更新する ことは出来ない
+        # PySimpleGUI の仕様上、1回のイベントで更新できるコンポーネントは1つしか無いため
+        self.graph.auto_scale_x_range()
+        self.graph.auto_scale_y_range()
         self.graph.commit_change()
 
     def _update_base_hlines(self) -> None:
@@ -239,8 +271,12 @@ class UserInterface:
         self._print_notice("フォルダの読み込みが完了しました")
 
     def on_click_update_graph_range(self) -> None:
-        self._update_graph_range()
+        self._update_both_graph_range()
         self._print_notice("グラフのレンジを更新しました")
+
+    def on_click_reset_graph_range(self) -> None:
+        self._reset_both_graph_range()
+        self._print_notice("グラフのレンジをリセットしました")
 
     def on_click_update_baselines(self) -> None:
         # hline の描画だけ呼び出すと無限に描画されてしまう
