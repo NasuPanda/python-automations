@@ -5,6 +5,7 @@ import tkinter
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+PLOT_FONT = "MS Gothic"
 FIGURE_BG_COLOR = "azure"
 BASELINE_STYLE = "dashed"
 SUBPLOT_POSITION = {"left": 0.05, "right": 0.6, "bottom": 0.1, "top": 0.95}
@@ -26,6 +27,8 @@ class Graph:
     """
 
     def __init__(self, canvas_component: tkinter.Canvas, figure_size: tuple[int, int] = (10, 8)) -> None:
+        plt.rcParams["font.family"] = PLOT_FONT
+
         self.fig, self.axes = plt.subplots(figsize=figure_size)
         self.fig.set_facecolor(FIGURE_BG_COLOR)
         self.fig.subplots_adjust(**SUBPLOT_POSITION)
