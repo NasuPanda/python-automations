@@ -1,6 +1,7 @@
 """TODO docs の記述
 """
 from src.common import utils
+from src.common.constants import TIME_AXIS_HEADER_REGEX
 from src.data.graph.metadata import Metadata
 from src.data.reader import CSVReader
 
@@ -34,10 +35,15 @@ class DataStore:
             return []
 
         # ヘッダーの中に `time` という文字列が含まれれば次に進む
+        # NOTE : 大文字/小文字を区別しないように正規表現を使用
         for header in self.headers_of_csv_reader:
-            if "time" in header:
+            try:
+                TIME_AXIS_HEADER_REGEX.findall(header)[0]
                 time_axis_name = header
+                print(time_axis_name)
                 break
+            except IndexError:
+                pass
         else:
             return []
 
