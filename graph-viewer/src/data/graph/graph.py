@@ -30,11 +30,14 @@ class Graph:
         self.fig.set_facecolor(FIGURE_BG_COLOR)
         self.fig.subplots_adjust(**SUBPLOT_POSITION)
         self.figure_canvas = draw_figure_to_canvas(canvas_component, self.fig)
+        # 水平線をもつかどうか True の場合、x_limの値に補正を掛ける
+        self.has_hline = False
 
     def clear(self) -> None:
         """グラフをクリアする。"""
         self.axes.cla()
         self.figure_canvas.draw()
+        self.has_hline = False
 
     def plot(self, y_values: list, label: str, x_values: list | None = None) -> None:
         """グラフにデータをプロットする。
@@ -63,8 +66,13 @@ class Graph:
         color: str = "blue",
         linestyle: str = BASELINE_STYLE,
     ) -> None:
-        x_min, x_max = self.axes.get_xlim()
-        self.axes.hlines([h_value], x_min, x_max, color, linestyles=linestyle)
+        _, x_max = self.axes.get_xlim()
+        # NOTE get_xlim の返り値は axes の表示範囲の下限/上限。プロットされた値ではない。
+        # x_lim の値をそのまま参照して h_line を引くと、表示範囲が拡大され続けてしまう。それを防ぐために補正を掛ける。
+        if self.has_hline:
+            x_max = x_max / 1.05
+        self.axes.hlines([h_value], 0, x_max, color, linestyles=linestyle)
+        self.has_hline = True
 
     def commit_change(self) -> None:
         """グラフにプロットした結果を反映させる。"""
