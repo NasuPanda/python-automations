@@ -2,7 +2,8 @@
 """
 import PySimpleGUI as sg
 
-from src.common.constants import BASELINE_COLOR_1, BASELINE_COLOR_2, TIME_AXIS_INDICATOR_TEXTS, ComponentKeys
+from src.common.constants import (BASELINE_COLOR_1, BASELINE_COLOR_2,
+                                  TIME_AXIS_INDICATOR_TEXTS, ComponentKeys)
 
 
 def _common_input_styles(key) -> dict:

@@ -40,7 +40,6 @@ class DataStore:
             try:
                 TIME_AXIS_HEADER_REGEX.findall(header)[0]
                 time_axis_name = header
-                print(time_axis_name)
                 break
             except IndexError:
                 pass

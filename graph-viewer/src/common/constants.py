@@ -1,6 +1,6 @@
+import re
 from dataclasses import dataclass
 from typing import Final
-import re
 
 
 @dataclass(frozen=True)
