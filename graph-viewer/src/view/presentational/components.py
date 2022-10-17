@@ -1,9 +1,7 @@
 import PySimpleGUI as sg
 
-from src.common.constants import BASE_HLINE_COLORS, TIME_AXIS_INDICATOR_TEXTS, ComponentKeys
-
-
-FONT = "Monospace"
+from src.common.constants import (BASE_HLINE_COLORS, FONT,
+                                  TIME_AXIS_INDICATOR_TEXTS, ComponentKeys)
 
 
 def _common_input_styles(key: str) -> dict:

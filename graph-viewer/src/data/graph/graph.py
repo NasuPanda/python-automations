@@ -5,12 +5,9 @@ import tkinter
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-PLOT_PARAM_FONT = "MS Gothic"
-PLOT_PARAM_X_MARGIN = 0
-PLOT_PARAM_Y_MARGIN = 0
-FIGURE_BG_COLOR = "azure"
-BASELINE_STYLE = "dashed"
-SUBPLOT_POSITION = {"left": 0.05, "right": 0.6, "bottom": 0.1, "top": 0.95}
+from src.common.constants import (PLOT_BASELINE_STYLE, PLOT_FIGURE_BG_COLOR,
+                                  PLOT_PARAM_FONT, PLOT_PARAM_X_MARGIN,
+                                  PLOT_PARAM_Y_MARGIN, PLOT_SUBPLOT_POSITION)
 
 
 def draw_figure_to_canvas(canvas_component, figure) -> FigureCanvasTkAgg:
@@ -35,8 +32,8 @@ class Graph:
         plt.rcParams["axes.ymargin"] = PLOT_PARAM_Y_MARGIN
 
         self.fig, self.axes = plt.subplots(figsize=figure_size)
-        self.fig.set_facecolor(FIGURE_BG_COLOR)
-        self.fig.subplots_adjust(**SUBPLOT_POSITION)
+        self.fig.set_facecolor(PLOT_FIGURE_BG_COLOR)
+        self.fig.subplots_adjust(**PLOT_SUBPLOT_POSITION)
         self.figure_canvas = draw_figure_to_canvas(canvas_component, self.fig)
 
     def clear(self) -> None:
@@ -55,15 +52,15 @@ class Graph:
         else:
             self.axes.plot(y_values, label=label)
 
-        self.fig.subplots_adjust(**SUBPLOT_POSITION)
+        self.fig.subplots_adjust(**PLOT_SUBPLOT_POSITION)
 
         self.axes.legend(bbox_to_anchor=(1.00, 1), borderaxespad=0)
 
     def set_x_range(self, x_range: tuple[float, float]) -> None:
-        self.axes.set_xlim([*x_range])
+        self.axes.set_xlim([*x_range])  # type: ignore
 
     def set_y_range(self, y_range: tuple[float, float]) -> None:
-        self.axes.set_ylim([*y_range])
+        self.axes.set_ylim([*y_range])  # type: ignore
 
     def auto_scale_x_range(self) -> None:
         self.axes.relim()
@@ -77,7 +74,7 @@ class Graph:
         self,
         h_value: int | float,
         color: str = "blue",
-        linestyle: str = BASELINE_STYLE,
+        linestyle: str = PLOT_BASELINE_STYLE,
     ) -> None:
         x_min, x_max = self.axes.get_xlim()
         self.axes.hlines([h_value], x_min, x_max, color, linestyles=linestyle)
