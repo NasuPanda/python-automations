@@ -9,12 +9,11 @@ import PySimpleGUI as sg
 from src.common import utils
 from src.common import types
 from src.common.constants import (
-    ALERT_COLOR,
-    BASELINE_COLOR_1,
-    BASELINE_COLOR_2,
+    BASE_HLINE_COLORS,
+    LOG_TEXT_COLORS,
     FILE_ICON,
     FOLDER_ICON,
-    NOTICE_COLOR,
+    BASE_HLINE_NUMBERS,
     TIME_AXIS_INDICATOR_TEXTS,
     ComponentKeys,
 )
@@ -78,10 +77,10 @@ class UserInterface:
                 self.events[event]()
 
     def _print_notice(self, *messages: str) -> None:
-        [self.window[ComponentKeys.log].print(message, t=NOTICE_COLOR) for message in messages]  # type: ignore
+        [self.window[ComponentKeys.log].print(message, t=LOG_TEXT_COLORS["notice"]) for message in messages]  # type: ignore
 
     def _print_alert(self, *messages: str) -> None:
-        [self.window[ComponentKeys.log].print(message, t=ALERT_COLOR) for message in messages]  # type: ignore
+        [self.window[ComponentKeys.log].print(message, t=LOG_TEXT_COLORS["alert"]) for message in messages]  # type: ignore
 
     def _get_canvas(self) -> tkinter.Canvas:
         """private Canvas を受け取る。"""
@@ -118,25 +117,13 @@ class UserInterface:
         # バリデーションに失敗したらエラー
         raise ValueError(f"{axis}軸のレンジに無効な値が含まれています: {min} ~ {max}")
 
-    def get_base_hline1_value(self) -> float | None:
-        # FIXME hline1, hline2 で分けない
-        base_hline1_value = self._get_values(ComponentKeys.baseline1_input)
-
-        if not base_hline1_value == "":
-            if utils.validate_input_number(base_hline1_value):
-                return float(base_hline1_value)
+    def get_base_hline_value(self, hline_number: types.HlineNumber) -> float | None:
+        hline_value = self._get_values(ComponentKeys.base_hline_input[hline_number])
+        if not hline_value == "":
+            if utils.validate_input_number(hline_value):
+                return float(hline_value)
             else:
-                self._print_alert("規格線1に無効な値が含まれています")
-
-    def get_base_hline2_value(self) -> float | None:
-        # FIXME hline1, hline2 で分けない
-        base_hline2_value = self._get_values(ComponentKeys.baseline2_input)
-
-        if not base_hline2_value == "":
-            if utils.validate_input_number(base_hline2_value):
-                return float(base_hline2_value)
-            else:
-                self._print_alert("規格線2に無効な値が含まれています")
+                self._print_alert(f"規格線{hline_number}に無効な値が含まれています")
 
     def _update_time_axis_indicator(self, is_time_axis: bool) -> None:
         indicator_text = TIME_AXIS_INDICATOR_TEXTS["y"] if is_time_axis else TIME_AXIS_INDICATOR_TEXTS["n"]
@@ -216,21 +203,20 @@ class UserInterface:
         self.graph.commit_change()
 
     def reset_both_graph_range(self) -> None:
-        self.window[ComponentKeys.graph_x_axis_min_range_input].update("")  # type: ignore
-        self.window[ComponentKeys.graph_x_axis_max_range_input].update("")  # type: ignore
-        self.window[ComponentKeys.graph_y_axis_min_range_input].update("")  # type: ignore
-        self.window[ComponentKeys.graph_y_axis_max_range_input].update("")  # type: ignore
-        # NOTE: input の値をクリア ➞ update_graph_range()でグラフを更新する ことは出来ない
+        self.window[ComponentKeys.graph_range["x"]["min"]].update("")  # type: ignore
+        self.window[ComponentKeys.graph_range["x"]["max"]].update("")  # type: ignore
+        self.window[ComponentKeys.graph_range["y"]["min"]].update("")  # type: ignore
+        self.window[ComponentKeys.graph_range["y"]["max"]].update("")  # type: ignore
+        # NOTE: input の値をクリア ➞ update_graph_range()でグラフを更新 することは出来ない
         # PySimpleGUI の仕様上、1回のイベントで更新できるコンポーネントは1つしか無いため
         self.graph.auto_scale_x_range()
         self.graph.auto_scale_y_range()
         self.graph.commit_change()
 
     def _update_base_hlines(self) -> None:
-        if hline1_value := self.get_base_hline1_value():
-            self.graph.plot_hline(hline1_value, BASELINE_COLOR_1)
-        if hline2_value := self.get_base_hline2_value():
-            self.graph.plot_hline(hline2_value, BASELINE_COLOR_2)
+        for hline_num in BASE_HLINE_NUMBERS:
+            if hline1_value := self.get_base_hline_value(hline_num):
+                self.graph.plot_hline(hline1_value, BASE_HLINE_COLORS[hline_num])
         self.graph.commit_change()
 
     def on_click_tree(self) -> None:

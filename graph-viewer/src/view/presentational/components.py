@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-from src.common.constants import BASELINE_COLOR_1, BASELINE_COLOR_2, TIME_AXIS_INDICATOR_TEXTS, ComponentKeys
+from src.common.constants import BASE_HLINE_COLORS, TIME_AXIS_INDICATOR_TEXTS, ComponentKeys
 
 
 FONT = "Monospace"
@@ -123,18 +123,18 @@ def adjust_graph_range_frame() -> sg.Frame:
             [
                 sg.T(**x_axis_text_styles),
                 sg.T(**min_range_text_styles),
-                sg.Input(**_common_input_styles(ComponentKeys.graph_x_axis_min_range_input)),
+                sg.Input(**_common_input_styles(ComponentKeys.graph_range["x"]["min"])),
                 sg.T(**range_text_styles),
                 sg.T(**max_range_text_styles),
-                sg.Input(**_common_input_styles(ComponentKeys.graph_x_axis_max_range_input)),
+                sg.Input(**_common_input_styles(ComponentKeys.graph_range["x"]["max"])),
             ],
             [
                 sg.T(**y_axis_text_styles),
                 sg.T(**min_range_text_styles),
-                sg.Input(**_common_input_styles(ComponentKeys.graph_y_axis_min_range_input)),
+                sg.Input(**_common_input_styles(ComponentKeys.graph_range["y"]["min"])),
                 sg.T(**range_text_styles),
                 sg.T(**max_range_text_styles),
-                sg.Input(**_common_input_styles(ComponentKeys.graph_y_axis_max_range_input)),
+                sg.Input(**_common_input_styles(ComponentKeys.graph_range["y"]["max"])),
             ],
             [sg.Button(**update_range_button_styles), sg.Button(**reset_range_button_styles)],
         ],
@@ -155,8 +155,8 @@ def x_axis_indicator_components() -> tuple[sg.Text, sg.Text]:
 
 def base_hline_frame() -> sg.Frame:
 
-    baseline1_text_styles = {"text": "規格線(Y軸)-1", "text_color": BASELINE_COLOR_1}
-    baseline2_text_styles = {"text": "規格線(Y軸)-2", "text_color": BASELINE_COLOR_2}
+    baseline1_text_styles = {"text": "規格線(Y軸)-1", "text_color": BASE_HLINE_COLORS["1"]}
+    baseline2_text_styles = {"text": "規格線(Y軸)-2", "text_color": BASE_HLINE_COLORS["2"]}
     # pad: left, right, top, bottom
     pad_l, pad_r, pad_t, pad_b = 100, 0, 20, 10
     update_baselines_button_styles = {
@@ -171,11 +171,11 @@ def base_hline_frame() -> sg.Frame:
         "layout": [
             [
                 sg.T(**baseline1_text_styles),
-                sg.Input(**_common_input_styles(ComponentKeys.baseline1_input)),
+                sg.Input(**_common_input_styles(ComponentKeys.base_hline_input["1"])),
             ],
             [
                 sg.T(**baseline2_text_styles),
-                sg.Input(**_common_input_styles(ComponentKeys.baseline2_input)),
+                sg.Input(**_common_input_styles(ComponentKeys.base_hline_input["2"])),
             ],
             [sg.Button(**update_baselines_button_styles)],
         ],
