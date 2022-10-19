@@ -1,5 +1,3 @@
-import csv
-import pandas as pd
 from src.data.reader import CSVReader
 
 """
@@ -16,6 +14,7 @@ TODOs
 ✓ BURNOUT を欠損値(NaN)として扱う処理
     read_csvのオプションで可能
 ✓ 特定の行(ここでは単位)を削除する処理
+★ ドメインによる分岐処理を減らす : コンポジションで作る???
 
 References
     - [pandasでUnicodeDecodeError が出たときにやることまとめ - 私の備忘録がないわね...私の...](https://kamakuraviel.hatenablog.com/entry/2020/05/27/201155)
@@ -24,32 +23,24 @@ References
 """
 
 MEASURED_VALUE_FLAG = "測定値"
-NA_VALUES = " BURNOUT"
+NA_VALUES = [" BURNOUT"]
 CSV_ENCODING = "cp932"
 EXCLUDED_COLUMNS = ["番号", "日付 時間", "Alarm1", "Alarm2", "AlarmOut"]
 
 filepath = "./graphtec.csv"
 
-with open(filepath) as f:
-    reader = csv.reader(f)
-    for i, row in enumerate(reader):
-        if MEASURED_VALUE_FLAG in row:
-            measured_value_header_row = i + 1
-            print(f"{MEASURED_VALUE_FLAG} is in row{i}")
-            print("row data:", row)
-            break
-    else:
-        print("Not found...")
-        exit(1)
+measured_value_header_row = CSVReader.find_row_by_flag(filepath, MEASURED_VALUE_FLAG)
 
-df = pd.read_csv(
+if measured_value_header_row is None:
+    exit(1)
+
+reader = CSVReader(
     filepath,
-    header=measured_value_header_row,
-    na_values=[" BURNOUT"],
-    encoding=CSV_ENCODING,
-    usecols=lambda x: x not in EXCLUDED_COLUMNS,
+    measured_value_header_row + 1,
+    NA_VALUES,
+    EXCLUDED_COLUMNS,
+    CSV_ENCODING,
 )
-
-print(df.head(3))
-df = df.drop(0, axis=0)
-print(df.head(3))
+print(reader.df.head(3))
+reader.drop_row_by_index(0)
+print(reader.df.head(3))
