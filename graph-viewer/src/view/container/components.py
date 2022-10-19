@@ -44,8 +44,7 @@ def generate_tree_data(parent: str, folder_path: str) -> sg.TreeData:
 
 
 class UserInterface:
-    def __init__(self) -> None:
-        initial_folder = components.popup_get_folder()
+    def __init__(self, initial_folder: str) -> None:
         if not utils.is_dir(initial_folder):
             raise FileNotFoundError("指定されたパスが見つかりません:", initial_folder)
         self.window = components.window(
@@ -73,6 +72,10 @@ class UserInterface:
 
             else:
                 self.events[event]()
+
+    def close_window(self) -> None:
+        """ウィンドを閉じる。"""
+        self.window.close()
 
     def _print_notice(self, *messages: str) -> None:
         """通知をログに表示する
