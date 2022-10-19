@@ -14,7 +14,7 @@ from src.common.constants import (
     TIME_AXIS_INDICATOR_TEXTS,
     ComponentKeys,
 )
-from src.data.graph.graph import Graph
+from src.data.graph import GraphPlotter
 from src.data.store import DataStore
 from src.view.presentational import components
 
@@ -52,7 +52,7 @@ class UserInterface:
             components.layout(generate_tree_data("", initial_folder if initial_folder else os.getcwd()))
         )
         self.data_store = DataStore()
-        self.graph = Graph(self._get_canvas(), (10, 8))
+        self.graph = GraphPlotter(self._get_canvas(), (10, 8))
 
         self.events = {
             ComponentKeys.csv_headers_listbox: self.on_select_csv_header,

@@ -2,8 +2,8 @@
 """
 from src.common import utils
 from src.common.constants import TIME_AXIS_HEADER_REGEX
-from src.data.graph.metadata import Metadata
-from src.data.reader import CSVReader
+from src.data.graph import Metadata
+from src.data._csv import CSVReader
 
 
 class DataStore:
