@@ -5,15 +5,9 @@ from typing import Any
 import PySimpleGUI as sg
 
 from src.common import types, utils
-from src.common.constants import (
-    BASE_HLINE_COLORS,
-    BASE_HLINE_NUMBERS,
-    FILE_ICON,
-    FOLDER_ICON,
-    LOG_TEXT_COLORS,
-    TIME_AXIS_INDICATOR_TEXTS,
-    ComponentKeys,
-)
+from src.common.constants import (BASE_HLINE_COLORS, BASE_HLINE_NUMBERS,
+                                  FILE_ICON, FOLDER_ICON, LOG_TEXT_COLORS,
+                                  TIME_AXIS_INDICATOR_TEXTS, ComponentKeys)
 from src.data.graph import GraphPlotter
 from src.data.store import DataStore
 from src.view.presentational import components

@@ -3,18 +3,12 @@
 import tkinter
 from dataclasses import dataclass
 
-
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from src.common.constants import (
-    PLOT_BASELINE_STYLE,
-    PLOT_FIGURE_BG_COLOR,
-    PLOT_PARAM_FONT,
-    PLOT_PARAM_X_MARGIN,
-    PLOT_PARAM_Y_MARGIN,
-    PLOT_SUBPLOT_POSITION,
-)
+from src.common.constants import (PLOT_BASELINE_STYLE, PLOT_FIGURE_BG_COLOR,
+                                  PLOT_PARAM_FONT, PLOT_PARAM_X_MARGIN,
+                                  PLOT_PARAM_Y_MARGIN, PLOT_SUBPLOT_POSITION)
 
 
 def draw_figure_to_canvas(canvas_component, figure) -> FigureCanvasTkAgg:

@@ -19,6 +19,10 @@ class ComponentKeys:
     base_hline_input = {"1": "-BASE_HLINE_1-", "2": "-BASE_HLINE_2-"}
     baselines_update = "-UPDATE_BASE_HLINES-"
     time_axis_indicator_text = "-X_AXIS_INDICATOR-"
+    # popup
+    get_folder_popup_folder_input = "-GET_FOLDER_POPUP_INPUT_FOLDER-"
+    get_folder_popup_select_mode_combo = "-GET_FOLDER_POPUP_SELECT_MODE-"
+    get_folder_popup_submit = "-GET_FOLDER_POPUP_SUBMIT-"
 
 
 # 処理
@@ -36,6 +40,8 @@ BASE_HLINE_COLORS = {
     "2": "blue",
 }
 TIME_AXIS_INDICATOR_TEXTS = {"n": "---", "y": "time[s]"}
+# popup get folder
+DOMAIN_MODE_OPTIONS = ["通常", "Graphtec"]
 
 # グラフ
 PLOT_PARAM_FONT = "MS Gothic"
