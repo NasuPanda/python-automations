@@ -4,11 +4,17 @@ import tkinter
 from dataclasses import dataclass
 
 import matplotlib.pyplot as plt
+import matplotlib.ticker as ticker
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-from src.common.constants import (PLOT_BASELINE_STYLE, PLOT_FIGURE_BG_COLOR,
-                                  PLOT_PARAM_FONT, PLOT_PARAM_X_MARGIN,
-                                  PLOT_PARAM_Y_MARGIN, PLOT_SUBPLOT_POSITION)
+from src.common.constants import (
+    PLOT_BASELINE_STYLE,
+    PLOT_FIGURE_BG_COLOR,
+    PLOT_PARAM_FONT,
+    PLOT_PARAM_X_MARGIN,
+    PLOT_PARAM_Y_MARGIN,
+    PLOT_SUBPLOT_POSITION,
+)
 
 
 def draw_figure_to_canvas(canvas_component, figure) -> FigureCanvasTkAgg:
@@ -86,6 +92,11 @@ class GraphPlotter:
         x_min, x_max = self.axes.get_xlim()
         self.axes.hlines([h_value], x_min, x_max, color, linestyles=linestyle)
         self.has_hline = True
+
+    def auto_set_y_tick(self, tick_interval: int = 20):
+        min, max = self.axes.get_ylim()
+        spacing = (min + max) / tick_interval
+        self.axes.yaxis.set_major_locator(ticker.MultipleLocator(spacing))
 
     def commit_change(self) -> None:
         """グラフにプロットした結果を反映させる。"""

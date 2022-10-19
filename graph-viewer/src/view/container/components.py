@@ -5,9 +5,15 @@ from typing import Any
 import PySimpleGUI as sg
 
 from src.common import types, utils
-from src.common.constants import (BASE_HLINE_COLORS, BASE_HLINE_NUMBERS,
-                                  FILE_ICON, FOLDER_ICON, LOG_TEXT_COLORS,
-                                  TIME_AXIS_INDICATOR_TEXTS, ComponentKeys)
+from src.common.constants import (
+    BASE_HLINE_COLORS,
+    BASE_HLINE_NUMBERS,
+    FILE_ICON,
+    FOLDER_ICON,
+    LOG_TEXT_COLORS,
+    TIME_AXIS_INDICATOR_TEXTS,
+    ComponentKeys,
+)
 from src.data.graph import GraphPlotter
 from src.data.store import DataStore
 from src.view.presentational import components
@@ -284,11 +290,11 @@ class UserInterface:
             self.data_store.update_plots_by_filepaths([])
             return
 
-        # 存在しないcsvヘッダが選ばれた場合
         try:
+            # 存在しないcsvヘッダが選ばれた場合
             self.data_store.update_plots_by_filepaths(filepaths)
         except ValueError:
-            self._print_alert("存在しないcsvヘッダが指定されました", "データを確認してください")
+            self._print_alert("存在しないcsvヘッダが指定されました", "ファイル間に異なるヘッダが含まれないか確認して下さい")
             self.reset_data_referring_to_tree()
             return
         self.update_csv_headers_listbox()
@@ -305,7 +311,7 @@ class UserInterface:
         try:
             self.data_store.update_plots_by_headers(csv_headers)
         except ValueError:
-            self._print_alert("存在しないcsvヘッダが指定されました", "データを確認してください")
+            self._print_alert("存在しないcsvヘッダが指定されました", "ファイル間に異なるヘッダが含まれないか確認して下さい")
             self.reset_data_referring_to_tree()
             return
         self.update_graph_canvas()

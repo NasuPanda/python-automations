@@ -12,16 +12,42 @@ class CSVReader:
     def __init__(
         self,
         filepath: str,
+        header_index: int = 0,
+        na_values: list[str] | None = None,
+        excluded_columns: list[str] | None = None,
+        encoding: str | None = None,
     ) -> None:
         """インスタンスの初期化。
 
         Args:
             filepath (str): csvファイルのパス。
         """
+        usecols = lambda x: x not in excluded_columns if excluded_columns else None
+
         self.df: pd.DataFrame = pd.read_csv(
             filepath,
+            header=header_index,
+            na_values=na_values,  # type: ignore
+            usecols=usecols,  # type: ignore
+            encoding=encoding,
         )
         self.columns = self.df.columns.values.tolist()
+
+    @classmethod
+    def find_row_by_flag(cls, filepath: str, flag: str, encoding: str | None = None) -> int | None:
+        """対象の文字列が存在する列を探す。
+
+        Args:
+            filepath (str): csvファイルパス。
+            flag (str): 対象の文字列。
+
+        Returns:
+            int | None: 対象の文字列が存在する列(0スタート)。存在しなければNoneを返す
+        """
+        with open(filepath, encoding=encoding) as f:
+            for row_index, line in enumerate(f):
+                if flag in line:
+                    return row_index
 
     def exists_column(self, column_name: str) -> bool:
         """カラムが存在するかどうか。

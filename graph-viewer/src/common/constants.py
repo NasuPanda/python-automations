@@ -25,6 +25,18 @@ class ComponentKeys:
     get_folder_popup_submit = "-GET_FOLDER_POPUP_SUBMIT-"
 
 
+@dataclass(frozen=True)
+class GraphtecMode:
+    measured_value_flag = "測定値"
+    na_values = [" BURNOUT"]
+    csv_encoding = "utf-8_sig"
+    excluded_columns = ["番号", "日付 時間", "Alarm1", "Alarm2", "AlarmOut"]
+    excluded_rows = [0]
+
+    time_axis_header_regex = re.compile("ms", flags=re.IGNORECASE)
+    time_axis_indicator_text = {"n": "Graphtec", "y": "Graphtec"}
+
+
 # 処理
 WORD_LENGTH_REMOVE_DUPLICATE: Final = 8
 TIME_AXIS_HEADER_REGEX = re.compile("time", flags=re.IGNORECASE)

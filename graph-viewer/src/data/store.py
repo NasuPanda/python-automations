@@ -111,10 +111,13 @@ class DataStore:
 
         # 変化なし
         number_of_new_filepaths = len(new_filepaths)
+        print(number_of_new_filepaths, self.number_of_csv_readers)
         if number_of_new_filepaths == self.number_of_csv_readers:
             return
 
         if number_of_new_filepaths > self.number_of_csv_readers:
+            print(new_filepaths)
+            print(self.csv_readers)
             # 追加するパターン
             for path in new_filepaths:
                 if not self._has_csv_reader(path):
@@ -122,6 +125,8 @@ class DataStore:
                     self._sync_plots()
                     return
         else:
+            print(new_filepaths)
+            print(self.csv_readers)
             # 削除するパターン
             for path in self.csv_readers.keys():
                 if path not in new_filepaths:
