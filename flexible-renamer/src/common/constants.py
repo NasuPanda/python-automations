@@ -11,8 +11,6 @@ class ComponentKeys:
     input_setting_file = "-INPUT_SETTING-"
     input_folder = "-INPUT_FOLDER-"
     multiline_preview = "-RESULT_PREVIEW-"
-    name_part_index_combo = {"before": "-NAME_PART_COMBO_BEFORE-", "after": "-NAME_PART_COMBO_AFTER-"}
-    layout_part_index_combo = {"before": "LAYOUT_PART_COMBO_BEFORE-", "after": "LAYOUT_PART_COMBO_AFTER-"}
     save_checkbox = "-SAVE_SETTING_CHECKBOX-"
     save_filename = "-SAVE_SETTING_FILENAME-"
     submit = "-SUBMIT-"
@@ -26,13 +24,9 @@ class RequireSettingExcelAddress:
 
 @dataclass(frozen=True)
 class OptionalSettingExcelAddress:
-    path = types.CellAddress(sheet_name="任意", address="B1")
-    # 名称
-    name_index = types.CellAddress(sheet_name="任意", address="B2")
-    # レイアウト
-    layout_index = types.CellAddress(sheet_name="任意", address="B3")
-    target_extension = types.CellAddress(sheet_name="任意", address="B4")
-    delimiter = types.CellAddress(sheet_name="任意", address="B5")
+    src_path = types.CellAddress(sheet_name="任意", coordinate="B1")
+    target_extension = types.CellAddress(sheet_name="任意", coordinate="B2")
+    delimiter = types.CellAddress(sheet_name="任意", coordinate="B3")
 
 
 @dataclass

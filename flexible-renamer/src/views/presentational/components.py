@@ -44,57 +44,11 @@ def _setting_folder_browse_components() -> tuple[sg.Input, sg.Button]:
     return sg.Input(**input_styles), sg.FolderBrowse(**browse_styles)
 
 
-def _setting_name_part_index_combo_components(values: list[int] = []) -> tuple[sg.Text, sg.Combo, sg.Text, sg.Combo]:
-    before_desc_styles = {"text": "サンプル名    変更前"}
-    after_desc_styles = {"text": "変更後"}
-    before_combo_styles = {
-        "values": values,
-        "default_value": DefaultSettings.name_index.before,
-        "key": ComponentKeys.name_part_index_combo["before"],
-    }
-    after_combo_styles = {
-        "values": values,
-        "default_value": DefaultSettings.name_index.after,
-        "key": ComponentKeys.name_part_index_combo["after"],
-    }
-
-    return (
-        sg.Text(**before_desc_styles),
-        sg.Combo(**before_combo_styles),
-        sg.Text(**after_desc_styles),
-        sg.Combo(**after_combo_styles),
-    )
-
-
-def _setting_layout_part_index_combo_components(values: list[int] = []) -> tuple[sg.Text, sg.Combo, sg.Text, sg.Combo]:
-    before_desc_styles = {"text": "撮影箇所    変更前"}
-    after_desc_styles = {"text": "変更後"}
-    before_combo_styles = {
-        "values": values,
-        "default_value": DefaultSettings.layout_index.before,
-        "key": ComponentKeys.layout_part_index_combo["before"],
-    }
-    after_combo_styles = {
-        "values": values,
-        "default_value": DefaultSettings.layout_index.after,
-        "key": ComponentKeys.layout_part_index_combo["after"],
-    }
-
-    return (
-        sg.Text(**before_desc_styles),
-        sg.Combo(**before_combo_styles),
-        sg.Text(**after_desc_styles),
-        sg.Combo(**after_combo_styles),
-    )
-
-
 def setting_frame() -> sg.Frame:
     frame_styles = {
         "title": "設定",
         "layout": [
             [*_setting_folder_browse_components()],
-            [*_setting_name_part_index_combo_components()],
-            [*_setting_layout_part_index_combo_components()],
         ],
     }
     return sg.Frame(**frame_styles)
