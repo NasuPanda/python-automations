@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "flexible-renamer"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+openpyxl = "^3.0.10"
+color = "^0.1"
+colorama = "^0.4.5"
+cprint = "^1.2.2"
+PySimpleGUI = "^4.60.4"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
