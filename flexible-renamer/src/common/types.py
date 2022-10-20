@@ -1,7 +1,7 @@
 from dataclasses import dataclass
+from datetime import date, datetime, time, timedelta
 from decimal import Decimal
 from typing import Literal, TypeAlias
-from datetime import date, datetime, time, timedelta
 
 
 @dataclass
@@ -39,7 +39,8 @@ class Config:
     # 任意
     target_extension: str
     delimiter: str
-    # そのまま
+    dst_folder: str
+    # 設定値を利用
     name_index: PartIndexes
     layout_index: PartIndexes
 

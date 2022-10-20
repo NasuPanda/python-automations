@@ -19,9 +19,7 @@ def setting_file_frame() -> sg.Frame:
         "readonly": True,
         "key": ComponentKeys.input_setting_file,
     }
-    browse_styles = {
-        "button_text": "ファイルを選択",
-    }
+    browse_styles = {"button_text": "ファイルを選択", "file_types": (("Excelファイル", "*.xlsx"),)}
 
     frame_styles = {
         "title": "設定ファイル入力",
@@ -46,7 +44,7 @@ def _setting_folder_browse_components() -> tuple[sg.Input, sg.Button]:
 
 def setting_frame() -> sg.Frame:
     frame_styles = {
-        "title": "設定",
+        "title": "画像フォルダ入力",
         "layout": [
             [*_setting_folder_browse_components()],
         ],
@@ -71,25 +69,6 @@ def preview_frame() -> sg.Frame:
     return sg.Frame(**frame_styles)
 
 
-def save_setting_frame() -> sg.Frame:
-    input_desc_styles = {"text": "ファイル名(拡張子不要)"}
-    input_styles = {"default_text": "", "key": ComponentKeys.save_filename, "size": (20, 1)}
-    checkbox_styles = {
-        "text": "設定を保存する",
-        "default": True,
-    }
-
-    frame_styles = {
-        "title": "設定の保存",
-        "layout": [
-            [sg.Checkbox(**checkbox_styles)],
-            [sg.Text(**input_desc_styles), sg.Input(**input_styles)],
-        ],
-    }
-
-    return sg.Frame(**frame_styles)
-
-
 def submit_button_component() -> sg.Button:
     # pad: left, right, top, bottom
     pad_l, pad_r, pad_t, pad_b = 100, 0, 20, 10
@@ -104,11 +83,10 @@ def submit_button_component() -> sg.Button:
 def window() -> sg.Window:
     layout = [
         [setting_file_frame()],
-        [_common_margin_component(height=2)],
         [setting_frame()],
+        [_common_margin_component(height=1)],
         [preview_frame()],
         [_common_margin_component(height=1)],
-        [save_setting_frame()],
         [submit_button_component()],
     ]
     window_styles = {
@@ -123,3 +101,11 @@ def window() -> sg.Window:
     }
 
     return sg.Window(**window_styles)
+
+
+def popup_error(*messages: str) -> None:
+    sg.popup_error(*messages, title="エラー")
+
+
+def popup_ok(*messages: str) -> None:
+    sg.popup_ok(*messages, title="通知")

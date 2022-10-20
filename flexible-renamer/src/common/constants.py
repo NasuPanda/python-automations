@@ -25,8 +25,9 @@ class RequireSettingExcelAddress:
 @dataclass(frozen=True)
 class OptionalSettingExcelAddress:
     src_path = types.CellAddress(sheet_name="任意", coordinate="B1")
-    target_extension = types.CellAddress(sheet_name="任意", coordinate="B2")
-    delimiter = types.CellAddress(sheet_name="任意", coordinate="B3")
+    dst_folder = types.CellAddress(sheet_name="任意", coordinate="B2")
+    target_extension = types.CellAddress(sheet_name="任意", coordinate="B3")
+    delimiter = types.CellAddress(sheet_name="任意", coordinate="B4")
 
 
 @dataclass
@@ -35,3 +36,4 @@ class DefaultSettings:
     layout_index = types.PartIndexes(before=1, after=2)
     target_extension = ".png"
     delimiter = "_"
+    dst_folder = "../出力フォルダ"

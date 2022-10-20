@@ -1,9 +1,9 @@
+import glob
 import os
 import shutil
 from pathlib import Path
 
 from src.common import exceptions
-from src.config.config import config
 
 
 class FileFilter:
@@ -13,9 +13,9 @@ class FileFilter:
         src_folder: str | None = None,
     ) -> None:
         if src_files:
-            self.paths = [file for file in src_files]
+            self.filepaths = [file for file in src_files]
         elif src_folder:
-            self.paths = [str(p) for p in Path(src_folder).glob("**/*")]
+            self.filepaths = glob.glob(f"{src_folder}/*.*")
         else:
             raise ValueError("引数が無効です")
 
@@ -25,70 +25,63 @@ class FileFilter:
 
     def filter_by_extension(
         self,
-        target_extension: str = config.target_extension,
+        target_extension: str,
     ) -> None:
         if target_extension[0] != ".":
             raise exceptions.ExtensionError(f"拡張子には `.` を含めて下さい : {target_extension}")
 
         paths_only_target_extension = [
-            file for file in self.paths if self.has_target_extension(file, target_extension)
+            file for file in self.filepaths if self.has_target_extension(file, target_extension)
         ]
-
         if not paths_only_target_extension:
             raise FileNotFoundError(f"拡張子{target_extension}のファイルが存在しません")
 
-        self.paths = paths_only_target_extension
+        self.filepaths = paths_only_target_extension
 
-    def exclude_by_exclude(self, excluded_name: str) -> None:
-        paths = [file for file in self.paths if not excluded_name in file]
+    def exclude_by_name_exclude(self, excluded_name: str) -> None:
+        paths = [file for file in self.filepaths if not excluded_name in file]
 
         if not paths:
             raise FileNotFoundError(f"全てのファイルが{excluded_name}を含んでいます")
 
-        self.paths = paths
+        self.filepaths = paths
 
-    def filter_by_include(self, included_name: str) -> None:
-        paths = [file for file in self.paths if included_name in file]
+    def filter_by_name_include(self, included_name: str) -> None:
+        paths = [file for file in self.filepaths if included_name in file]
 
         if not paths:
             raise FileNotFoundError(f"どのファイルも{included_name}を含んでいません")
 
-        self.paths = paths
+        self.filepaths = paths
 
 
 class FileRenamer:
-    delimiter = config.delimiter
-
     def __init__(
-        self,
-        src_files: list[str] | None = None,
-        src_folder: str | None = None,
+        self, src_files: list[str] | None = None, src_folder: str | None = None, delimiter: str = "_"
     ) -> None:
         if src_files:
             self.src_paths = src_files
         elif src_folder:
-            self.src_paths = [str(p) for p in Path(src_folder).glob("**/*")]
+            self.src_paths = glob.glob(f"{src_folder}/*.*")
         else:
             raise ValueError("引数が無効です")
 
+        self.delimiter = delimiter
+        # renameするのはfileのstem(拡張子を除いたファイル名)
         self.dst_names: list[str] = [Path(i).stem for i in self.src_paths]
-        print(self.dst_names)
 
-    @classmethod
-    def split(cls, original: str) -> list[str]:
-        return original.split(cls.delimiter)
+    def split(self, original: str) -> list[str]:
+        return original.split(self.delimiter)
 
-    @classmethod
-    def swap(cls, original: str, before: int, after: int) -> str:
-        parts = cls.split(original)
+    def swap(self, original: str, before: int, after: int) -> str:
+        parts = self.split(original)
         parts[before], parts[after] = parts[after], parts[before]
-        return cls.delimiter.join(parts)
+        return self.delimiter.join(parts)
 
-    @classmethod
-    def replace(cls, original: str, new_part: str, replaced_index: int) -> str:
-        parts = cls.split(original)
+    def replace(self, original: str, new_part: str, replaced_index: int) -> str:
+        parts = self.split(original)
         parts[replaced_index] = new_part
-        return cls.delimiter.join(parts)
+        return self.delimiter.join(parts)
 
     @property
     def number_of_dst_files(self) -> int:
@@ -100,7 +93,7 @@ class FileRenamer:
         replaced_index: int,
     ) -> None:
         if self.number_of_dst_files != len(new_parts):
-            raise exceptions.LengthDoesNotMatchError("dst_names と new_parts の長さが一致していません")
+            raise exceptions.LengthDoesNotMatchError("設定されたデータ名の数 と 入力ファイル数が一致していません")
 
         try:
             self.dst_names = [
@@ -108,7 +101,7 @@ class FileRenamer:
                 for filename, new_part in zip(self.dst_names, new_parts)
             ]
         except IndexError:
-            exceptions.ReplaceError("ファイルの部分置換に失敗しました")
+            exceptions.ReplaceError(f"ファイルの部分置換に失敗しました。ファイル名に`{self.delimiter}`は含まれていますか?")
 
     def swap_parts(
         self,
@@ -121,7 +114,7 @@ class FileRenamer:
         try:
             self.dst_names = [self.swap(i, before_index, after_index) for i in self.dst_names]
         except IndexError:
-            exceptions.ReplaceError("ファイルの部分スワップに失敗しました")
+            exceptions.ReplaceError(f"ファイルの部分スワップに失敗しました。ファイル名に`{self.delimiter}`は含まれていますか?")
 
     def copy_from_src_to_dst(self, dst_folder: str) -> None:
         extension = Path(self.src_paths[0]).suffix
@@ -130,5 +123,5 @@ class FileRenamer:
             dst_path = os.path.join(dst_folder, dst_name + extension)
             shutil.copy(src_path, dst_path)
 
-    def get_sample(self) -> str:
-        return self.dst_names[0]
+    def format_previews(self) -> list[str]:
+        return [f"{Path(src).stem} => {dst}" for (src, dst) in zip(self.src_paths, self.dst_names)]
