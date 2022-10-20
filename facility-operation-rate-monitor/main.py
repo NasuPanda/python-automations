@@ -11,8 +11,7 @@ def record_current_process_pid():
 
 
 def main():
-    """Main function.
-    """
+    """Main function."""
     from libs.log.logger import Logger
     from libs.monitors.device import InputDeviceMonitor
     from libs.monitors.process import ProcessesMonitor
@@ -55,7 +54,7 @@ def main():
 
         logger.write_log(
             has_received_input=device_monitor.has_received_input,
-            has_process_been_executed=process_monitor.has_process_been_executed
+            has_process_been_executed=process_monitor.has_process_been_executed,
         )
 
         device_monitor.stop_listener()
