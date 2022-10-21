@@ -152,3 +152,137 @@ class TestCal(object):
         print("end")
         del cls.cal
 ```
+
+## fixture
+
+https://rinatz.github.io/python-book/ch08-02-pytest/#_7
+
+### pytest の fixture
+
+あらかじめ設定された引数をテストメソッドから受け取れるようになる。
+
+```py
+def test_save(self, tmpdir):
+    self.cal.save(tmpdir, self.test_filename)
+    created_filepath = os.path.join(tmpdir, self.test_filename)
+
+    assert os.path.exists(created_filepath) is True
+```
+
+### 独自の fixture
+
+定義。pytestの fixture を受け取ることも出来る。
+
+```py
+@pytest.fixture
+def csv_file(tmpdir):
+    return "csv file fixture"
+```
+
+呼び出し。
+
+```py
+
+class TestCal(object):
+    def test_add_num_and_double(self, csv_file):
+        print(csv_file)
+        assert self.cal.add_num_and_double(1, 1) == 4
+```
+
+#### `yield`
+
+`yield` を使うと、Testの前後に処理を挟むことが出来る。
+
+ファイル操作をする場合などに便利。(Test側で `with open` したり `close` したりする必要がなくなる)
+
+```py
+@pytest.fixture
+def csv_file(tmpdir):
+    with open(os.path.join(tmpdir, "test.csv"), "w+") as c:
+        print("before test")
+        yield c
+        print("after test")
+```
+
+### conftest
+
+https://rinatz.github.io/python-book/ch08-02-pytest/#conftestpy
+
+複数のファイルを跨いで共通の fixture を共有したい時は、`conftest.py` という名前のファイルを使う。
+
+#### `addoption`
+
+`conftest.py` に `pytest_〇〇` とすると fixture を追加出来る。
+
+```py
+# conftest.py
+def pytest_addoption(parser):
+    parser.addoption("--os-name", default="linux", help="os name")
+```
+
+`request.config.getoption("option-name")` とすると受け取ることが出来る。
+
+```py
+def test_add_num_and_double(self, request):
+    os_name = request.config.getoption("--os-name")
+    print(os_name)
+
+    if os_name == "mac":
+        print("ls")
+    elif os_name == "windows":
+        print("dir")
+    assert self.cal.add_num_and_double(1, 1) == 4
+```
+
+`pytest --help` で定義したオプションを見ることが出来る。
+
+```shell
+$ pytest --help
+
+usage: pytest [options] [file_or_dir] [file_or_dir] [...]
+...
+custom options:
+  --os-name=OS_NAME     os name
+```
+
+## カバレッジ
+
+テストのカバレッジを調べる。
+
+```shell
+pip install pytest-cov pytest-xdist
+```
+
+### 使い方
+
+`pytest --cov=module_name` とする。
+
+```shell
+pytest --cov=calculation
+
+Name             Stmts   Miss  Cover
+------------------------------------
+calculation.py      13      1    92%
+------------------------------------
+TOTAL               13      1    92%
+```
+
+カバーできていない箇所を調べるには `--cov-report term-missing` を付ける。
+
+```shell
+pytest -s --cov=calculation --cov-report term-missing
+
+Name             Stmts   Miss  Cover   Missing
+----------------------------------------------
+calculation.py      13      1   92%       12
+----------------------------------------------
+TOTAL               13      1   92%       12
+```
+
+### どこまでテストする?
+
+- 100% は難しい
+- 会社のルールに従えばいい
+  - 「80%以上にしよう」
+  - 「ユニットテストは書かない」
+
