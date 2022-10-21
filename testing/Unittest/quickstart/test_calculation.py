@@ -13,15 +13,21 @@ class CalTest(unittest.TestCase):
     - メソッド名は test_method_name とする
     """
 
+    def setUp(self):
+        print("setup")
+        self.cal = calculation.Cal()
+
+    def tearDown(self) -> None:
+        print("clean up")
+        del self.cal
+
     def test_add_num_and_double(self):
-        cal = calculation.Cal()
-        self.assertEqual(cal.add_num_and_double(1, 1), 4)
+        self.assertEqual(self.cal.add_num_and_double(1, 1), 4)
 
     def test_add_num_and_double_raise(self):
-        cal = calculation.Cal()
         # 例外処理にはwithステートメントを使う
         with self.assertRaises(ValueError):
-            cal.add_num_and_double("1", "1")
+            self.cal.add_num_and_double("1", "1")
 
 
 # unittest.main()で実行
