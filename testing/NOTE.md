@@ -286,3 +286,218 @@ TOTAL               13      1   92%       12
   - 「80%以上にしよう」
   - 「ユニットテストは書かない」
 
+## Mock
+
+### 例で使うコード
+
+サードパーティのライブラリにリクエストを送るクラスを想定。
+
+```py
+import requests
+
+class ThirdPartyBonusRestApi(object):
+    """サードパーティのAPI"""
+    def bonus_price(self, year):
+        res = requests.get("http://localhost/bonus", params={"year": year})
+        # ex: {"price": 10000000}
+        return res.json()["price"]
+
+
+class Salary(object):
+    def __init__(self, base=100, year=2017):
+        self.bonus_api = ThirdPartyBonusRestApi()
+        self.base = base
+        self.year = year
+
+    def calculation_salary(self):
+        """APIを叩くコード"""
+        bonus = self.bonus_api.bonus_price(year=self.year)
+        return self.base + bonus
+```
+
+### Unittest - MagicMock
+
+`MagicMock(return_value=value)` とする。
+
+```py
+import unittest
+from unittest.mock import MagicMock
+
+import salary
+
+
+class TestSalary(unittest.TestCase):
+    def test_calculation_salary(self):
+        s = salary.Salary()
+        s.bonus_api.bonus_price = MagicMock(return_value=1)
+        self.assertEqual(s.calculation_salary(), 101)
+
+
+if __name__ == "__main__":
+    unittest.main()
+```
+
+### 呼ばれたかどうか
+
+`assert_called` などのメソッドを使う。
+
+```py
+class TestSalary(unittest.TestCase):
+    def test_calculation_salary(self):
+        s = salary.Salary(base=100)
+        s.bonus_api.bonus_price = MagicMock(return_value=1)
+
+        # 呼ばれたかどうか
+        s.bonus_api.bonus_price.assert_called()
+        s.bonus_api.bonus_price.assert_called_once()
+        s.bonus_api.bonus_price.assert_called_with(year=2017)
+
+        self.assertEqual(s.bonus_api.bonus_price.call_count, 1)
+```
+
+### patch
+
+次のコードはインスタンスを生成した後にモック化している。これはよろしくない。
+
+```py
+def test_calculation_salary(self):
+    s = salary.Salary(base=100, year=2017)
+    s.bonus_api.bonus_price = MagicMock(return_value=1)
+
+    self.assertEqual(s.calculation_salary(), 101)
+```
+
+#### デコレータ
+
+そこで、patch を使う。文字列でパスを記述する。`return_value` はデコレータ部分でも設定可能。
+
+```py
+    @mock.patch("salary.ThirdPartyBonusRestApi.bonus_price")
+    def test_calculation_salary_patch(self, mock_bonus):
+        mock_bonus.return_value = 1
+
+        s = salary.Salary(base=100, year=2017)
+        salary_price = s.calculation_salary()
+
+        self.assertEqual(salary_price, 101)
+        mock_bonus.assert_called()
+```
+
+#### with
+
+`with` でも設定可能。
+
+```py
+def test_calculation_salary_patch_with_statement(self):
+    with mock.patch("salary.ThirdPartyBonusRestApi.bonus_price") as mock_bonus:
+        mock_bonus.return_value = 1
+
+        s = salary.Salary(base=100, year=2017)
+        salary_price = s.calculation_salary()
+
+        self.assertEqual(salary_price, 101)
+        mock_bonus.assert_called()
+```
+
+#### patcher
+
+patcher でも設定可能。
+setup / teardown でモックを設定したい時に便利。
+
+```py
+def test_calculation_salary_patch_patcher(self):
+    """with で patch
+    """
+    # start
+    patcher = mock.patch("salary.ThirdPartyBonusRestApi.bonus_price")
+    mock_bonus = patcher.start()
+    mock_bonus.return_value = 1
+
+    s = salary.Salary(base=100, year=2017)
+    salary_price = s.calculation_salary()
+
+    self.assertEqual(salary_price, 101)
+    mock_bonus.assert_called()
+
+    # stop
+    patcher.stop()
+```
+
+```py
+# setUp, tearDownの例
+class TestSalary(unittest.TestCase):
+    def setUp(self):
+        self.patcher = mock.patch("salary.ThirdPartyBonusRestApi.bonus_price")
+        self.mock_bonus = self.patcher.start()
+
+    def tearDown(self):
+        self.patcher.stop()
+```
+
+#### side effect
+
+関数、ラムダ式をモックに渡す。複雑な処理を書きたい時に便利。
+
+```py
+def test_calculation_salary_patch_by_side_effect(self):
+    """side effect で patch"""
+
+    # def f(year):
+    #     return 1
+    # self.mock_bonus.side_effect = f
+    self.mock_bonus.side_effect = lambda year: 1
+
+    s = salary.Salary(base=100, year=2017)
+    salary_price = s.calculation_salary()
+
+    self.assertEqual(salary_price, 101)
+    self.mock_bonus.assert_called()
+```
+
+例外処理のテストでも使う。TDDライクなアプローチが可能。
+
+```py
+def test_calculation_salary_patch_by_side_effect(self):
+    """side effect で patch"""
+    self.mock_bonus.side_effect = ConnectionRefusedError
+
+    s = salary.Salary(base=100, year=2017)
+    salary_price = s.calculation_salary()
+
+    self.assertEqual(salary_price, 100)
+    self.mock_bonus.assert_called()
+```
+
+配列を渡すことも出来る。呼ばれた回数に応じて返り値が変わる。
+
+```py
+self.mock_bonus.side_effect = [1, 2, 3, ValueError]
+```
+
+### クラスごとモック化
+
+```py
+@mock.patch("salary.ThirdPartyBonusRestApi", spec=True)
+def test_calculation_salary_class(self, mock_rest):
+    """クラスごとモックに"""
+    # return_value メソッドはでモックを返す
+    mock_rest = mock_rest.return_value
+    mock_rest.bonus_price.return_value = 1
+
+    s = salary.Salary(base=100, year=2017)
+    salary_price = s.calculation_salary()
+
+    self.assertEqual(salary_price, 101)
+    mock_rest.bonus_price.assert_called()
+```
+
+## More Utils
+
+- setuptools
+  - Pythonで作ったコードを配布する時に使うライブラリ
+  - テストを実行することも出来る
+- tox
+  - テスト実行に必要な環境(パッケージ)を仮想環境内に入れる事ができる
+- selenium
+  - UI の自動テスト
+
