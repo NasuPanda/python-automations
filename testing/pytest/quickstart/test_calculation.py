@@ -14,11 +14,28 @@ def test_add_num_and_double():
 
 # クラス名は Test から始めれば良い
 class TestCal(object):
+    @classmethod
+    def setup_class(cls):
+        print("start")
+        cls.cal = calculation.Cal()
+
+    @classmethod
+    def teardown_class(cls):
+        print("end")
+        del cls.cal
+
+    # setup / teardown _method とすることでメソッド実行前後の処理を定義出来る
+    def setup_method(self, method):
+        print("setup", method)
+        # self.cal = calculation.Cal()
+
+    def teardown_method(self, method):
+        print("tear down", method)
+        # del self.cal
+
     def test_add_num_and_double(self):
-        cal = calculation.Cal()
-        assert cal.add_num_and_double(1, 1) == 4
+        assert self.cal.add_num_and_double(1, 1) == 4
 
     def test_add_num_and_double_raise(self):
-        cal = calculation.Cal()
         with pytest.raises(ValueError):
-            cal.add_num_and_double("1", "1")
+            self.cal.add_num_and_double("1", "1")
