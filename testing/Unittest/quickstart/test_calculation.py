@@ -5,6 +5,8 @@ import unittest
 
 import calculation
 
+RELEASE_NAME = "test"
+
 
 class CalTest(unittest.TestCase):
     """Testing Cal.
@@ -23,6 +25,11 @@ class CalTest(unittest.TestCase):
 
     def test_add_num_and_double(self):
         self.assertEqual(self.cal.add_num_and_double(1, 1), 4)
+
+    # @unittest.skip("skip")
+    @unittest.skipIf(RELEASE_NAME == "test", "skip")
+    def test_add_num_and_double_skip(self):
+        self.assertEqual(self.cal.add_num_and_double(2, 2), 8)
 
     def test_add_num_and_double_raise(self):
         # 例外処理にはwithステートメントを使う
