@@ -77,3 +77,78 @@ if __name__ == "__main__":
 ```
 
 CLIから `python -m unittest test_module_1.py test_module_2.py` のように実行することも可能。
+
+# pytest
+
+## 実行
+
+```shell
+pytest
+
+# 標準出力を見たい時
+pytest -s
+```
+
+## 基本的な書き方
+
+### 関数として
+
+`test_` から始まる関数は全てテストとして認識される。
+
+```py
+def test_add_num_and_double():
+    cal = calculation.Cal()
+    # assert 何らかの式 と書くだけで良い
+    assert cal.add_num_and_double(1, 1) == 4
+```
+
+### クラスとして
+
+クラス名は `Test` から始めれば良い。
+
+```py
+import calculation
+
+class TestCal(object):
+    def test_add_num_and_double(self):
+        cal = calculation.Cal()
+        assert cal.add_num_and_double(1, 1) == 4
+```
+
+### 例外処理
+
+```py
+def test_raise(self):
+    with pytest.raises(ValueError):
+        raise ValueError
+```
+
+### setup / teardown
+
+`setup / teardown _method` とすることでメソッド実行前後に処理を定義出来る。
+
+```py
+class TestCal(object):
+    def setup_method(self, method):
+        print("setup", method)
+        self.cal = calculation.Cal()
+
+    def teardown_method(self, method):
+        print("tear down", method)
+        del self.cal
+```
+
+上のような例であれば、 `setup / teardown _class` を使ったほうが良い。
+
+```py
+class TestCal(object):
+    @classmethod
+    def setup_class(cls):
+        print("start")
+        cls.cal = calculation.Cal()
+
+    @classmethod
+    def teardown_class(cls):
+        print("end")
+        del cls.cal
+```

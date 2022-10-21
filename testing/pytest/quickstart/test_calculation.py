@@ -5,14 +5,11 @@ import pytest
 import calculation
 
 
-# test_ から始まる関数は全てテストとして認識される
 def test_add_num_and_double():
     cal = calculation.Cal()
-    # assert 何らかの式 と書く
     assert cal.add_num_and_double(1, 1) == 4
 
 
-# クラス名は Test から始めれば良い
 class TestCal(object):
     @classmethod
     def setup_class(cls):
@@ -24,7 +21,6 @@ class TestCal(object):
         print("end")
         del cls.cal
 
-    # setup / teardown _method とすることでメソッド実行前後の処理を定義出来る
     def setup_method(self, method):
         print("setup", method)
         # self.cal = calculation.Cal()
