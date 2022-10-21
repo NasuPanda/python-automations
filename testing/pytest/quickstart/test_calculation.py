@@ -35,3 +35,8 @@ class TestCal(object):
     def test_add_num_and_double_raise(self):
         with pytest.raises(ValueError):
             self.cal.add_num_and_double("1", "1")
+
+    # @pytest.mark.skipif(IS_RELEASE==True, reason="skip")
+    @pytest.mark.skip(reason="skip!")
+    def test_skip(self):
+        assert self.cal.add_num_and_double(2, 2) == 8
