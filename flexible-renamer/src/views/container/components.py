@@ -164,6 +164,11 @@ class UserInterface:
             renamer = self._exec_rename(filter.filepaths)
             if renamer is None:
                 return
-            renamer.copy_from_src_to_dst(self.config.dst_folder)
+
+            try:
+                renamer.copy_from_src_to_dst(self.config.dst_folder)
+            except OSError as e:
+                self._notice_error(str(e), "処理を中断します")
+                return
 
         self._notice_ok("ファイルのリネームに成功しました", f"保存先: {self.config.dst_folder}")

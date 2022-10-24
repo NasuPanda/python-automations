@@ -19,6 +19,8 @@ class FileFilter:
         else:
             raise ValueError("引数が無効です")
 
+        self.filepaths.sort()
+
     @classmethod
     def has_target_extension(cls, path: str, target_extension: str) -> bool:
         return path[-len(target_extension) :] == target_extension
@@ -65,6 +67,8 @@ class FileRenamer:
             self.src_paths = glob.glob(f"{src_folder}/*.*")
         else:
             raise ValueError("引数が無効です")
+
+        self.src_paths.sort()
 
         self.delimiter = delimiter
         # renameするのはfileのstem(拡張子を除いたファイル名)
@@ -117,11 +121,18 @@ class FileRenamer:
             exceptions.ReplaceError(f"ファイルの部分スワップに失敗しました。ファイル名に`{self.delimiter}`は含まれていますか?")
 
     def copy_from_src_to_dst(self, dst_folder: str) -> None:
+        os.makedirs(dst_folder, exist_ok=True)
         extension = Path(self.src_paths[0]).suffix
 
         for src_path, dst_name in zip(self.src_paths, self.dst_names):
             dst_path = os.path.join(dst_folder, dst_name + extension)
-            shutil.copy(src_path, dst_path)
+            try:
+                shutil.copy(src_path, dst_path)
+            except OSError:
+                raise OSError(f"ファイル名に使えない名前が指定されました: {dst_name}")
+
+    def _format_preview(self, src: str, dst: str) -> str:
+        return f"変更前: {Path(src).stem} ===> 変更後: {dst}"
 
     def format_previews(self) -> list[str]:
-        return [f"{Path(src).stem} => {dst}" for (src, dst) in zip(self.src_paths, self.dst_names)]
+        return [self._format_preview(src, dst) for (src, dst) in zip(self.src_paths, self.dst_names)]
