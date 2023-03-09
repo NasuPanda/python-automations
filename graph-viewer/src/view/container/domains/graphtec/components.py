@@ -1,8 +1,8 @@
+from src.backend.domains.graphtec.store import GraphtecDataStore
 from src.common import utils
-from src.common.exception import GraphtecFlagNotFoundError
-from src.data.domains.graphtec.store import GraphtecDataStore
-from src.view.container.components import UserInterface
 from src.common.constants import ComponentKeys, GraphtecMode
+from src.common.exception import GraphtecFlagNotFoundError
+from src.view.container.components import UserInterface
 
 
 class GraphtecUserInterface(UserInterface):

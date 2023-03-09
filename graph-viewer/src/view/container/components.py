@@ -4,6 +4,8 @@ from typing import Any
 
 import PySimpleGUI as sg
 
+from src.backend.graph import GraphPlotter
+from src.backend.store import DataStore
 from src.common import types, utils
 from src.common.constants import (
     BASE_HLINE_COLORS,
@@ -14,8 +16,6 @@ from src.common.constants import (
     TIME_AXIS_INDICATOR_TEXTS,
     ComponentKeys,
 )
-from src.data.graph import GraphPlotter
-from src.data.store import DataStore
 from src.view.presentational import components
 
 
