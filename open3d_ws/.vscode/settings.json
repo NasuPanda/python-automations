@@ -1,0 +1,28 @@
+{
+  "files.exclude": {
+    "**/__pycache__": true,
+    "**/.mypy_cache": true
+  },
+  "ros.distro": "noetic",
+  "python.linting.mypyEnabled": true,
+  "python.linting.enabled": true,
+  // フォーマッタの設定
+  // "editor.formatOnSave": true,
+  // "python.linting.flake8Path": "/home/sn/.local/bin/flake8",
+  // "python.formatting.blackPath": "/home/sn/.local/bin/black",
+  // "python.linting.flake8CategorySeverity.E": "Warning",
+  // "python.linting.flake8CategorySeverity.F": "Warning",
+  // "editor.codeActionsOnSave": {
+  //     "source.organizeImports": true
+  // },
+  // "python.linting.mypyPath": "/home/sn/.local/bin/mypy",
+  // "python.linting.mypyEnabled": true,
+  // "python.linting.mypyCategorySeverity.error": "Information",
+  // "python.linting.mypyArgs": [
+  //     "--follow-imports=silent",
+  //     "--ignore-missing-imports",
+  //     "--show-column-numbers",
+  //     "--no-pretty",
+  //     "--follow-imports=skip"
+  // ],
+}
