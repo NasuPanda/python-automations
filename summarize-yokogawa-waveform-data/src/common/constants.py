@@ -27,14 +27,14 @@ CLI_COLORS = {
 
 """Order"""
 COLUMN_ORDERS = [
-    "top(V)",
-    "Tc(V)",
-    "Pin(MPa)",
-    "Pc(MPa)",
-    "A",
-    "Pk(MPa)",
-    "Pv(MPa)",
-    "燃温(℃)",
+    "value1",
+    "value2",
+    "value3",
+    "value4",
+    "value5",
+    "value6",
+    "value7",
+    "value8",
 ]
 CHANNELS = [
     "CH1",
@@ -60,8 +60,8 @@ CHANNELS = [
 
 class GraphSettings(NamedTuple):
     x_axis_title: str = "時間[s]"
-    primary_y_axis_title: str = "燃圧[MPa] Tc-Pin-Pc-A-Pk-Pv"
-    secondary_y_axis_title: str = "燃温[℃]"
+    primary_y_axis_title: str = "Value2"
+    secondary_y_axis_title: str = "Value8"
     address: str = "J5"
     width: int = 22
     height: int = 16
