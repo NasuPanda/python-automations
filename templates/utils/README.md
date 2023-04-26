@@ -7,6 +7,8 @@
     - [参考](#参考-1)
   - [datetime](#datetime)
     - [参考](#参考-2)
+  - [sqlite3](#sqlite3)
+    - [参考](#参考-3)
 
 ## re
 Pythonで正規表現の処理を行うには標準ライブラリのreモジュールを使う.
@@ -47,3 +49,9 @@ Pythonでdatetime(日時)の操作をするときに使うモジュール.
 
 ### 参考
 - [Pythonのdatetimeで日付や時間と文字列を変換（strftime, strptime） | note.nkmk.me](https://note.nkmk.me/python-datetime-usage/)
+
+## sqlite3
+PythonでSQLiteを操作するときに使うモジュール.
+
+### 参考
+[sqlite3 — DB-API 2.0 interface for SQLite databases — Python 3.11.3 documentation](https://docs.python.org/3/library/sqlite3.html)
