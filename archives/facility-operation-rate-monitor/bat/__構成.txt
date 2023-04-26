@@ -1,0 +1,8 @@
+実行用
+exec.bat(実体) < exec_wrapper.vbs(exec.batを非表示で呼び出し) < exec_vbs_wrapper.bat(exec_wrapper.vbsを呼び出す)
+
+プロンプトを非表示にするために`.vbs`を使用する。
+`.vbs`だとタスクスケジューラから上手く起動しないようなので、`.vbs`を呼び出すバッチファイルをタスクに登録する。
+
+停止用
+stop.bat

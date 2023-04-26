@@ -1,10 +1,13 @@
 # 監視間隔(分で指定)
-monitor_interval_minutes: 5
+# TODO 必要に応じて変更する
+monitor_interval_minutes: 1
 # 停止時間 低: 負荷高, 信憑性高 / 高: 負荷低, 信憑性低
 sleep_time: 1
 # ログフォルダ名
-log_folder: "./logs"
+# TODO 必要に応じて変更する
+log_folder: "../../ログ"
 # 設備名
+# TODO 変更する
 facility_name: 'facility_A'
 # CSVの定義
 csv_columns:
@@ -12,25 +15,14 @@ csv_columns:
   time: 時刻
   man-hour: 実作業有無
   machine_time: マシンタイム
+  active_window_title: アクティブなウィンドウの名前
 
 # モニタリング対象のプロセス
-# - プロセス名はタスクマネージャ上でプロセスの「プロパティ」を選択することで見ることが出来る
-# - CPU負荷のしきい値はプロセス名と対応する位置に記述する
-# 例
-  # names:
-  #   - Taskmgr.exe
-  #   - QaseeClient.exe
-  # cpu_usage_thresholds:
-  #   - 3.0
-  #   - 0.1
-monitored_processes:
-  # 監視したいプロセス名
+# TODO 変更する
+monitoring_process:
+  # 監視したいアプリケーション名
   names:
-    - Taskmgr.exe
-    - QaseeClient.exe
-  # 稼働判定とするCPU負荷のしきい値
-  cpu_usage_thresholds:
-    - 3.0
-    - 0.5
+    - Visual Studio Code
+    - Teams
 
 
