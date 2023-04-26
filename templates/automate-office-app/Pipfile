@@ -1,0 +1,17 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+openpyxl = "*"
+python-pptx = "*"
+
+[dev-packages]
+black = "*"
+mypy = "*"
+flake8 = "*"
+isort = "*"
+
+[requires]
+python_version = "3.10"
