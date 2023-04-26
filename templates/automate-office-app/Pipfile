@@ -6,6 +6,7 @@ name = "pypi"
 [packages]
 openpyxl = "*"
 python-pptx = "*"
+pywin32 = "*"
 
 [dev-packages]
 black = "*"
