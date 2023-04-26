@@ -4,6 +4,9 @@
 
 ![demo-gif](./samples/デモ/PowerPointFormatter_特定レイアウト_デモ.gif)
 
+## 開発時期
+*2022/05*
+
 ## 概要
 
 PowerPointで作成したフォーマットを使用して画像貼り付け・テキスト置換を行います。
