@@ -1,5 +1,4 @@
-from typing import Literal, TypeAlias
+from typing import Literal
 
-DomainModeOptions = Literal["通常", "Graphtec"]
 GraphAxis = Literal["x", "y"]
 HlineNumber = Literal["1", "2"]

@@ -1,6 +1,6 @@
 import PySimpleGUI as sg
 
-from src.common.constants import FONT, DOMAIN_MODE_OPTIONS, ComponentKeys
+from src.common.constants import FONT, ComponentKeys
 
 
 def folder_browse_components() -> tuple[sg.Input, sg.Button]:
@@ -28,27 +28,16 @@ def submit_button_component() -> sg.Button:
     return sg.Button(**styles)
 
 
-def mode_select_combo_components() -> tuple[sg.Text, sg.Combo]:
-    text_styles = {"text": "モード選択"}
-    combo_styles = {
-        "values": DOMAIN_MODE_OPTIONS,
-        "default_value": DOMAIN_MODE_OPTIONS[0],
-        "key": ComponentKeys.get_folder_popup_select_mode_combo,
-    }
-    return sg.Text(**text_styles), sg.Combo(**combo_styles)
-
-
 def layout() -> list:
     return [
         [*folder_browse_components()],
-        [*mode_select_combo_components()],
         [submit_button_component()],
     ]
 
 
-def popup_get_folder_and_mode() -> sg.Window:
+def popup_get_folder() -> sg.Window:
     windows_styles = {
-        "title": "Popup get folder and select mode",
+        "title": "Popup get folder",
         "layout": layout(),
         "element_justification": "center",
         "font": f"{FONT} 15",

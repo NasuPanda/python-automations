@@ -1,13 +1,12 @@
-from src.common import types
 from src.common.constants import ComponentKeys
 from src.view.presentational import popup
 
 
-class PopupToGetFolderAndMode:
+class PopupToGetFolder:
     def __init__(self) -> None:
-        self.window = popup.popup_get_folder_and_mode()
+        self.window = popup.popup_get_folder()
 
-    def get_folder_and_mode(self) -> tuple[str, types.DomainModeOptions] | None:
+    def get_folder(self) -> str | None:
         while True:
             event, values = self.window.read()  # type: ignore
 
@@ -15,10 +14,7 @@ class PopupToGetFolderAndMode:
                 return None
 
             if event == ComponentKeys.get_folder_popup_submit:
-                return (
-                    values[ComponentKeys.get_folder_popup_folder_input],
-                    values[ComponentKeys.get_folder_popup_select_mode_combo],
-                )
+                return values[ComponentKeys.get_folder_popup_folder_input]
 
     def close_window(self) -> None:
         self.window.close()
