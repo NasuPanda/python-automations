@@ -1,4 +1,4 @@
-"""点が均等に配置されていることを前提にSORCをメッシュ化。自力で法線ベクトルを付与する。
+"""点が均等に配置されていることを前提に立方体をメッシュ化。自力で法線ベクトルを付与する。
 
 NOTE
 - 欠損値扱いをする要素は None/nan で埋める。座標に0が存在するため0埋めはしない。
@@ -101,7 +101,7 @@ def main():
 
     # メッシュ化
     mesh = meshing.reconstruct_by_poisson(pcd, display_result=True)
-    # file_io.write_mesh("./result.ply", mesh)
+    file_io.write_mesh("./result.ply", mesh)
 
 
 if __name__ == "__main__":
