@@ -2,17 +2,6 @@
 **/domains/**
 **/under_proxy/**
 **/credentials/**
-par-parser/config.py
-par-parser/src/models/vi.py
-
-# データを含む拡張子は除外する
-*.csv
-*.xlsx
-*.xlsm
-*.pptx
-*.pptm
-*.par
-*.db
 
 # 不要なので除外
 **/__pycache__/**
